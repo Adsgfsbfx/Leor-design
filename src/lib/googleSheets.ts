@@ -1,6 +1,5 @@
 import "server-only";
 
-import { createHash } from "node:crypto";
 import { google } from "googleapis";
 
 export const leadHeaders = [
@@ -27,21 +26,14 @@ export const leadHeaders = [
   "Follow-up Notes",
 ] as const;
 
-const messageHeaders = ["Timestamp (IST)", "Phone", "Name", "Message Text"] as const;
 const sheetScopes = ["https://www.googleapis.com/auth/spreadsheets"];
+const pendingLeadAppends = new Map<string, Promise<void>>();
 
 type GoogleSheetsEnvironment = {
   spreadsheetId: string;
   serviceAccountEmail: string;
   privateKey: string;
 };
-
-type CachedAppend = {
-  expiresAt: number;
-  promise: Promise<void>;
-};
-
-const leadAppendCache = new Map<string, CachedAppend>();
 
 export class GoogleSheetsConfigurationError extends Error {
   constructor() {
@@ -101,10 +93,6 @@ export function formatIstTimestamp(date = new Date()) {
   const part = (type: Intl.DateTimeFormatPartTypes) =>
     parts.find((item) => item.type === type)?.value ?? "";
   return `${part("year")}-${part("month")}-${part("day")} ${part("hour")}:${part("minute")}:${part("second")} IST`;
-}
-
-function createLeadId(idempotencyKey: string) {
-  return `lead_${createHash("sha256").update(idempotencyKey).digest("hex").slice(0, 40)}`;
 }
 
 async function ensureSheetTab(
@@ -182,49 +170,21 @@ async function hasLeadId(leadId: string) {
   return result.data.values?.some(([existingId]) => existingId === leadId) ?? false;
 }
 
-export async function appendLead(
-  idempotencyKey: string,
-  createRow: (leadId: string) => string[],
-) {
-  const leadId = createLeadId(idempotencyKey);
-  if (leadAppendCache.size > 5_000) {
-    const now = Date.now();
-    for (const [cachedId, entry] of leadAppendCache) {
-      if (entry.expiresAt <= now) leadAppendCache.delete(cachedId);
-    }
+export async function appendLeadRow(leadId: string, row: string[]) {
+  if (row.length !== leadHeaders.length) {
+    throw new Error("Lead row does not match the configured Google Sheets columns.");
   }
-  const cached = leadAppendCache.get(leadId);
-  if (cached && cached.expiresAt > Date.now()) return cached.promise;
+  const pending = pendingLeadAppends.get(leadId);
+  if (pending) return pending;
 
-  const promise = (async () => {
+  const append = (async () => {
     if (await hasLeadId(leadId)) return;
-    const row = createRow(leadId);
-    if (row.length !== leadHeaders.length) {
-      throw new Error("Lead row does not match the configured Google Sheets columns.");
-    }
     await appendRows("Leads", leadHeaders, [row]);
   })();
-
-  leadAppendCache.set(leadId, { expiresAt: Date.now() + 24 * 60 * 60 * 1000, promise });
+  pendingLeadAppends.set(leadId, append);
   try {
-    await promise;
-  } catch (error) {
-    leadAppendCache.delete(leadId);
-    throw error;
+    await append;
+  } finally {
+    pendingLeadAppends.delete(leadId);
   }
-}
-
-export async function appendWhatsAppClick(row: string[]) {
-  if (row.length !== leadHeaders.length) {
-    throw new Error("WhatsApp click row does not match the configured Google Sheets columns.");
-  }
-  await appendRows("Leads", leadHeaders, [row]);
-}
-
-export async function appendWhatsAppMessages(rows: string[][]) {
-  if (rows.length === 0) return;
-  if (rows.some((row) => row.length !== messageHeaders.length)) {
-    throw new Error("WhatsApp message row does not match the configured sheet columns.");
-  }
-  await appendRows("WhatsApp Messages", messageHeaders, rows);
 }

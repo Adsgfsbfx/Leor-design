@@ -1,18 +1,13 @@
 import { createHmac, timingSafeEqual } from "node:crypto";
-import {
-  appendWhatsAppMessages,
-  formatIstTimestamp,
-  isGoogleSheetsConfigured,
-  sanitizeSheetText,
-} from "../../../../src/lib/googleSheets";
+import { getSupabaseAdmin, isSupabaseConfigured } from "../../../../src/lib/supabaseAdmin";
 
 function webhookConfigured() {
   return Boolean(
-    process.env.WHATSAPP_VERIFY_TOKEN &&
-      process.env.WHATSAPP_APP_SECRET &&
-      process.env.WHATSAPP_ACCESS_TOKEN &&
-      process.env.WHATSAPP_PHONE_NUMBER_ID &&
-      isGoogleSheetsConfigured(),
+    process.env.WHATSAPP_VERIFY_TOKEN?.trim() &&
+      process.env.WHATSAPP_APP_SECRET?.trim() &&
+      process.env.WHATSAPP_ACCESS_TOKEN?.trim() &&
+      process.env.WHATSAPP_PHONE_NUMBER_ID?.trim() &&
+      isSupabaseConfigured(),
   );
 }
 
@@ -40,6 +35,7 @@ export async function GET(request: Request) {
 }
 
 type IncomingMessage = {
+  id?: unknown;
   from?: unknown;
   timestamp?: unknown;
   text?: { body?: unknown };
@@ -56,12 +52,12 @@ function asRecord(value: unknown): Record<string, unknown> | null {
     : null;
 }
 
-function toTimestamp(value: unknown) {
+function messageTimestamp(value: unknown) {
   if (typeof value !== "string" || !/^\d{1,12}$/.test(value)) {
-    return formatIstTimestamp();
+    return new Date().toISOString();
   }
   const date = new Date(Number(value) * 1_000);
-  return Number.isNaN(date.getTime()) ? formatIstTimestamp() : formatIstTimestamp(date);
+  return Number.isNaN(date.getTime()) ? new Date().toISOString() : date.toISOString();
 }
 
 export async function POST(request: Request) {
@@ -100,36 +96,68 @@ export async function POST(request: Request) {
 
   const root = asRecord(payload);
   const entries = Array.isArray(root?.entry) ? root.entry : [];
-  const rows: string[][] = [];
+  const messagesToInsert: {
+    wa_message_id: string;
+    created_at: string;
+    from_phone: string;
+    profile_name: string;
+    message_text: string;
+    direction: "inbound";
+  }[] = [];
   for (const entry of entries) {
     const entryRecord = asRecord(entry);
     const changes = Array.isArray(entryRecord?.changes) ? entryRecord.changes : [];
     for (const change of changes) {
       const value = asRecord(asRecord(change)?.value);
-      const messages = Array.isArray(value?.messages) ? value.messages as IncomingMessage[] : [];
-      const contacts = Array.isArray(value?.contacts) ? value.contacts as IncomingContact[] : [];
+      const messages = Array.isArray(value?.messages)
+        ? value.messages as IncomingMessage[]
+        : [];
+      const contacts = Array.isArray(value?.contacts)
+        ? value.contacts as IncomingContact[]
+        : [];
       for (const message of messages) {
         const body = message.text?.body;
-        if (typeof body !== "string" || typeof message.from !== "string") continue;
+        if (
+          typeof message.id !== "string" ||
+          message.id.length > 200 ||
+          typeof message.from !== "string" ||
+          message.from.length > 40 ||
+          typeof body !== "string"
+        ) {
+          continue;
+        }
         const contact = contacts.find((item) => item.wa_id === message.from);
-        rows.push([
-          toTimestamp(message.timestamp),
-          sanitizeSheetText(message.from, 40),
-          sanitizeSheetText(typeof contact?.profile?.name === "string" ? contact.profile.name : "", 120),
-          sanitizeSheetText(body, 4_000),
-        ]);
+        const profileName =
+          typeof contact?.profile?.name === "string"
+            ? contact.profile.name.slice(0, 120)
+            : "";
+        messagesToInsert.push({
+          wa_message_id: message.id,
+          created_at: messageTimestamp(message.timestamp),
+          from_phone: message.from,
+          profile_name: profileName,
+          message_text: body.slice(0, 4_000),
+          direction: "inbound",
+        });
       }
     }
   }
 
   try {
-    await appendWhatsAppMessages(rows);
-    return Response.json({ received: rows.length }, { status: 200 });
+    if (messagesToInsert.length > 0) {
+      const { error } = await getSupabaseAdmin()
+        .from("whatsapp_messages")
+        .upsert(messagesToInsert, {
+          onConflict: "wa_message_id",
+          ignoreDuplicates: true,
+        });
+      if (error) throw error;
+    }
+    return Response.json({ received: messagesToInsert.length }, { status: 200 });
   } catch (error) {
-    console.error(
-      "Google Sheets WhatsApp webhook append failed.",
-      error instanceof Error ? { name: error.name, message: error.message } : error,
-    );
+    console.error("Supabase WhatsApp webhook insert failed.", {
+      message: error instanceof Error ? error.message : String(error),
+    });
     return Response.json({ message: "Webhook storage is temporarily unavailable." }, { status: 503 });
   }
 }

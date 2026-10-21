@@ -141,7 +141,7 @@ function logWhatsAppIntent(
   }).catch(() => undefined);
 }
 
-export function EnquiryForm({ compact = false }: { compact?: boolean }) {
+export function EnquiryForm() {
   const [status, setStatus] = useState<FormStatus>({ kind: "idle", message: "" });
   const [servicesError, setServicesError] = useState("");
   const [submitting, setSubmitting] = useState(false);
@@ -149,8 +149,8 @@ export function EnquiryForm({ compact = false }: { compact?: boolean }) {
   const submittingRef = useRef(false);
   const idempotencyKeyRef = useRef("");
   const formRef = useRef<HTMLFormElement>(null);
-  const servicesErrorId = compact ? "services-needed-error-compact" : "services-needed-error";
-  const source = compact ? "hero form" : "enquiry form";
+  const servicesErrorId = "services-needed-error";
+  const source = "enquiry form";
 
   function getIdempotencyKey() {
     if (!idempotencyKeyRef.current) {
@@ -205,6 +205,7 @@ export function EnquiryForm({ compact = false }: { compact?: boolean }) {
     setSubmitting(true);
     const payload = getFormPayload(form, true);
     setStatus({ kind: "loading", message: "Saving your details before opening WhatsApp…" });
+    logWhatsAppIntent(source, payload.whatsappMessage);
     const controller = new AbortController();
     const timeout = window.setTimeout(() => controller.abort(), 8_000);
     try {
@@ -298,7 +299,7 @@ export function EnquiryForm({ compact = false }: { compact?: boolean }) {
 
   return (
     <form
-      className={`enquiry-form${compact ? " enquiry-form-compact" : ""}`}
+      className="enquiry-form"
       onSubmit={handleSubmit}
       onChange={(event) => updateWhatsAppMessage(event.currentTarget)}
       onInput={(event) => updateWhatsAppMessage(event.currentTarget)}
@@ -526,7 +527,6 @@ export function ProjectGallery() {
             <div className="project-image sample-image-frame">
               <SampleImage
                 alt={project.alt}
-                isSample={project.isSample}
                 label={project.label}
                 sizes="(max-width: 767px) 100vw, (max-width: 1050px) 50vw, (max-width: 1279px) 33vw, 25vw"
                 src={project.src}
@@ -539,7 +539,7 @@ export function ProjectGallery() {
         ))}
       </div>
       <p className="image-disclaimer">
-        Sample images shown. Leor&apos;s completed projects will replace these.
+        Illustrative images shown. Leor&apos;s completed projects will replace these.
       </p>
     </>
   );
@@ -638,6 +638,7 @@ export function FloatingWhatsAppButton() {
   useEffect(() => {
     const protectedAreas = [
       ...document.querySelectorAll(".enquiry-form"),
+      ...document.querySelectorAll(".hero-cta-card"),
       ...document.querySelectorAll(".site-footer"),
     ];
     if (protectedAreas.length === 0 || !("IntersectionObserver" in window)) return;
@@ -676,14 +677,12 @@ export function FloatingWhatsAppButton() {
 
 export function SampleImage({
   alt,
-  isSample,
   label,
   priority = false,
   sizes,
   src,
 }: {
   alt: string;
-  isSample: boolean;
   label: string;
   priority?: boolean;
   sizes: string;
@@ -697,7 +696,7 @@ export function SampleImage({
         <Image
           alt={alt}
           fill
-          loading={priority ? undefined : "lazy"}
+          loading={priority ? "eager" : "lazy"}
           onError={() => setFailed(true)}
           preload={priority}
           sizes={sizes}
@@ -708,10 +707,10 @@ export function SampleImage({
         <span aria-label={alt} className="sample-picture-fallback" role="img">
           <span className="sample-fallback-mark">L.</span>
           <strong>{label}</strong>
-          <small>Leor Design · Sample visual</small>
+          <small>Leor Design · Visual reference</small>
         </span>
       )}
-      {isSample && <span className="sample-image-badge">Sample image</span>}
+      <span className="image-name-badge">{label}</span>
     </div>
   );
 }
@@ -722,7 +721,6 @@ export function HeroImage() {
     <div className="hero-photo">
       <SampleImage
         alt={heroImage.alt}
-        isSample={heroImage.isSample}
         label={heroImage.label}
         priority
         sizes="(max-width: 760px) 100vw, 58vw"

@@ -3,7 +3,6 @@ import {
   packageRates,
   phoneDisplay,
   phoneHref,
-  sampleTestimonialsPlaceholder,
   site,
 } from "../../../src/config/site";
 import {
@@ -154,15 +153,20 @@ export default function LandingPage() {
           </div>
           <div className="hero-visual">
             <HeroImage />
-            <div className="hero-form-card">
+            <div className="hero-form-card hero-cta-card">
               <div className="form-card-heading">
                 <div>
                   <p className="eyebrow">A good place to begin</p>
-                  <h2>Tell us about home.</h2>
+                  <h2>Let’s talk about your home.</h2>
                 </div>
                 <span className="form-card-arrow" aria-hidden="true">↘</span>
               </div>
-              <EnquiryForm compact />
+              <p className="hero-cta-copy">
+                Share what you have in mind. We’ll help you find a thoughtful place to start.
+              </p>
+              <a className="button button-dark hero-cta-link" href="#contact">
+                Tell us about your home <span aria-hidden="true">↘</span>
+              </a>
             </div>
           </div>
           <a className="scroll-cue" href="#promise"><span /> Scroll to explore</a>
@@ -232,7 +236,6 @@ export default function LandingPage() {
                   <div className="service-image sample-image-frame">
                     <SampleImage
                       alt={service.alt}
-                      isSample={service.isSample}
                       label={service.label}
                       sizes="(max-width: 767px) 50vw, (max-width: 1050px) 50vw, 33vw"
                       src={service.src}
@@ -254,7 +257,7 @@ export default function LandingPage() {
               );
             })}
           </div>
-          <p className="image-disclaimer">Sample images shown. Leor&apos;s completed projects will replace these.</p>
+          <p className="image-disclaimer">Illustrative images shown. Leor&apos;s completed projects will replace these.</p>
         </section>
 
         <section className="section process-section" id="process">
@@ -277,7 +280,6 @@ export default function LandingPage() {
           <div className="why-image">
             <SampleImage
               alt={interiorImages[0].alt}
-              isSample={interiorImages[0].isSample}
               label={interiorImages[0].label}
               sizes="(max-width: 760px) 100vw, 40vw"
               src={interiorImages[0].src}
@@ -322,14 +324,6 @@ export default function LandingPage() {
           <p className="estimate-disclaimer">Illustrative comparison only. Package rates are editable estimates, not a confirmed price list. Every final proposal is tailored to the agreed brief.</p>
         </section>
 
-        <section className="section stories-section" id="stories">
-          <div className="stories-heading"><p className="eyebrow">A space saved for your story</p><h2>Good homes are personal.<br /><em>So are the stories.</em></h2></div>
-          <div className="sample-notice">SAMPLE PLACEHOLDERS · These are not genuine customer reviews. Replace with approved client feedback before publishing.</div>
-          <div className="story-grid">
-            {[1, 2, 3].map((item) => <article className="story-card" key={item}><span className="story-quote" aria-hidden="true">“</span><p>{sampleTestimonialsPlaceholder}</p><div className="story-byline"><span className="story-avatar">L</span><span>Client name to be added<small>Project details to be confirmed</small></span></div><span className="story-placeholder-label">Sample content placeholder</span></article>)}
-          </div>
-        </section>
-
         <section className="section faq-section" id="faqs">
           <div className="faq-heading"><p className="eyebrow">A few useful first answers</p><h2>Questions,<br /><em>before the first hello.</em></h2><p>Still wondering about something specific? Tell us about your home and we’ll take it from there.</p><a className="text-link" href="#contact">Ask us directly <span aria-hidden="true">↗</span></a></div>
           <FAQAccordion />
@@ -372,7 +366,7 @@ export default function LandingPage() {
           </div>
           <div className="footer-column"><h2>Our services</h2><a href="#spaces">Living rooms & bedrooms</a><a href="#spaces">Kitchens & wardrobes</a><a href="#spaces">Complete homes</a><a href="#spaces">Painting & electrical</a><a href="#portfolio">Visual inspiration</a></div>
           <div className="footer-column"><h2>Good to know</h2><a href="#materials">Materials & finishes</a><a href="#compare">Package comparison</a><a href="#faqs">Frequently asked</a><a href="#contact">Consultation</a></div>
-          <div className="footer-column footer-contact"><h2>Say hello</h2><a href="#contact">Send an enquiry <span aria-hidden="true">↗</span></a><WhatsAppButton className="footer-whatsapp" source="footer">WhatsApp us <span aria-hidden="true">↗</span></WhatsAppButton><a href={phoneHref}>{phoneDisplay} <span aria-hidden="true">↗</span></a><small>Email placeholder: {site.businessEmailPlaceholder}</small></div>
+          <div className="footer-column footer-contact"><h2>Say hello</h2><a href="#contact">Send an enquiry <span aria-hidden="true">↗</span></a><WhatsAppButton className="footer-whatsapp" source="footer">WhatsApp us <span aria-hidden="true">↗</span></WhatsAppButton><a href={phoneHref}>{phoneDisplay} <span aria-hidden="true">↗</span></a><small>Call or WhatsApp to talk about your home.</small></div>
         </div>
         <div className="footer-bottom"><span>© {site.companyName}. All rights reserved.</span><span>Thoughtful interiors in Bangalore</span><a href="/privacy">Privacy</a><a href="#home">Back to top ↑</a></div>
       </footer>

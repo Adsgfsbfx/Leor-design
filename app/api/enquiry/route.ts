@@ -1,20 +1,48 @@
-import { appendLead, formatIstTimestamp, GoogleSheetsConfigurationError, sanitizeSheetText } from "../../../src/lib/googleSheets";
+import { after } from "next/server";
+import { mirrorLeadToGoogleSheets, type LeadSheetsMirrorRecord } from "../../../src/lib/leadSheetsMirror";
 import { isRateLimited } from "../../../src/lib/rateLimit";
 import { enquiryServiceOptions } from "../../../src/config/site";
+import { getSupabaseAdmin, SupabaseConfigurationError } from "../../../src/lib/supabaseAdmin";
 
 type EnquiryPayload = Record<string, unknown>;
 type DeviceType = "mobile" | "tablet" | "desktop";
+type EnquirySource = "hero_form" | "enquiry_form" | "estimator" | "service_card";
 
 const allowedPropertyTypes = new Set(["Apartment", "Villa", "Renovation", "Other"]);
-const allowedSources = new Set(["hero form", "enquiry form", "estimator", "service card"]);
+const sourceMapping: Record<string, EnquirySource> = {
+  "enquiry form": "enquiry_form",
+  estimator: "estimator",
+  "service card": "service_card",
+};
 const allowedDevices = new Set<DeviceType>(["mobile", "tablet", "desktop"]);
 const stringValue = (value: unknown) =>
   typeof value === "string" ? value.trim() : "";
 const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
-const safe = (value: string, maxLength: number) => sanitizeSheetText(value, maxLength);
 
 function invalid(message: string, status = 400) {
   return Response.json({ message }, { status });
+}
+
+function scheduleSheetsMirror(lead: LeadSheetsMirrorRecord) {
+  after(async () => {
+    try {
+      if (!(await mirrorLeadToGoogleSheets(lead))) return;
+      const { error } = await getSupabaseAdmin()
+        .from("leads")
+        .update({ sheets_synced: true })
+        .eq("id", lead.id);
+      if (error) throw error;
+    } catch (error) {
+      const errorCode =
+        typeof error === "object" && error !== null && "code" in error
+          ? String(error.code ?? "")
+          : "";
+      console.error("Optional Google Sheets lead mirror failed.", {
+        code: errorCode,
+        message: error instanceof Error ? error.message : String(error),
+      });
+    }
+  });
 }
 
 export async function POST(request: Request) {
@@ -63,7 +91,8 @@ export async function POST(request: Request) {
         ),
       )]
     : [];
-  const source = stringValue(payload.source);
+  const requestedSource = stringValue(payload.source);
+  const source = sourceMapping[requestedSource];
   const deviceType = stringValue(payload.deviceType) as DeviceType;
   const name = stringValue(payload.name);
   const locality = stringValue(payload.locality);
@@ -85,7 +114,7 @@ export async function POST(request: Request) {
     requirements.length > 2_000 ||
     servicesNeeded.length === 0 ||
     payload.consent !== true ||
-    !allowedSources.has(source) ||
+    !source ||
     !allowedDevices.has(deviceType) ||
     typeof payload.whatsappClicked !== "boolean" ||
     estimatorSelections.length > 500 ||
@@ -100,52 +129,94 @@ export async function POST(request: Request) {
     return invalid("Please check the enquiry details and try again.");
   }
 
+  const utmSource = stringValue(payload.utmSource);
+  const utmMedium = stringValue(payload.utmMedium);
+  const utmCampaign = stringValue(payload.utmCampaign);
+  if (utmSource.length > 200 || utmMedium.length > 200 || utmCampaign.length > 200) {
+    return invalid("Please check the enquiry details and try again.");
+  }
+
+  const estimatorData = estimatorSelections
+    ? { selections: estimatorSelections }
+    : null;
+  const leadInput = {
+    idempotency_key: idempotencyKey,
+    source,
+    name,
+    mobile,
+    email: email || null,
+    property_type: propertyType,
+    locality,
+    services_needed: servicesNeeded,
+    requirements: whatsappClicked
+      ? `${requirements}\n\nWhatsApp message: ${whatsappMessage}`.slice(0, 2_000)
+      : requirements,
+    estimator_selections: estimatorData,
+    indicative_estimate: indicativeEstimate || null,
+    page_url: pageUrl || null,
+    utm_source: utmSource || null,
+    utm_medium: utmMedium || null,
+    utm_campaign: utmCampaign || null,
+    device_type: deviceType,
+    whatsapp_clicked: whatsappClicked,
+    consent: true,
+    consent_at: new Date().toISOString(),
+    status: "New",
+  };
+
   try {
-    await appendLead(idempotencyKey, (leadId) => [
-      formatIstTimestamp(),
-      leadId,
-      safe(source, 50),
-      safe(name, 120),
-      safe(mobile, 10),
-      safe(email, 254),
-      safe(propertyType, 60),
-      safe(locality, 120),
-      safe(servicesNeeded.join(", "), 500),
-      safe(
-        whatsappClicked
-          ? `${requirements}\n\nWhatsApp message: ${whatsappMessage}`
-          : requirements,
-        2_000,
-      ),
-      safe(estimatorSelections, 500),
-      safe(indicativeEstimate, 100),
-      safe(pageUrl, 2_000),
-      safe(stringValue(payload.utmSource), 200),
-      safe(stringValue(payload.utmMedium), 200),
-      safe(stringValue(payload.utmCampaign), 200),
-      deviceType,
-      whatsappClicked ? "Yes" : "No",
-      `Yes — ${formatIstTimestamp()}`,
-      "New",
-      "",
-    ]);
+    const { data: insertedLead, error: insertError } = await getSupabaseAdmin()
+      .from("leads")
+      .insert(leadInput)
+      .select("*")
+      .single();
+
+    if (insertError?.code === "23505") {
+      const { data: existingLead, error: lookupError } = await getSupabaseAdmin()
+        .from("leads")
+        .select("*")
+        .eq("idempotency_key", idempotencyKey)
+        .maybeSingle();
+      if (lookupError) {
+        console.error("Could not check the already-saved enquiry.", {
+          code: lookupError.code,
+          message: lookupError.message,
+        });
+        throw lookupError;
+      }
+      if (!existingLead) throw insertError;
+      if (!existingLead.sheets_synced) {
+        scheduleSheetsMirror(existingLead as LeadSheetsMirrorRecord);
+      }
+      return Response.json({ message: "Enquiry already saved." }, { status: 200 });
+    }
+    if (insertError) throw insertError;
+    if (!insertedLead) throw new Error("Supabase returned no inserted enquiry row.");
+
+    scheduleSheetsMirror(insertedLead as LeadSheetsMirrorRecord);
     return Response.json({ message: "Enquiry saved." }, { status: 201 });
   } catch (error) {
-    if (error instanceof GoogleSheetsConfigurationError) {
-      console.error("Google Sheets enquiry append is not configured.", error.message);
+    if (error instanceof SupabaseConfigurationError) {
+      console.error("Supabase enquiry insert is not configured.", error.message);
       return invalid(
-        "Our enquiry form is temporarily unavailable. Please call or WhatsApp us instead.",
+        "Our enquiry form is not connected yet. Please try again later or contact us by phone.",
         503,
       );
     }
 
     console.error(
-      "Google Sheets enquiry append failed.",
-      error instanceof Error ? { name: error.name, message: error.message } : error,
+      "Supabase enquiry insert failed.",
+      error instanceof Error
+        ? {
+            name: error.name,
+            code: "code" in error ? String(error.code ?? "") : "",
+            message: error.message,
+          }
+        : error,
     );
     return invalid(
       "We couldn't save your enquiry right now. Please try again shortly or contact us by phone.",
-      502,
+      503,
     );
   }
 }

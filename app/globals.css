@@ -194,8 +194,8 @@ select:focus-visible {
   margin: 0 auto;
   padding: 48px 0 80px;
   align-items: center;
-  grid-template-columns: 0.84fr 1.16fr;
-  gap: 50px;
+  grid-template-columns: minmax(0, 0.95fr) minmax(0, 1.05fr);
+  gap: 40px;
 }
 
 .hero-copy {
@@ -242,6 +242,10 @@ select:focus-visible {
   font-weight: 400;
   letter-spacing: -2.7px;
   line-height: 1.02;
+}
+
+.hero-copy h1 {
+  font-size: clamp(50px, 5vw, 68px);
 }
 
 .hero-copy h1 em,
@@ -408,6 +412,20 @@ select:focus-visible {
 .form-card-arrow {
   color: #90927e;
   font-size: 22px;
+}
+
+.hero-cta-copy {
+  max-width: 340px;
+  margin: 0 0 17px;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+.hero-cta-link {
+  min-height: 44px;
+  padding: 0 15px;
+  gap: 18px;
 }
 
 .enquiry-form {
@@ -3278,7 +3296,7 @@ select:focus-visible {
   text-transform: uppercase;
 }
 
-.sample-image-badge {
+.image-name-badge {
   position: absolute;
   z-index: 2;
   top: 12px;
@@ -3297,7 +3315,7 @@ select:focus-visible {
   z-index: 0;
 }
 
-.hero-photo .sample-image-badge {
+.hero-photo .image-name-badge {
   top: 16px;
   right: 16px;
 }
@@ -3628,6 +3646,15 @@ select:focus-visible {
 }
 
 @media (min-width: 768px) and (max-width: 1050px) {
+  .hero-section {
+    gap: 22px;
+    grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+  }
+
+  .hero-copy h1 {
+    font-size: clamp(38px, 5vw, 52px);
+  }
+
   .project-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }

@@ -4,8 +4,6 @@ export const site = {
   serviceArea: "Serving all of Bangalore",
   phoneNumber: "+91 8792385751",
   whatsappMessage: "Hi Leor Design, I'd like to discuss my home interiors.",
-  businessEmailPlaceholder: "Add confirmed business email before launch",
-  privacyContactEmail: "privacy@leordesign.example",
 } as const;
 
 export const phoneDisplay = site.phoneNumber.replace("+91 ", "");
@@ -78,6 +76,3 @@ export const faqs = [
       "Send us your contact details, locality, and a short note about your home. We’ll use them to arrange an initial conversation and understand what you’re looking for.",
   },
 ] as const;
-
-export const sampleTestimonialsPlaceholder =
-  "Add genuine, permission-approved Leor client testimonials here before publishing.";
