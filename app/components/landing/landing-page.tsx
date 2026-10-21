@@ -1,20 +1,22 @@
-import Image from "next/image";
+import { interiorImages } from "../../../src/config/images";
 import {
-  images,
   packageRates,
+  phoneDisplay,
+  phoneHref,
   sampleTestimonialsPlaceholder,
-  services,
   site,
 } from "../../../src/config/site";
 import {
   CostEstimator,
   EnquiryForm,
   FAQAccordion,
+  FloatingWhatsAppButton,
   Header,
   HeroImage,
   MobileActionBar,
   ProjectGallery,
-  WhatsAppLink,
+  SampleImage,
+  WhatsAppButton,
 } from "./interactive";
 
 const packages = [
@@ -63,6 +65,49 @@ const materials = [
   ["04", "Metals & details", "Subtle accents that bring a room into focus."],
 ];
 
+const serviceDetails = {
+  "living-room": {
+    description: "A welcoming balance of comfort, flow, light, and the pieces you love.",
+    icon: "⌂",
+    points: ["Space planning", "Lighting and finishes", "Furniture and storage"],
+  },
+  bedroom: {
+    description: "Restful rooms with thoughtful storage and a softer end to the day.",
+    icon: "☾",
+    points: ["Bedroom layouts", "Wardrobe planning", "Comfort-led finishes"],
+  },
+  "modular-kitchen": {
+    description: "Hard-working layouts, considered finishes, and room for everyday rituals.",
+    icon: "✳",
+    points: ["Kitchen planning", "Storage solutions", "Surface selections"],
+  },
+  wardrobe: {
+    description: "Storage planned around your belongings, routines, and available space.",
+    icon: "▤",
+    points: ["Built-in storage", "Internal organisation", "Finish choices"],
+  },
+  "complete-home": {
+    description: "A cohesive design language carried from the first room to the last detail.",
+    icon: "⌂",
+    points: ["Whole-home design", "Coordinated finishes", "Delivery coordination"],
+  },
+  "dining-area": {
+    description: "A considered place to gather, share meals, and spend time together.",
+    icon: "◌",
+    points: ["Dining layouts", "Lighting and finishes", "Comfortable circulation"],
+  },
+  painting: {
+    description: "Interior wall painting and finishing work, planned around your home.",
+    icon: "✦",
+    points: ["Interior wall painting", "Touch-ups and finishes", "Painting coordination"],
+  },
+  "electrical-work": {
+    description: "Electrical finishing for lighting, switches, wiring, and fixtures.",
+    icon: "✧",
+    points: ["Lighting and switches", "Wiring and new points", "Fixture installation"],
+  },
+} as const;
+
 const comparisonRows = [
   ["Space planning", true, true, true],
   ["Material & finish guidance", "Core", "Expanded", "Curated"],
@@ -91,6 +136,13 @@ export default function LandingPage() {
             <div className="hero-links">
               <a className="button button-dark" href="#contact"><span className="desktop-cta">Let’s talk about your home</span><span className="mobile-cta">Get Free Quote</span><span aria-hidden="true">↗</span></a>
               <a className="button button-outline hero-secondary" href="#portfolio"><span className="desktop-cta">Explore the spaces</span><span className="mobile-cta">See our work</span><span aria-hidden="true">↓</span></a>
+              <WhatsAppButton
+                className="button button-whatsapp hero-whatsapp"
+                source="hero"
+                message="Hi Leor Design, I'd like a free quote for my home interiors."
+              >
+                WhatsApp
+              </WhatsAppButton>
             </div>
             <div className="hero-service-chips" aria-label="Interior design and finishing services">
               <span>Interior design</span><span>Painting</span><span>Electrical work</span>
@@ -173,17 +225,36 @@ export default function LandingPage() {
             <p className="section-intro">From one room that needs a rethink to a whole home with a story to tell, let’s make the plan feel like yours.</p>
           </div>
           <div className="services-grid">
-            {services.map((service, index) => (
-              <article className="service-card" key={service.title}>
-                <div className="service-image"><Image alt={service.alt} fill sizes="(max-width: 760px) 50vw, 33vw" src={service.image} /><span>0{index + 1}</span></div>
-                <span aria-hidden="true" className="service-icon">{service.icon}</span>
-                <h3>{service.title}</h3>
-                <p>{service.description}</p>
-                <ul className="service-points">{service.points.map((point) => <li key={point}>{point}</li>)}</ul>
-              </article>
-            ))}
+            {interiorImages.map((service, index) => {
+              const details = serviceDetails[service.id];
+              return (
+                <article className="service-card" key={service.id}>
+                  <div className="service-image sample-image-frame">
+                    <SampleImage
+                      alt={service.alt}
+                      isSample={service.isSample}
+                      label={service.label}
+                      sizes="(max-width: 767px) 50vw, (max-width: 1050px) 50vw, 33vw"
+                      src={service.src}
+                    />
+                    <span className="service-number">0{index + 1}</span>
+                  </div>
+                  <span aria-hidden="true" className="service-icon">{details.icon}</span>
+                  <h3>{service.label}</h3>
+                  <p>{details.description}</p>
+                  <ul className="service-points">{details.points.map((point) => <li key={point}>{point}</li>)}</ul>
+                  <WhatsAppButton
+                    className="service-whatsapp"
+                    source="service card"
+                    message={`Hi Leor Design, I'm interested in ${service.label}.`}
+                  >
+                    Ask about {service.label} <span aria-hidden="true">↗</span>
+                  </WhatsAppButton>
+                </article>
+              );
+            })}
           </div>
-          <p className="image-disclaimer">Service imagery is sample inspiration and does not represent completed Leor projects.</p>
+          <p className="image-disclaimer">Sample images shown. Leor&apos;s completed projects will replace these.</p>
         </section>
 
         <section className="section process-section" id="process">
@@ -204,7 +275,13 @@ export default function LandingPage() {
 
         <section className="section why-section" id="why-leor">
           <div className="why-image">
-            <Image alt="Warm, tactile home interior detail with natural materials" fill sizes="(max-width: 760px) 100vw, 40vw" src={images.detail} />
+            <SampleImage
+              alt={interiorImages[0].alt}
+              isSample={interiorImages[0].isSample}
+              label={interiorImages[0].label}
+              sizes="(max-width: 760px) 100vw, 40vw"
+              src={interiorImages[0].src}
+            />
             <span>Designing for the everyday, beautifully.</span>
           </div>
           <div className="why-copy">
@@ -264,8 +341,14 @@ export default function LandingPage() {
             <h2>Let’s make room<br />for <em>what matters.</em></h2>
             <p>Tell us a little about your home. We’ll get back to you to understand the brief and see if we’re the right fit.</p>
             <div className="contact-note"><span className="contact-dot" />{site.address}<small>{site.serviceArea}</small></div>
-            <WhatsAppLink className="whatsapp-link" />
-            <a className="phone-link" href={`tel:${site.phoneNumber}`}>{site.phoneDisplay} <span>Call Leor Design</span></a>
+            <WhatsAppButton
+              className="whatsapp-link"
+              source="enquiry form"
+              message="Hi Leor Design, I'd like a free quote for my home interiors."
+            >
+              Chat on WhatsApp
+            </WhatsAppButton>
+            <a className="phone-link" href={phoneHref}>{phoneDisplay} <span>Call Leor Design</span></a>
           </div>
           <div className="contact-form-card">
             <p className="eyebrow">A few details to get us started</p>
@@ -289,11 +372,12 @@ export default function LandingPage() {
           </div>
           <div className="footer-column"><h2>Our services</h2><a href="#spaces">Living rooms & bedrooms</a><a href="#spaces">Kitchens & wardrobes</a><a href="#spaces">Complete homes</a><a href="#spaces">Painting & electrical</a><a href="#portfolio">Visual inspiration</a></div>
           <div className="footer-column"><h2>Good to know</h2><a href="#materials">Materials & finishes</a><a href="#compare">Package comparison</a><a href="#faqs">Frequently asked</a><a href="#contact">Consultation</a></div>
-          <div className="footer-column footer-contact"><h2>Say hello</h2><a href="#contact">Send an enquiry <span aria-hidden="true">↗</span></a><WhatsAppLink className="footer-whatsapp" /><a href={`tel:${site.phoneNumber}`}>{site.phoneDisplay} <span aria-hidden="true">↗</span></a><small>Email placeholder: {site.businessEmailPlaceholder}</small></div>
+          <div className="footer-column footer-contact"><h2>Say hello</h2><a href="#contact">Send an enquiry <span aria-hidden="true">↗</span></a><WhatsAppButton className="footer-whatsapp" source="footer">WhatsApp us <span aria-hidden="true">↗</span></WhatsAppButton><a href={phoneHref}>{phoneDisplay} <span aria-hidden="true">↗</span></a><small>Email placeholder: {site.businessEmailPlaceholder}</small></div>
         </div>
-        <div className="footer-bottom"><span>© {site.companyName}. All rights reserved.</span><span>Thoughtful interiors in Bangalore</span><a href="#home">Back to top ↑</a></div>
+        <div className="footer-bottom"><span>© {site.companyName}. All rights reserved.</span><span>Thoughtful interiors in Bangalore</span><a href="/privacy">Privacy</a><a href="#home">Back to top ↑</a></div>
       </footer>
       <MobileActionBar />
+      <FloatingWhatsAppButton />
     </>
   );
 }

@@ -1,130 +1,151 @@
+import { appendLead, formatIstTimestamp, GoogleSheetsConfigurationError, sanitizeSheetText } from "../../../src/lib/googleSheets";
+import { isRateLimited } from "../../../src/lib/rateLimit";
 import { enquiryServiceOptions } from "../../../src/config/site";
 
-type Enquiry = {
-  name: string;
-  mobile: string;
-  email: string;
-  propertyType: string;
-  locality: string;
-  requirements: string;
-  servicesNeeded: string[];
-};
+type EnquiryPayload = Record<string, unknown>;
+type DeviceType = "mobile" | "tablet" | "desktop";
 
-const isRecord = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
-const stringValue = (value: unknown) => (typeof value === "string" ? value.trim() : "");
+const allowedPropertyTypes = new Set(["Apartment", "Villa", "Renovation", "Other"]);
+const allowedSources = new Set(["hero form", "enquiry form", "estimator", "service card"]);
+const allowedDevices = new Set<DeviceType>(["mobile", "tablet", "desktop"]);
+const stringValue = (value: unknown) =>
+  typeof value === "string" ? value.trim() : "";
 const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
+const safe = (value: string, maxLength: number) => sanitizeSheetText(value, maxLength);
+
+function invalid(message: string, status = 400) {
+  return Response.json({ message }, { status });
+}
 
 export async function POST(request: Request) {
+  if (isRateLimited(request, "enquiry", 8, 15 * 60 * 1000)) {
+    return invalid("Too many requests. Please wait a little and try again.", 429);
+  }
+
   const contentLength = Number(request.headers.get("content-length") ?? 0);
   if (contentLength > 16_384) {
-    return Response.json(
-      { message: "Your enquiry is too large. Please shorten the details and try again." },
-      { status: 413 },
-    );
+    return invalid("Your enquiry is too large. Please shorten the details and try again.", 413);
+  }
+
+  const idempotencyKey = request.headers.get("idempotency-key")?.trim() ?? "";
+  if (!/^[\w-]{16,200}$/.test(idempotencyKey)) {
+    return invalid("Please refresh the page and try sending your enquiry again.");
   }
 
   let data: unknown;
   try {
     data = await request.json();
   } catch {
-    return Response.json({ message: "Please check the enquiry details and try again." }, { status: 400 });
+    return invalid("Please check the enquiry details and try again.");
+  }
+  if (!data || typeof data !== "object" || Array.isArray(data)) {
+    return invalid("Please check the enquiry details and try again.");
   }
 
-  if (!isRecord(data)) {
-    return Response.json({ message: "Please check the enquiry details and try again." }, { status: 400 });
+  const payload = data as EnquiryPayload;
+  if (stringValue(payload.website)) {
+    return invalid("Please check the enquiry details and try again.");
   }
 
-  const enteredMobile = stringValue(data.mobile);
-  const digits = enteredMobile.replace(/\D/g, "");
-  const mobile = digits.length === 12 && digits.startsWith("91") ? digits.slice(2) : digits;
-  const servicesNeeded = Array.isArray(data.servicesNeeded)
-    ? data.servicesNeeded.filter(
-        (service): service is string =>
-          typeof service === "string" &&
-          enquiryServiceOptions.some((option) => option === service),
-      )
+  const enteredMobile = stringValue(payload.mobile);
+  const normalizedMobile = enteredMobile.replace(/[\s-]/g, "");
+  const mobile = normalizedMobile.startsWith("+91")
+    ? normalizedMobile.slice(3)
+    : normalizedMobile;
+  const email = stringValue(payload.email);
+  const propertyType = stringValue(payload.propertyType);
+  const servicesNeeded = Array.isArray(payload.servicesNeeded)
+    ? [...new Set(
+        payload.servicesNeeded.filter(
+          (service): service is (typeof enquiryServiceOptions)[number] =>
+            typeof service === "string" &&
+            enquiryServiceOptions.some((option) => option === service),
+        ),
+      )]
     : [];
-  const enquiry: Enquiry = {
-    name: stringValue(data.name),
-    mobile,
-    email: stringValue(data.email),
-    propertyType: stringValue(data.propertyType),
-    locality: stringValue(data.locality),
-    requirements: stringValue(data.requirements),
-    servicesNeeded,
-  };
+  const source = stringValue(payload.source);
+  const deviceType = stringValue(payload.deviceType) as DeviceType;
+  const name = stringValue(payload.name);
+  const locality = stringValue(payload.locality);
+  const requirements = stringValue(payload.requirements);
+  const estimatorSelections = stringValue(payload.estimatorSelections);
+  const indicativeEstimate = stringValue(payload.indicativeEstimate);
+  const whatsappClicked = payload.whatsappClicked === true;
+  const whatsappMessage = stringValue(payload.whatsappMessage);
 
   if (
-    !enquiry.name ||
-    !/^[6-9]\d{9}$/.test(enquiry.mobile) ||
-    !isEmail(enquiry.email) ||
-    !["Apartment", "Villa", "Renovation", "Other"].includes(enquiry.propertyType) ||
-    !enquiry.locality ||
-    !enquiry.requirements ||
-    enquiry.servicesNeeded.length === 0
+    !name ||
+    name.length > 120 ||
+    !/^[6-9]\d{9}$/.test(mobile) ||
+    (email !== "" && (!isEmail(email) || email.length > 254)) ||
+    !allowedPropertyTypes.has(propertyType) ||
+    !locality ||
+    locality.length > 120 ||
+    !requirements ||
+    requirements.length > 2_000 ||
+    servicesNeeded.length === 0 ||
+    payload.consent !== true ||
+    !allowedSources.has(source) ||
+    !allowedDevices.has(deviceType) ||
+    typeof payload.whatsappClicked !== "boolean" ||
+    estimatorSelections.length > 500 ||
+    indicativeEstimate.length > 100 ||
+    (whatsappClicked && (!whatsappMessage || whatsappMessage.length > 2_000))
   ) {
-    return Response.json(
-      { message: "Please check all fields, choose a service, and enter a valid Indian mobile number." },
-      { status: 400 },
-    );
+    return invalid("Please check the required fields, consent, services, and Indian mobile number.");
   }
 
-  const webhookUrl = process.env.LEOR_ENQUIRY_WEBHOOK_URL;
-  if (!webhookUrl) {
-    return Response.json(
-      { message: "Enquiry delivery is not connected yet. Please call or WhatsApp us instead." },
-      { status: 503 },
-    );
+  const pageUrl = stringValue(payload.pageUrl);
+  if (pageUrl.length > 2_000) {
+    return invalid("Please check the enquiry details and try again.");
   }
 
-  let endpoint: URL;
   try {
-    endpoint = new URL(webhookUrl);
-  } catch {
-    return Response.json(
-      { message: "Enquiry delivery is misconfigured. Please call or WhatsApp us instead." },
-      { status: 503 },
-    );
-  }
-  if (endpoint.protocol !== "https:" && endpoint.protocol !== "http:") {
-    return Response.json(
-      { message: "Enquiry delivery is misconfigured. Please call or WhatsApp us instead." },
-      { status: 503 },
-    );
-  }
+    await appendLead(idempotencyKey, (leadId) => [
+      formatIstTimestamp(),
+      leadId,
+      safe(source, 50),
+      safe(name, 120),
+      safe(mobile, 10),
+      safe(email, 254),
+      safe(propertyType, 60),
+      safe(locality, 120),
+      safe(servicesNeeded.join(", "), 500),
+      safe(
+        whatsappClicked
+          ? `${requirements}\n\nWhatsApp message: ${whatsappMessage}`
+          : requirements,
+        2_000,
+      ),
+      safe(estimatorSelections, 500),
+      safe(indicativeEstimate, 100),
+      safe(pageUrl, 2_000),
+      safe(stringValue(payload.utmSource), 200),
+      safe(stringValue(payload.utmMedium), 200),
+      safe(stringValue(payload.utmCampaign), 200),
+      deviceType,
+      whatsappClicked ? "Yes" : "No",
+      `Yes — ${formatIstTimestamp()}`,
+      "New",
+      "",
+    ]);
+    return Response.json({ message: "Enquiry saved." }, { status: 201 });
+  } catch (error) {
+    if (error instanceof GoogleSheetsConfigurationError) {
+      console.error("Google Sheets enquiry append is not configured.", error.message);
+      return invalid(
+        "Our enquiry form is temporarily unavailable. Please call or WhatsApp us instead.",
+        503,
+      );
+    }
 
-  const controller = new AbortController();
-  const timeout = setTimeout(() => controller.abort(), 10_000);
-  let response: Response;
-  try {
-    response = await fetch(endpoint, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...(process.env.LEOR_ENQUIRY_WEBHOOK_TOKEN
-          ? { Authorization: `Bearer ${process.env.LEOR_ENQUIRY_WEBHOOK_TOKEN}` }
-          : {}),
-      },
-      body: JSON.stringify(enquiry),
-      signal: controller.signal,
-      cache: "no-store",
-    });
-  } catch {
-    return Response.json(
-      { message: "We couldn't reach the enquiry inbox. Please try again shortly." },
-      { status: 502 },
+    console.error(
+      "Google Sheets enquiry append failed.",
+      error instanceof Error ? { name: error.name, message: error.message } : error,
     );
-  } finally {
-    clearTimeout(timeout);
-  }
-
-  if (!response.ok) {
-    return Response.json(
-      { message: "We couldn't deliver your enquiry. Please try again shortly." },
-      { status: 502 },
+    return invalid(
+      "We couldn't save your enquiry right now. Please try again shortly or contact us by phone.",
+      502,
     );
   }
-
-  return Response.json({ message: "Enquiry saved." }, { status: 201 });
 }

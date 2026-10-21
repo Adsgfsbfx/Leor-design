@@ -2,28 +2,19 @@ export const site = {
   companyName: "Leor Design",
   address: "Hebbal, Bangalore, Karnataka",
   serviceArea: "Serving all of Bangalore",
-  phoneDisplay: "8050414570",
-  phoneNumber: "+918050414570",
-  whatsappNumber: "918050414570",
+  phoneNumber: "+91 8792385751",
   whatsappMessage: "Hi Leor Design, I'd like to discuss my home interiors.",
   businessEmailPlaceholder: "Add confirmed business email before launch",
+  privacyContactEmail: "privacy@leordesign.example",
 } as const;
 
-export const images = {
-  hero: "https://images.unsplash.com/photo-1600210492486-724fe5c67fb0?auto=format&fit=crop&w=1800&q=88",
-  living:
-    "https://images.unsplash.com/photo-1600607687939-ce8a6c25118c?auto=format&fit=crop&w=1000&q=85",
-  bedroom:
-    "https://images.unsplash.com/photo-1616486338812-3dadae4b4ace?auto=format&fit=crop&w=1000&q=85",
-  kitchen:
-    "https://images.unsplash.com/photo-1600607687920-4e2a09cf159d?auto=format&fit=crop&w=1000&q=85",
-  dining:
-    "https://images.unsplash.com/photo-1600210491369-e753d80a41f3?auto=format&fit=crop&w=1000&q=85",
-  wardrobe:
-    "https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1000&q=85",
-  detail:
-    "https://images.unsplash.com/photo-1600566753086-00f18fb6b3ea?auto=format&fit=crop&w=1000&q=85",
-} as const;
+export const phoneDisplay = site.phoneNumber.replace("+91 ", "");
+export const phoneHref = `tel:${site.phoneNumber.replace(/\s/g, "")}`;
+
+export function buildWhatsAppLink(message: string) {
+  const number = site.phoneNumber.replace(/\D/g, "");
+  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+}
 
 // Editable, indicative sample estimates only; confirm rates before publishing.
 export const packageRates = {
@@ -39,68 +30,15 @@ export const serviceAddOnEstimates = {
 } as const;
 
 export const enquiryServiceOptions = [
-  "Living rooms",
-  "Bedrooms",
-  "Kitchens",
-  "Wardrobes",
-  "Complete homes",
+  "Living Room",
+  "Bedroom",
+  "Modular Kitchen",
+  "Wardrobe",
+  "Complete Home",
+  "Dining Area",
   "Painting",
-  "Electrical work",
+  "Electrical Work",
   "Other",
-] as const;
-
-export const services = [
-  {
-    title: "Living rooms",
-    description: "A welcoming balance of comfort, flow, light, and the pieces you love.",
-    image: images.living,
-    alt: "Warm living room inspiration with natural light",
-    icon: "⌂",
-    points: ["Space planning", "Lighting and finishes", "Furniture and storage"],
-  },
-  {
-    title: "Bedrooms",
-    description: "Restful rooms with thoughtful storage and a softer end to the day.",
-    image: images.bedroom,
-    alt: "Relaxed bedroom interior inspiration",
-    icon: "☾",
-    points: ["Bedroom layouts", "Wardrobe planning", "Comfort-led finishes"],
-  },
-  {
-    title: "Kitchens",
-    description: "Hard-working layouts, considered finishes, and room for everyday rituals.",
-    image: images.kitchen,
-    alt: "Contemporary kitchen interior inspiration",
-    icon: "✳",
-    points: ["Kitchen planning", "Storage solutions", "Surface selections"],
-  },
-  {
-    title: "Wardrobes",
-    description: "Storage planned around your belongings, routines, and available space.",
-    image: images.wardrobe,
-    alt: "Calm wardrobe and built-in storage inspiration",
-    icon: "▤",
-    points: ["Built-in storage", "Internal organisation", "Finish choices"],
-  },
-  {
-    title: "Complete homes",
-    description: "A cohesive design language carried from the first room to the last detail.",
-    image: images.dining,
-    alt: "Cohesive dining interior inspiration",
-    icon: "⌂",
-    points: ["Whole-home design", "Coordinated finishes", "Delivery coordination"],
-  },
-  {
-    title: "Snag & Finishing Works",
-    description: "Practical finishing support to help bring your home together.",
-    image: images.detail,
-    alt: "Carefully finished interior detail used as a sample visual",
-    icon: "✦",
-    points: [
-      "Painting: interior walls, touch-ups, putty & polish, ceiling and woodwork finishes, post-handover snag fixes",
-      "Electrical: new points & wiring, switches & fixtures, lighting installation, fan & appliance fittings, safety checks and snag fixes",
-    ],
-  },
 ] as const;
 
 export const faqs = [
@@ -138,51 +76,6 @@ export const faqs = [
     question: "How do I get started?",
     answer:
       "Send us your contact details, locality, and a short note about your home. We’ll use them to arrange an initial conversation and understand what you’re looking for.",
-  },
-] as const;
-
-export const projects = [
-  {
-    title: "Quietly layered living",
-    category: "Living",
-    location: "Sample visual · Bangalore",
-    image: images.living,
-    alt: "Neutral-toned living room with an inviting, layered seating arrangement",
-  },
-  {
-    title: "A softer start to the day",
-    category: "Bedroom",
-    location: "Sample visual · Bangalore",
-    image: images.bedroom,
-    alt: "Calm bedroom concept with warm natural textures",
-  },
-  {
-    title: "Made for everyday rituals",
-    category: "Kitchen",
-    location: "Sample visual · Bangalore",
-    image: images.kitchen,
-    alt: "Contemporary kitchen interior with warm neutral finishes",
-  },
-  {
-    title: "Room to gather",
-    category: "Dining",
-    location: "Sample visual · Bangalore",
-    image: images.dining,
-    alt: "Elegant dining area with a considered natural palette",
-  },
-  {
-    title: "Storage, thoughtfully considered",
-    category: "Wardrobe",
-    location: "Sample visual · Bangalore",
-    image: images.wardrobe,
-    alt: "Built-in wardrobe and storage inspiration in a serene interior",
-  },
-  {
-    title: "The beauty is in the details",
-    category: "Living",
-    location: "Sample visual · Bangalore",
-    image: images.detail,
-    alt: "Close view of a refined interior detail and natural materials",
   },
 ] as const;
 
