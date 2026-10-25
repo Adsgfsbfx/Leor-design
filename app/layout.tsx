@@ -1,37 +1,32 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Playfair_Display } from "next/font/google";
+import { Hanken_Grotesk, Instrument_Serif } from "next/font/google";
+import type { ReactNode } from "react";
 import { site } from "../src/config/site";
 import "./globals.css";
 
-const geistSans = Geist({
-  variable: "--font-geist-sans",
+const hankenGrotesk = Hanken_Grotesk({
+  variable: "--font-hanken-grotesk",
   subsets: ["latin"],
+  display: "swap",
 });
 
-const geistMono = Geist_Mono({
-  variable: "--font-geist-mono",
-  subsets: ["latin"],
-});
-
-const playfair = Playfair_Display({
-  variable: "--font-playfair",
+const instrumentSerif = Instrument_Serif({
+  variable: "--font-instrument-serif",
+  weight: "400",
   subsets: ["latin"],
   display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: `${site.companyName} | Thoughtful Home Interiors in Bangalore`,
+  title: `${site.companyName} | Home Interiors in Hebbal, Bangalore`,
   description:
-    "Considered interiors, made personal. Explore home interiors and finishing works across Bangalore with Leor Design, based in Hebbal.",
+    "Thoughtful home interiors in Bangalore. Explore illustrative spaces, finishes, provisional budget ranges, and design services from Leor Design in Hebbal.",
 };
 
-export default function RootLayout({ children }: LayoutProps<"/">) {
+export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html
-      lang="en"
-      className={`${geistSans.variable} ${geistMono.variable} ${playfair.variable} h-full antialiased`}
-    >
-      <body className="min-h-full flex flex-col">{children}</body>
+    <html lang="en" className={`${hankenGrotesk.variable} ${instrumentSerif.variable}`}>
+      <body>{children}</body>
     </html>
   );
 }

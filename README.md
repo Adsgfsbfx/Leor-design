@@ -1,11 +1,11 @@
 # Leor Design
 
-A responsive Bengaluru interiors website built with Next.js App Router, TypeScript, and Tailwind CSS. Supabase Postgres is the primary database for enquiries and WhatsApp click-to-chat intents. Google Sheets can be enabled as an optional mirror.
+A responsive Bengaluru interiors website built with Next.js App Router, TypeScript, and Tailwind CSS. The homepage enquiry and discount forms are front-end demonstrations and do not send or save submissions. The repository also contains server/API integrations documented below; they are not called by the current homepage and should be reviewed before any future connection.
 
 ## Run locally
 
 ```bash
-npm install
+npm ci
 npm run dev
 ```
 

@@ -2,30 +2,21 @@ export const site = {
   companyName: "Leor Design",
   address: "Hebbal, Bangalore, Karnataka",
   serviceArea: "Serving all of Bangalore",
-  phoneNumber: "+91 8792385751",
-  whatsappMessage: "Hi Leor Design, I'd like to discuss my home interiors.",
+  phoneNumber: "+91 8050414570",
+  alternatePhoneNumber: "+91 9180414570",
+  whatsappNumber: "918050414570",
+  whatsappMessage:
+    "Hello Leor Design, I am interested in your interior design services.",
 } as const;
 
 export const phoneDisplay = site.phoneNumber.replace("+91 ", "");
-export const phoneHref = `tel:${site.phoneNumber.replace(/\s/g, "")}`;
+export const phoneHref = `tel:+91${phoneDisplay}`;
+export const alternatePhoneDisplay = site.alternatePhoneNumber.replace("+91 ", "");
+export const alternatePhoneHref = `tel:+91${alternatePhoneDisplay}`;
 
 export function buildWhatsAppLink(message: string) {
-  const number = site.phoneNumber.replace(/\D/g, "");
-  return `https://wa.me/${number}?text=${encodeURIComponent(message)}`;
+  return `https://wa.me/${site.whatsappNumber}?text=${encodeURIComponent(message)}`;
 }
-
-// Editable, indicative sample estimates only; confirm rates before publishing.
-export const packageRates = {
-  essential: 1499,
-  signature: 2199,
-  bespoke: 3199,
-} as const;
-
-// Editable add-on planning estimates only; confirm costs before publishing.
-export const serviceAddOnEstimates = {
-  paintingPerSqFt: 65,
-  electricalAllowance: 18000,
-} as const;
 
 export const enquiryServiceOptions = [
   "Living Room",
