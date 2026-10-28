@@ -10,6 +10,7 @@ import {
 } from "../../../src/config/site";
 import { calculateEstimate, formatRange } from "../../../src/lib/pricing";
 import { WhatsAppMark, LeadForm } from "./forms";
+import HeroVideo from "./hero-video";
 
 const iconPaths: Record<string, string> = {
   check: "M5 12.5l4.5 4.5L19 7.5",
@@ -59,8 +60,6 @@ const Gold = ({ children }: { children: React.ReactNode }) => <em className="gol
 export function Hero() {
   return (
     <section className="hero" id="top-hero">
-      <Image src={photos.hero.src} alt={photos.hero.alt} fill priority sizes="100vw" className="hero-img" />
-      <div className="hero-shade" />
       <div className="wrap hero-grid" id="top">
         <div className="hero-copy">
           <p className="eyebrow light">Hebbal, Bangalore</p>
@@ -74,8 +73,10 @@ export function Hero() {
         <div className="hero-form-card" id="enquire">
           <LeadForm />
         </div>
+        <div className="hero-media">
+          <HeroVideo />
+        </div>
       </div>
-      <p className="hero-credit">Illustrative stock photograph, not a Leor project.</p>
     </section>
   );
 }
