@@ -553,7 +553,7 @@ button { cursor: pointer; }
   height: 100%;
   object-fit: cover;
   object-position: center 48%;
-  filter: none;
+  filter: sepia(.28) saturate(1.26) hue-rotate(-8deg) brightness(1.04);
   pointer-events: none;
 }
 .hero-grid { z-index: 1; }
