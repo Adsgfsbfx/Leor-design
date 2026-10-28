@@ -60,6 +60,7 @@ const Gold = ({ children }: { children: React.ReactNode }) => <em className="gol
 export function Hero() {
   return (
     <section className="hero" id="top-hero">
+      <HeroVideo />
       <div className="wrap hero-grid" id="top">
         <div className="hero-copy">
           <p className="eyebrow light">Hebbal, Bangalore</p>
@@ -72,9 +73,6 @@ export function Hero() {
         </div>
         <div className="hero-form-card" id="enquire">
           <LeadForm />
-        </div>
-        <div className="hero-media">
-          <HeroVideo />
         </div>
       </div>
     </section>
