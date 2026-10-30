@@ -3,6 +3,11 @@ module.exports = {
   theme: {
     extend: {
       colors: {
+        redwood: "var(--redwood)",
+        tenne: "var(--tenne)",
+        "golden-bear": "var(--golden-bear)",
+        "aztec-gold": "var(--aztec-gold)",
+        "sand-dollar": "var(--sand-dollar)",
         navy: "var(--navy)",
         "navy-deep": "var(--navy-deep)",
         "navy-soft": "var(--navy-soft)",

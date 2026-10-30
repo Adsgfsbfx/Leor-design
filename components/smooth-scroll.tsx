@@ -23,7 +23,6 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
   const lenisRef = useRef<Lenis | null>(null);
   const locksRef = useRef(new Set<symbol>());
   const pendingScrollRef = useRef<PendingScroll | null>(null);
-  const previousPathRef = useRef(pathname);
   const [lenis, setLenis] = useState<Lenis | null>(null);
 
   const scrollTo = useCallback((target: ScrollTarget, options?: ScrollToOptions) => {
@@ -123,15 +122,26 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       if (lenisRef.current) lenisRef.current.scrollTo(0, { immediate: true });
       else window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     };
-
-    if (previousPathRef.current !== pathname) {
-      previousPathRef.current = pathname;
+    const resetHomeScroll = () => {
+      if (pathname === "/" && window.location.hash) {
+        window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}`);
+      }
       resetScroll();
-    } else {
-      resetScroll();
-    }
+    };
 
-    return () => { window.history.scrollRestoration = previousRestoration; };
+    resetHomeScroll();
+    const frameId = requestAnimationFrame(resetHomeScroll);
+    const onPageShow = () => {
+      resetHomeScroll();
+      requestAnimationFrame(resetHomeScroll);
+    };
+    window.addEventListener("pageshow", onPageShow);
+
+    return () => {
+      cancelAnimationFrame(frameId);
+      window.removeEventListener("pageshow", onPageShow);
+      window.history.scrollRestoration = previousRestoration;
+    };
   }, [pathname]);
 
   useEffect(() => {
@@ -172,7 +182,8 @@ export function useScrollLock(locked: boolean) {
   const tokenRef = useRef(Symbol("scroll-lock"));
 
   useEffect(() => {
-    setScrollLock(tokenRef.current, locked);
-    return () => setScrollLock(tokenRef.current, false);
+    const token = tokenRef.current;
+    setScrollLock(token, locked);
+    return () => setScrollLock(token, false);
   }, [locked, setScrollLock]);
 }

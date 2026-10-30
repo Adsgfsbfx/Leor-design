@@ -43,7 +43,7 @@ export default function Navbar() {
     return () => window.removeEventListener("keydown", onKeyDown);
   }, []);
 
-  return <motion.header inert={hidden && !open} className={`cinematic-nav${scrolled ? " is-scrolled" : ""}${hidden ? " is-hidden" : ""}`} initial={reduce ? false : { opacity: 0, y: -8 }} animate={{ opacity: 1, y: hidden ? -110 : 0 }} transition={{ opacity: { duration: reduce ? 0 : .45, delay: reduce ? 0 : 2.62 }, y: { duration: reduce ? 0 : .42, ease: [.22, 1, .36, 1] } }}>
+  return <motion.header inert={hidden && !open} className={`cinematic-nav${scrolled ? " is-scrolled" : ""}${hidden ? " is-hidden" : ""}`} initial={reduce ? false : { opacity: 0, y: -8 }} animate={{ opacity: 1, y: hidden ? -110 : 0 }} transition={{ opacity: { duration: reduce ? 0 : .45, delay: reduce ? 0 : 1.26 }, y: { duration: reduce ? 0 : .42, ease: [.22, 1, .36, 1] } }}>
     <div className="cinematic-nav-inner">
       <a href="#top" className="cinematic-brand" aria-label="Leor Design home"><span>LEOR</span><small>Design</small></a>
       <nav className="cinematic-nav-links" aria-label="Primary navigation">{items.map(([label, href]) => <a href={href} key={href} className={active === href ? "is-active" : ""} aria-current={active === href ? "location" : undefined}>{label}<i /></a>)}</nav>

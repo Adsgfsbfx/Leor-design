@@ -5,12 +5,11 @@ import { FadeUp, ImageReveal, Magnetic, Parallax, Reveal } from "../../component
 import { SectionLabel } from "../../components/ui/section-label";
 
 const colors = [
-  { name: "Ivory stone", value: "--ivory", className: "bg-ivory", note: "Balance" },
-  { name: "Ivory soft", value: "--ivory-soft", className: "bg-ivory-soft", note: "Surface" },
-  { name: "Midnight navy", value: "--navy", className: "bg-navy", note: "Depth" },
-  { name: "Deep navy", value: "--navy-deep", className: "bg-navy-deep", note: "Dark sections" },
-  { name: "Royal gold", value: "--gold", className: "bg-gold", note: "Accent" },
-  { name: "Gold deep", value: "--gold-deep", className: "bg-gold-deep", note: "Light-surface accent" },
+  { name: "Redwood", value: "#6A4912", className: "bg-redwood", note: "Primary" },
+  { name: "Tenne", value: "#B76308", className: "bg-tenne", note: "Warm accent" },
+  { name: "Golden Bear", value: "#DEB228", className: "bg-golden-bear", note: "Highlight" },
+  { name: "Aztec Gold", value: "#9F0C1F", className: "bg-aztec-gold", note: "Accent" },
+  { name: "Sand Dollar", value: "#C29F8D", className: "bg-sand-dollar", note: "Material neutral" },
 ];
 
 export const metadata = {
@@ -28,7 +27,7 @@ export default function DesignSystemPage() {
     </Container></section>
 
     <section className="ds-section" id="palette"><Container>
-      <div className="ds-section-head"><SectionLabel>01 / Palette</SectionLabel><h2>Material, light, restraint.</h2><p>Ivory stone and midnight navy form the canvas. Royal gold appears as a quiet point of emphasis.</p></div>
+      <div className="ds-section-head"><SectionLabel>01 / Palette</SectionLabel><h2>Grounded in warmth.</h2><p>Redwood and Sand Dollar build the foundation, with Tenne, Golden Bear and Aztec Gold adding warmth and contrast.</p></div>
       <div className="ds-swatches">{colors.map((color, index) => <FadeUp key={color.name} delay={index * .05} className="ds-swatch"><div className={`ds-swatch-color ${color.className}`} /><div className="ds-swatch-meta"><div><h3>{color.name}</h3><span>{color.note}</span></div><code>{color.value}</code></div></FadeUp>)}</div>
     </Container></section>
 
@@ -49,6 +48,6 @@ export default function DesignSystemPage() {
       <div className="ds-motion-note"><FadeUp><span>FadeUp</span><p>Soft entrance with restrained vertical travel.</p></FadeUp><FadeUp delay={.14}><span>ImageReveal</span><p>A calm clip-path reveal for interior photography.</p></FadeUp><FadeUp delay={.28}><span>Magnetic</span><p>Subtle pointer response on capable devices.</p></FadeUp><FadeUp delay={.42}><span>Parallax</span><p>Low amplitude depth that respects motion preferences.</p></FadeUp></div>
     </Container></section>
 
-    <footer className="ds-footer"><Container><SectionLabel>Enduring by design</SectionLabel><p>Leor <em>Design</em></p><span>Midnight navy · Royal gold · Ivory stone</span></Container></footer>
+    <footer className="ds-footer"><Container><SectionLabel>Enduring by design</SectionLabel><p>Leor <em>Design</em></p><span>Redwood · Golden Bear · Sand Dollar</span></Container></footer>
   </main>;
 }
