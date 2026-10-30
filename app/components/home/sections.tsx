@@ -1,4 +1,4 @@
-import Image from "next/image";
+import { PremiumImage } from "../../../components/ui/premium-image";
 import { photos } from "../../../src/config/images";
 import {
   alternatePhoneDisplay,
@@ -79,30 +79,6 @@ export function Hero() {
   );
 }
 
-const trust = [
-  ["phone", "Free", "first consultation"],
-  ["tag", "Transparent", "budget ranges"],
-  ["layers", "Finishes", "you can compare"],
-  ["doc", "Written", "proposal to review"],
-  ["pin", "Hebbal", "studio, Bangalore"],
-  ["clock", "Clear", "project timelines"],
-] as const;
-
-export function TrustStrip() {
-  return (
-    <section className="trust-strip" aria-label="What to expect">
-      <ul className="wrap">
-        {trust.map(([icon, a, b]) => (
-          <li key={a}>
-            <Icon name={icon} />
-            <span>{a}<br />{b}</span>
-          </li>
-        ))}
-      </ul>
-    </section>
-  );
-}
-
 export function CostCards() {
   const two = calculateEstimate("2 BHK", "essential", []);
   const three = calculateEstimate("3 BHK", "essential", []);
@@ -114,7 +90,7 @@ export function CostCards() {
         </Heading>
         <div className="cost-grid">
           <article className="cost-card">
-            <div className="cost-img"><Image src={photos.livingBright.src} alt={photos.livingBright.alt} fill sizes="(max-width: 800px) 100vw, 33vw" /></div>
+            <PremiumImage className="cost-img" src={photos.livingBright.src} alt={photos.livingBright.alt} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" ratio="4 / 5" />
             <div className="cost-body">
               <span className="icon-tile"><Icon name="grid" /></span>
               <div>
@@ -126,7 +102,7 @@ export function CostCards() {
             <p className="cost-foot">Indicative · pending approval</p>
           </article>
           <article className="cost-card featured">
-            <div className="cost-img"><Image src={photos.livingNeutral.src} alt={photos.livingNeutral.alt} fill sizes="(max-width: 800px) 100vw, 33vw" /></div>
+            <PremiumImage className="cost-img" src={photos.livingNeutral.src} alt={photos.livingNeutral.alt} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" ratio="4 / 5" />
             <div className="cost-body">
               <span className="icon-tile"><Icon name="home" /></span>
               <div>
@@ -138,7 +114,7 @@ export function CostCards() {
             <p className="cost-foot">Indicative · pending approval</p>
           </article>
           <article className="cost-card calc">
-            <div className="cost-img"><Image src={photos.kitchenOak.src} alt={photos.kitchenOak.alt} fill sizes="(max-width: 800px) 100vw, 33vw" /></div>
+            <PremiumImage className="cost-img" src={photos.kitchenOak.src} alt={photos.kitchenOak.alt} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" ratio="4 / 5" />
             <div className="cost-body">
               <span className="icon-tile"><Icon name="calc" /></span>
               <div>
@@ -225,7 +201,7 @@ export function Packages() {
           {tiers.map((tier) => (
             <article key={tier.name} className="tier-card">
               <span className="tier-tag">{tier.tag}</span>
-              <div className="tier-img"><Image src={tier.photo.src} alt={tier.photo.alt} fill sizes="(max-width: 800px) 100vw, 33vw" /></div>
+              <PremiumImage className="tier-img" src={tier.photo.src} alt={tier.photo.alt} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" ratio="3 / 4" />
               <div className="tier-body">
                 <h3>{tier.name} interiors</h3>
                 <p>{tier.text}</p>
@@ -270,10 +246,9 @@ export function WhyLeor() {
           </ul>
           <a className="btn btn-gold" href="#enquire">Start your interior journey <span aria-hidden="true">→</span></a>
         </div>
-        <div className="why-photo">
-          <Image src={photos.villaStaircase.src} alt={photos.villaStaircase.alt} fill sizes="(max-width: 900px) 100vw, 40vw" />
+        <PremiumImage className="why-photo" variant="arch" src={photos.villaStaircase.src} alt={photos.villaStaircase.alt} sizes="(max-width: 960px) 100vw, (max-width: 1280px) 50vw, 40vw" ratio="16 / 9" overlay>
           <p>Spaces that feel like you</p>
-        </div>
+        </PremiumImage>
       </div>
     </section>
   );
@@ -295,10 +270,9 @@ export function DesignApproach() {
         <div className="approach-grid">
           {approach.map((item) => (
             <article key={item.step} className="approach-card">
-              <div className="approach-photo">
-                <Image src={item.photo.src} alt={item.photo.alt} fill sizes="(max-width: 860px) 100vw, 380px" />
+              <PremiumImage className="approach-photo" src={item.photo.src} alt={item.photo.alt} sizes="(max-width: 640px) 100vw, (max-width: 1280px) 45vw, 520px" ratio="4 / 3">
                 <span className="approach-step">{item.step}</span>
-              </div>
+              </PremiumImage>
               <div className="approach-body">
                 <h3>{item.title}</h3>
                 <p>{item.text}</p>
@@ -316,7 +290,7 @@ export function DesignerCta() {
   return (
     <section className="section" id="designer">
       <div className="wrap designer">
-        <div className="designer-photo"><Image src={photos.wardrobeWalkIn.src} alt={photos.wardrobeWalkIn.alt} fill sizes="(max-width: 900px) 100vw, 45vw" /></div>
+        <PremiumImage className="designer-photo" src={photos.wardrobeWalkIn.src} alt={photos.wardrobeWalkIn.alt} sizes="(max-width: 960px) 100vw, (max-width: 1280px) 50vw, 45vw" ratio="16 / 9" />
         <div className="designer-copy">
           <p className="eyebrow">Talk to a designer</p>
           <h2>Unsure where to <Gold>begin?</Gold></h2>
@@ -423,7 +397,7 @@ export function ConsultationSection({ children }: { children: React.ReactNode })
             <li><Icon name="pin" /><span>{site.address}</span></li>
           </ul>
         </div>
-        <div className="form-card">{children}</div>
+        <div className="form-card" id="enquire">{children}</div>
       </div>
     </section>
   );

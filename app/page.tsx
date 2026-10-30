@@ -1,6 +1,9 @@
 import { connection } from "next/server";
-import { Comparison, Commitments, DesignApproach, ConsultationSection, CostCards, CtaBand, DesignerCta, FinalCta, Footer, Gold, Heading, Hero, Highlights, Packages, ProjectsHeading, TrustStrip, WhyLeor } from "./components/home/sections";
-import { Estimator, Faq, Finishes, Header, Projects } from "./components/home/interactive";
+import { Comparison, Commitments, DesignApproach, ConsultationSection, CostCards, CtaBand, DesignerCta, FinalCta, Footer, Gold, Heading, Highlights, Packages, ProjectsHeading, WhyLeor } from "./components/home/sections";
+import { Estimator, Faq, Finishes, Projects } from "./components/home/interactive";
+import TrustStrip from "./components/home/trust-strip";
+import Navbar from "./components/navbar";
+import Hero from "./components/hero";
 import { ConsultationForm } from "./components/home/forms";
 import { FloatingActions, OfferPopup } from "./components/home/overlays";
 
@@ -10,7 +13,7 @@ export default async function Home() {
   await connection();
   return (
     <>
-      <Header />
+      <Navbar />
       <main>
         <Hero />
         <TrustStrip />

@@ -1,7 +1,9 @@
 "use client";
 
-import Image from "next/image";
+import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import { PremiumImage } from "../../../components/ui/premium-image";
+import { useScrollLock } from "../../../components/smooth-scroll";
 import { concepts, photos, projectCategories, type Photo, type ProjectCategory } from "../../../src/config/images";
 import { alternatePhoneDisplay, buildWhatsAppLink, faqs, phoneDisplay, phoneHref, site } from "../../../src/config/site";
 import {
@@ -28,6 +30,7 @@ const navLinks = [
 
 export function Header() {
   const [open, setOpen] = useState(false);
+  useScrollLock(open);
   return (
     <header className="site-header">
       <div className="header-inner">
@@ -62,7 +65,39 @@ export function Header() {
 
 export function Projects() {
   const [filter, setFilter] = useState<"All" | ProjectCategory>("All");
-  const shown = (filter === "All" ? concepts.slice(0, 6) : concepts.filter((c) => c.category === filter));
+  const [selectedIndex, setSelectedIndex] = useState<number | null>(null);
+  const [projectCursor, setProjectCursor] = useState({ x: 0, y: 0, visible: false });
+  const projectCursorRef = useRef(projectCursor);
+  const reduce = useReducedMotion();
+  const updateProjectCursor = (cursor: typeof projectCursor) => {
+    projectCursorRef.current = cursor;
+    setProjectCursor(cursor);
+  };
+  const shown = filter === "All" ? concepts.slice(0, 6) : concepts.filter((c) => c.category === filter);
+  useEffect(() => {
+    const hideCursorIfImageMovedAway = () => {
+      const cursor = projectCursorRef.current;
+      if (!cursor.visible) return;
+      const underPointer = document.elementFromPoint(cursor.x, cursor.y);
+      if (!underPointer?.closest(".project-card-media")) {
+        const hiddenCursor = { ...cursor, visible: false };
+        projectCursorRef.current = hiddenCursor;
+        setProjectCursor(hiddenCursor);
+      }
+    };
+    window.addEventListener("scroll", hideCursorIfImageMovedAway, true);
+    return () => window.removeEventListener("scroll", hideCursorIfImageMovedAway, true);
+  }, []);
+
+  const moveProjectCursor = (event: React.PointerEvent<HTMLLIElement>) => {
+    if (event.pointerType !== "mouse" || navigator.maxTouchPoints > 0 || window.matchMedia("(pointer: coarse)").matches) {
+      updateProjectCursor({ ...projectCursorRef.current, visible: false });
+      return;
+    }
+    const hoveringImage = (event.target as HTMLElement).closest(".project-card-media");
+    updateProjectCursor({ x: event.clientX, y: event.clientY, visible: Boolean(hoveringImage) });
+  };
+
   return (
     <>
       <div className="filters" role="group" aria-label="Filter projects">
@@ -72,19 +107,83 @@ export function Projects() {
           </button>
         ))}
       </div>
-      <ul className="project-grid">
-        {shown.map((c) => (
-          <li key={c.id} className="project-card">
-            <Image src={c.photo.src} alt={c.photo.alt} fill sizes="(max-width: 700px) 100vw, (max-width: 1100px) 50vw, 33vw" />
-            <div className="project-top">
-              <h3>{c.title}</h3>
-              <span>Illustrative concept</span>
-            </div>
-            <p className="project-bottom">{c.room}</p>
-          </li>
-        ))}
-      </ul>
+      <motion.ul className="project-grid" layout={!reduce}>
+        <AnimatePresence mode="popLayout">
+          {shown.map((c, index) => (
+            <motion.li key={c.id} className="project-card" layout={!reduce} initial={reduce ? false : { opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }} viewport={{ once: true, amount: .15 }} transition={{ duration: reduce ? 0 : .55, delay: reduce ? 0 : index * .07, ease: [.22, 1, .36, 1] }} onPointerMove={moveProjectCursor} onPointerLeave={() => updateProjectCursor({ ...projectCursorRef.current, visible: false })}>
+              <button type="button" className="project-card-media" aria-label={`View ${c.title}`} onClick={() => { setSelectedIndex(index); updateProjectCursor({ ...projectCursorRef.current, visible: false }); }}>
+                <PremiumImage src={c.photo.src} alt={c.photo.alt} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" ratio={index % 3 === 0 ? "4 / 5" : index % 3 === 1 ? "1 / 1" : "4 / 3"} overlay>
+                  <span className="project-top"><strong>{c.title}</strong><small>Illustrative concept</small></span>
+                  <span className="project-bottom">{c.room}</span>
+                  <span className="project-view">View <i aria-hidden="true">↗</i></span>
+                </PremiumImage>
+              </button>
+            </motion.li>
+          ))}
+        </AnimatePresence>
+      </motion.ul>
+      <div className={`project-cursor${projectCursor.visible ? " is-visible" : ""}`} style={{ transform: `translate3d(${projectCursor.x}px, ${projectCursor.y}px, 0)` }} aria-hidden="true"><span>View</span></div>
+      <AnimatePresence>
+        {selectedIndex !== null && shown[selectedIndex] && <GalleryLightbox items={shown} index={selectedIndex} onIndexChange={setSelectedIndex} onClose={() => setSelectedIndex(null)} />}
+      </AnimatePresence>
     </>
+  );
+}
+
+function GalleryLightbox({ items, index, onIndexChange, onClose }: { items: typeof concepts; index: number; onIndexChange: (index: number) => void; onClose: () => void }) {
+  const dialogRef = useRef<HTMLDivElement>(null);
+  const closeRef = useRef<HTMLButtonElement>(null);
+  const previousFocus = useRef<HTMLElement | null>(null);
+  const touchStartX = useRef<number | null>(null);
+  const callbacks = useRef({ onIndexChange, onClose });
+  const indexRef = useRef(index);
+  const lengthRef = useRef(items.length);
+  const image = items[index];
+  useScrollLock(true);
+
+  useEffect(() => {
+    callbacks.current = { onIndexChange, onClose };
+    indexRef.current = index;
+    lengthRef.current = items.length;
+  }, [onIndexChange, onClose, index, items.length]);
+
+  useEffect(() => {
+    previousFocus.current = document.activeElement as HTMLElement | null;
+    closeRef.current?.focus();
+    const onKeyDown = (event: KeyboardEvent) => {
+      if (event.key === "Escape") callbacks.current.onClose();
+      if (event.key === "ArrowRight") callbacks.current.onIndexChange((indexRef.current + 1) % lengthRef.current);
+      if (event.key === "ArrowLeft") callbacks.current.onIndexChange((indexRef.current - 1 + lengthRef.current) % lengthRef.current);
+      if (event.key === "Tab" && dialogRef.current) {
+        const focusable = [...dialogRef.current.querySelectorAll<HTMLElement>('button:not([disabled]), [href], [tabindex]:not([tabindex="-1"])')];
+        const first = focusable[0];
+        const last = focusable[focusable.length - 1];
+        if (event.shiftKey && document.activeElement === first) { event.preventDefault(); last?.focus(); }
+        else if (!event.shiftKey && document.activeElement === last) { event.preventDefault(); first?.focus(); }
+      }
+    };
+    document.addEventListener("keydown", onKeyDown);
+    return () => {
+      document.removeEventListener("keydown", onKeyDown);
+      previousFocus.current?.focus?.({ preventScroll: true });
+    };
+  }, []);
+
+  return (
+    <motion.div className="gallery-lightbox" role="presentation" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }} onTouchStart={(event) => { touchStartX.current = event.touches[0]?.clientX ?? null; }} onTouchEnd={(event) => {
+      const start = touchStartX.current;
+      const end = event.changedTouches[0]?.clientX;
+      if (start !== null && end !== undefined && Math.abs(end - start) > 50) onIndexChange((index + (end < start ? 1 : -1) + items.length) % items.length);
+      touchStartX.current = null;
+    }}>
+      <motion.div className="gallery-lightbox-dialog" ref={dialogRef} role="dialog" aria-modal="true" aria-label={`${image.title} image viewer`} initial={{ opacity: 0, y: 16 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }} transition={{ duration: .35 }}>
+        <button ref={closeRef} type="button" className="lightbox-close" aria-label="Close image viewer" onClick={onClose}>×</button>
+        <button type="button" className="lightbox-arrow lightbox-prev" aria-label="Previous image" onClick={() => onIndexChange((index - 1 + items.length) % items.length)}>‹</button>
+        <div className="lightbox-image"><PremiumImage src={image.photo.src} alt={image.photo.alt} sizes="90vw" ratio="16 / 10" fit="contain" unconstrained /></div>
+        <button type="button" className="lightbox-arrow lightbox-next" aria-label="Next image" onClick={() => onIndexChange((index + 1) % items.length)}>›</button>
+        <div className="lightbox-caption"><h2>{image.title}</h2><p>{image.room}</p></div>
+      </motion.div>
+    </motion.div>
   );
 }
 
@@ -237,7 +336,7 @@ export function Finishes() {
     <div className="finishes">
       <div className="finish-preview">
         {current.photo ? (
-          <Image key={current.id} src={current.photo.src} alt={current.photo.alt} fill sizes="(max-width: 900px) 100vw, 55vw" />
+          <PremiumImage key={current.id} src={current.photo.src} alt={current.photo.alt} sizes="(max-width: 1100px) 100vw, 520px" ratio="4 / 3" overlay />
         ) : (
           <div className="door-preview" style={{ background: current.color }} role="img" aria-label={`${current.name} wardrobe door colour preview`}>
             <span /><span />
@@ -250,7 +349,7 @@ export function Finishes() {
       <div className="finish-side">
         <h3>{current.name}</h3>
         <p>{current.note}</p>
-        <ul className="finish-list" aria-label="Choose a finish">
+        <ul className="finish-list" aria-label="Choose a finish" data-lenis-prevent>
           {finishes.map((f) => (
             <li key={f.id}>
               <button type="button" aria-pressed={f.id === active} onClick={() => setActive(f.id)}>

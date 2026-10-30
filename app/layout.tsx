@@ -1,19 +1,23 @@
 import type { Metadata } from "next";
-import { Hanken_Grotesk, Instrument_Serif } from "next/font/google";
+import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { site } from "../src/config/site";
+import { SmoothScrollProvider } from "../components/smooth-scroll";
 import "./globals.css";
 
-const hankenGrotesk = Hanken_Grotesk({
-  variable: "--font-hanken-grotesk",
-  subsets: ["latin"],
+const inter = localFont({
+  src: "../public/fonts/inter-latin.woff2",
+  variable: "--font-inter",
+  weight: "100 900",
   display: "swap",
 });
 
-const instrumentSerif = Instrument_Serif({
-  variable: "--font-instrument-serif",
-  weight: "400",
-  subsets: ["latin"],
+const cormorant = localFont({
+  src: [
+    { path: "../public/fonts/cormorant-garamond-latin.woff2", weight: "300 500", style: "normal" },
+    { path: "../public/fonts/cormorant-garamond-italic-latin.woff2", weight: "300 500", style: "italic" },
+  ],
+  variable: "--font-cormorant",
   display: "swap",
 });
 
@@ -25,8 +29,8 @@ export const metadata: Metadata = {
 
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${hankenGrotesk.variable} ${instrumentSerif.variable}`}>
-      <body>{children}</body>
+    <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
+      <body><SmoothScrollProvider>{children}</SmoothScrollProvider></body>
     </html>
   );
 }

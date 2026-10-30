@@ -1,7 +1,8 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import Image from "next/image";
+import { PremiumImage } from "../../../components/ui/premium-image";
+import { useScrollLock } from "../../../components/smooth-scroll";
 import { buildWhatsAppLink, phoneHref, site } from "../../../src/config/site";
 import { photos } from "../../../src/config/images";
 import { RegisterForm, WhatsAppMark } from "./forms";
@@ -13,6 +14,7 @@ export function OfferPopup() {
   const shown = useRef(false);
   const closeRef = useRef<HTMLButtonElement>(null);
   const dialogRef = useRef<HTMLDivElement>(null);
+  useScrollLock(open);
 
   useEffect(() => {
     let seen = false;
@@ -48,10 +50,6 @@ export function OfferPopup() {
   useEffect(() => {
     if (!open) return;
     const previous = document.activeElement as HTMLElement | null;
-    const scrollbar = window.innerWidth - document.documentElement.clientWidth;
-    const { overflow, paddingRight } = document.body.style;
-    document.body.style.overflow = "hidden";
-    if (scrollbar > 0) document.body.style.paddingRight = `${scrollbar}px`;
     dialogRef.current?.querySelector<HTMLInputElement>("input")?.focus({ preventScroll: true });
 
     const onKey = (event: KeyboardEvent) => {
@@ -77,8 +75,6 @@ export function OfferPopup() {
     window.addEventListener("keydown", onKey);
     return () => {
       window.removeEventListener("keydown", onKey);
-      document.body.style.overflow = overflow;
-      document.body.style.paddingRight = paddingRight;
       previous?.focus?.({ preventScroll: true });
     };
   }, [open]);
@@ -91,14 +87,14 @@ export function OfferPopup() {
           <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M6 6l12 12M18 6L6 18" /></svg>
         </button>
         <div className="offer-art">
-          <Image src={photos.livingNeutral.src} alt="" fill sizes="(max-width: 700px) 100vw, 420px" />
+          <PremiumImage className="offer-art-image" src={photos.livingNeutral.src} alt="" sizes="(max-width: 768px) 100vw, 420px" ratio="4 / 5" overlay />
           <div className="offer-art-copy">
             <p className="offer-brand">Leor Design · Hebbal, Bengaluru</p>
             <p className="offer-big" aria-hidden="true"><span>10</span><sup>%</sup><em>OFF</em></p>
             <p className="offer-ribbon"><span>Flat 10% off on your interiors</span></p>
           </div>
         </div>
-        <div className="offer-panel">
+        <div className="offer-panel" data-lenis-prevent>
           <h2 id="offer-title">Begin your interior journey</h2>
           <p className="offer-lead">Share your details and we will talk you through the offer, with no obligation.</p>
           <RegisterForm compact buttonLabel="Claim My 10% Discount" />
