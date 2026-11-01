@@ -2,9 +2,11 @@
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
+import Image from "next/image";
 import { PremiumImage } from "../../../components/ui/premium-image";
 import { useScrollLock } from "../../../components/smooth-scroll";
 import { concepts, photos, projectCategories, type Photo, type ProjectCategory } from "../../../src/config/images";
+import { materialBrands, projectTerms } from "../../../src/config/budget-details";
 import { alternatePhoneDisplay, buildWhatsAppLink, faqs, phoneDisplay, phoneHref, site } from "../../../src/config/site";
 import {
   addOns,
@@ -20,10 +22,9 @@ import {
 import { RegisterForm } from "./forms";
 
 const navLinks = [
-  ["Projects", "#projects"],
+  ["Services", "#services"],
+  ["About", "#highlights"],
   ["Estimate", "#estimator"],
-  ["Packages", "#packages"],
-  ["Finishes", "#finishes"],
   ["FAQs", "#faq"],
   ["Contact", "#contact"],
 ] as const;
@@ -73,7 +74,8 @@ export function Projects() {
     projectCursorRef.current = cursor;
     setProjectCursor(cursor);
   };
-  const shown = filter === "All" ? concepts.slice(0, 6) : concepts.filter((c) => c.category === filter);
+  const shown = filter === "All" ? concepts : concepts.filter((c) => c.category === filter);
+  const loopStyle = { "--projects-loop-duration": `${Math.max(28, shown.length * 7)}s` } as React.CSSProperties;
   useEffect(() => {
     const hideCursorIfImageMovedAway = () => {
       const cursor = projectCursorRef.current;
@@ -107,21 +109,40 @@ export function Projects() {
           </button>
         ))}
       </div>
-      <motion.ul className="project-grid" layout={!reduce}>
-        <AnimatePresence mode="popLayout">
-          {shown.map((c, index) => (
-            <motion.li key={c.id} className="project-card" layout={!reduce} initial={reduce ? false : { opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }} viewport={{ once: true, amount: .15 }} transition={{ duration: reduce ? 0 : .55, delay: reduce ? 0 : index * .07, ease: [.22, 1, .36, 1] }} onPointerMove={moveProjectCursor} onPointerLeave={() => updateProjectCursor({ ...projectCursorRef.current, visible: false })}>
-              <button type="button" className="project-card-media" aria-label={`View ${c.title}`} onClick={() => { setSelectedIndex(index); updateProjectCursor({ ...projectCursorRef.current, visible: false }); }}>
-                <PremiumImage src={c.photo.src} alt={c.photo.alt} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" ratio={index % 3 === 0 ? "4 / 5" : index % 3 === 1 ? "1 / 1" : "4 / 3"} overlay>
-                  <span className="project-top"><strong>{c.title}</strong><small>Illustrative concept</small></span>
-                  <span className="project-bottom">{c.room}</span>
-                  <span className="project-view">View <i aria-hidden="true">↗</i></span>
-                </PremiumImage>
-              </button>
-            </motion.li>
-          ))}
-        </AnimatePresence>
-      </motion.ul>
+      <div className="projects-slider" role="region" aria-roledescription="carousel" aria-label="Concept interior gallery">
+        <div className="projects-slider-track" style={loopStyle}>
+          <motion.ul className="project-grid projects-marquee-group" layout={!reduce}>
+            <AnimatePresence mode="popLayout">
+              {shown.map((c, index) => (
+                <motion.li key={c.id} className="project-card" layout={!reduce} initial={reduce ? false : { opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }} viewport={{ once: true, amount: .15 }} transition={{ duration: reduce ? 0 : .55, delay: reduce ? 0 : index * .07, ease: [.22, 1, .36, 1] }} onPointerMove={moveProjectCursor} onPointerLeave={() => updateProjectCursor({ ...projectCursorRef.current, visible: false })}>
+                  <button type="button" className="project-card-media" aria-label={`View ${c.title}`} onClick={() => { setSelectedIndex(index); updateProjectCursor({ ...projectCursorRef.current, visible: false }); }}>
+                    <Image className="concept-gallery-image" src={c.photo.src} alt={c.photo.alt} fill sizes="(max-width: 700px) 50vw, (max-width: 1024px) 30vw, 245px" quality={85} loading="eager" decoding="async" />
+                    <span className="project-label">{c.category}</span>
+                  </button>
+                  <div className="project-info">
+                    <strong>{c.title}</strong>
+                    <small>{c.room}</small>
+                  </div>
+                </motion.li>
+              ))}
+            </AnimatePresence>
+          </motion.ul>
+          <ul className="project-grid projects-marquee-group projects-marquee-clone" aria-hidden="true">
+            {shown.map((c) => (
+              <li key={`clone-${c.id}`} className="project-card">
+                <div className="project-card-media">
+                  <Image className="concept-gallery-image" src={c.photo.src} alt="" fill sizes="(max-width: 700px) 50vw, (max-width: 1024px) 30vw, 245px" quality={85} loading="eager" decoding="async" />
+                  <span className="project-label">{c.category}</span>
+                </div>
+                <div className="project-info">
+                  <strong>{c.title}</strong>
+                  <small>{c.room}</small>
+                </div>
+              </li>
+            ))}
+          </ul>
+        </div>
+      </div>
       <div className={`project-cursor${projectCursor.visible ? " is-visible" : ""}`} style={{ transform: `translate3d(${projectCursor.x}px, ${projectCursor.y}px, 0)` }} aria-hidden="true"><span>View</span></div>
       <AnimatePresence>
         {selectedIndex !== null && shown[selectedIndex] && <GalleryLightbox items={shown} index={selectedIndex} onIndexChange={setSelectedIndex} onClose={() => setSelectedIndex(null)} />}
@@ -211,7 +232,7 @@ function useAnimated(target: number) {
 
 export function Estimator() {
   const [home, setHome] = useState<HomeType>("2 BHK");
-  const [finish, setFinish] = useState<FinishLevelId>("premium");
+  const [finish, setFinish] = useState<FinishLevelId>("essential");
   const [selected, setSelected] = useState<AddOnId[]>([]);
   const [registering, setRegistering] = useState(false);
   const [registered, setRegistered] = useState(false);
@@ -231,6 +252,12 @@ export function Estimator() {
   const rangeText = formatRange(low, high);
   const finalRange = formatRange(estimate.low, estimate.high);
   const estimateText = `My ${home} ${finish} estimate on the calculator was ${finalRange}.`;
+  const paymentStages = [
+    ["Design stage", 20],
+    ["Production", 60],
+    ["Materials dispatch", 10],
+    ["Before handover", 10],
+  ] as const;
   const toggle = (id: AddOnId) =>
     setSelected((s) => (s.includes(id) ? s.filter((x) => x !== id) : [...s, id]));
 
@@ -274,14 +301,13 @@ export function Estimator() {
       </div>
 
       <div className="estimator-result">
-        <p className="eyebrow light">Provisional budget range</p>
+        <p className="eyebrow light">Provisional budget range · GST excluded</p>
         <p className="result-number" aria-live="polite" aria-atomic="true">
           <span className="sr-only">{finalRange}</span>
           <span aria-hidden="true">{rangeText}</span>
         </p>
         <p className="result-sub">
-          for a {home} · {finishLevels.find((l) => l.id === finish)?.label} finish · about {formatRupees(estimate.emi)}/month
-          EMI (12%, 36 months, illustrative)
+          {home} · {finishLevels.find((l) => l.id === finish)?.label} finish
         </p>
         <dl className="breakdown">
           <div><dt>{home} base price</dt><dd>{formatRupees(estimate.base)}</dd></div>
@@ -289,7 +315,39 @@ export function Estimator() {
           <div><dt>Add-ons</dt><dd>{formatRupees(estimate.addOnTotal)}</dd></div>
           <div className="total"><dt>Midpoint estimate</dt><dd>{formatRupees(estimate.mid)}</dd></div>
         </dl>
-        <p className="fine">Range is the midpoint ±8%. Placeholder pricing pending Leor approval; not a quotation.</p>
+        <div className="payment-plan">
+          <div className="payment-plan-heading">
+            <h3>Payment stages</h3>
+            <span>GST excluded</span>
+          </div>
+          <ol className="payment-stages">
+            {paymentStages.map(([stage, percentage]) => (
+              <li key={stage}>
+                <span>{stage}</span>
+                <strong>{percentage}%</strong>
+              </li>
+            ))}
+          </ol>
+        </div>
+        <div className="estimator-project-details">
+          <div>
+            <strong>Project timeline</strong>
+            <span>{projectTerms[0].value}; {projectTerms[0].note.toLowerCase()}</span>
+          </div>
+          <div>
+            <strong>Warranties</strong>
+            <span>Modular work: {projectTerms[1].value} · Hardware: {projectTerms[2].value}</span>
+          </div>
+          <details className="estimator-brands">
+            <summary>Brands used by material</summary>
+            <dl>
+              {materialBrands.map((item) => (
+                <div key={item.category}><dt>{item.category}</dt><dd>{item.brands}</dd></div>
+              ))}
+            </dl>
+          </details>
+        </div>
+        <p className="fine">Range is the midpoint ±8%. Estimate and payment amounts exclude GST. Final pricing is confirmed after a site visit and written proposal.</p>
 
         {registered ? (
           <p className="discount-result" role="status">

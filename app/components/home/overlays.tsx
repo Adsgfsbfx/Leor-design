@@ -121,9 +121,14 @@ export function FloatingActions() {
         <span>Chat</span>
       </a>
       <div className="mobile-bar">
-        <a className="mobile-call" href={phoneHref}>Call now</a>
+        <a className="mobile-call" href={phoneHref}>
+          <svg viewBox="0 0 24 24" width="18" height="18" aria-hidden="true" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+            <path d="M5 4h4l2 5-2.5 1.5a11 11 0 005 5L15 13l5 2v4a2 2 0 01-2 2A16 16 0 013 6a2 2 0 012-2z" />
+          </svg>
+          <span>Call Leor</span>
+        </a>
         <a className="mobile-wa" href={buildWhatsAppLink(site.whatsappMessage)} target="_blank" rel="noopener noreferrer">
-          <WhatsAppMark /> WhatsApp
+          <WhatsAppMark /> <span>WhatsApp</span>
         </a>
       </div>
     </>

@@ -1,7 +1,7 @@
 "use client";
 
 import { motion, useReducedMotion } from "framer-motion";
-import { useState } from "react";
+import { useRef, useState } from "react";
 import { Container } from "../../../components/ui/container";
 
 const commitments = [
@@ -23,26 +23,41 @@ function CommitmentIcon({ name }: { name: (typeof commitments)[number]["icon"] }
     location: <><path d="M20 10c0 5-8 12-8 12S4 15 4 10a8 8 0 1 1 16 0Z"/><circle cx="12" cy="10" r="2.5"/></>,
     timeline: <><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3.5 2"/></>,
   };
-  return <svg viewBox="0 0 24 24" width="24" height="24" aria-hidden="true" {...shared}>{paths[name]}</svg>;
+  return <svg viewBox="0 0 24 24" width="16" height="16" aria-hidden="true" {...shared}>{paths[name]}</svg>;
 }
 
 export default function TrustStrip() {
   const reduce = useReducedMotion();
   const [hasEntered, setHasEntered] = useState(false);
+  const [activeIndex, setActiveIndex] = useState(0);
+  const gridRef = useRef<HTMLUListElement>(null);
   const listVariants = { hidden: {}, visible: { transition: { staggerChildren: reduce ? 0 : .07 } } };
   const itemVariants = { hidden: { opacity: 0, y: reduce ? 0 : 12 }, visible: { opacity: 1, y: 0 } };
+  const updateActiveIndex = () => {
+    const grid = gridRef.current;
+    if (!grid) return;
+    const maxScroll = grid.scrollWidth - grid.clientWidth;
+    const progress = maxScroll > 0 ? grid.scrollLeft / maxScroll : 0;
+    setActiveIndex(Math.round(progress * (commitments.length - 1)));
+  };
 
   return <section className={`leor-trust-strip${hasEntered ? " is-visible" : ""}`} aria-label="Leor Design commitments">
     <Container>
-      <motion.ul className="leor-trust-grid" aria-label="Studio commitments" tabIndex={0} data-lenis-prevent variants={listVariants} initial={reduce ? false : "hidden"} whileInView="visible" onViewportEnter={() => setHasEntered(true)} viewport={{ once: true, amount: .2 }}>
-        {commitments.map((item) => <motion.li className="leor-trust-item" key={item.title} variants={itemVariants} transition={{ duration: reduce ? 0 : .6, ease: [.22, 1, .36, 1] }}>
-          <span className="leor-trust-icon"><CommitmentIcon name={item.icon}/></span>
-          <div className="leor-trust-copy">
-            <h2 className="leor-trust-title">{item.title}</h2>
-            <p className="leor-trust-subtitle">{item.subtitle}</p>
-          </div>
+      <motion.ul ref={gridRef} className="leor-trust-grid" aria-label="Studio commitments" data-lenis-prevent variants={listVariants} initial={reduce ? false : "hidden"} whileInView="visible" onViewportEnter={() => setHasEntered(true)} onScroll={updateActiveIndex} viewport={{ once: true, amount: .2 }}>
+        {commitments.map((item) => <motion.li className="leor-trust-item" key={item.title} variants={itemVariants} transition={{ duration: reduce ? 0 : .25, ease: "easeOut" }}>
+          <a className="leor-trust-link" href="#contact" aria-label={`${item.title}: ${item.subtitle}. Contact Leor Design.`}>
+            <span className="leor-trust-icon"><CommitmentIcon name={item.icon}/></span>
+            <span className="leor-trust-copy">
+              <span className="leor-trust-title">{item.title}</span>
+              <span className="leor-trust-subtitle">{item.subtitle}</span>
+            </span>
+          </a>
         </motion.li>)}
       </motion.ul>
+      <span className="leor-trust-fade" aria-hidden="true" />
+      <div className="leor-trust-pagination" aria-hidden="true">
+        {commitments.map((item, index) => <span key={item.title} className={activeIndex === index ? "is-active" : ""} />)}
+      </div>
     </Container>
   </section>;
 }

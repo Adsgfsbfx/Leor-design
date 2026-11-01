@@ -1,11 +1,11 @@
-// Placeholder prices from the PRD; they are pending client approval.
+// Indicative base budgets provided by Leor for the home-size estimator.
 export const homeTypes = ["1 BHK", "2 BHK", "3 BHK", "4 BHK", "Villa"] as const;
 export type HomeType = (typeof homeTypes)[number];
 
 export const basePrices: Record<HomeType, number> = {
-  "1 BHK": 380000,
-  "2 BHK": 620000,
-  "3 BHK": 900000,
+  "1 BHK": 200000,
+  "2 BHK": 300000,
+  "3 BHK": 500000,
   "4 BHK": 1250000,
   Villa: 2000000,
 };
@@ -47,7 +47,6 @@ export type Estimate = {
   high: number;
   discountLow: number;
   discountHigh: number;
-  emi: number;
 };
 
 export function calculateEstimate(
@@ -65,13 +64,6 @@ export function calculateEstimate(
   const low = roundTo(mid * 0.92, 10000);
   const high = roundTo(mid * 1.08, 10000);
 
-  const monthlyRate = 0.12 / 12;
-  const months = 36;
-  const emi = roundTo(
-    (mid * monthlyRate * (1 + monthlyRate) ** months) / ((1 + monthlyRate) ** months - 1),
-    100,
-  );
-
   return {
     base,
     finishCost,
@@ -81,7 +73,6 @@ export function calculateEstimate(
     high,
     discountLow: roundTo(mid * 0.92 * 0.9, 10000),
     discountHigh: roundTo(mid * 1.08 * 0.9, 10000),
-    emi,
   };
 }
 

@@ -1,5 +1,6 @@
 import { PremiumImage } from "../../../components/ui/premium-image";
 import { photos } from "../../../src/config/images";
+import { materialBrands, projectTerms } from "../../../src/config/budget-details";
 import {
   alternatePhoneDisplay,
   alternatePhoneHref,
@@ -8,9 +9,9 @@ import {
   phoneHref,
   site,
 } from "../../../src/config/site";
-import { calculateEstimate, formatRange } from "../../../src/lib/pricing";
 import { WhatsAppMark, LeadForm } from "./forms";
 import HeroVideo from "./hero-video";
+import { Estimator } from "./interactive";
 
 const iconPaths: Record<string, string> = {
   check: "M5 12.5l4.5 4.5L19 7.5",
@@ -79,52 +80,101 @@ export function Hero() {
   );
 }
 
+const services = [
+  { icon: "home", title: "Full home interiors", description: "Complete interiors for every room, including kitchens, wardrobes, TV units, bedrooms and ceilings.", note: `Typical timeline: ${projectTerms[0].value}; ${projectTerms[0].note.toLowerCase()}.` },
+  { icon: "grid", title: "Commercial interiors", description: "Functional interiors for small offices, clinics, studios and shops.", note: "" },
+  { icon: "layers", title: "Civil works", description: "Breaking walls, new bathrooms, flooring and tiling.", note: "" },
+  { icon: "check", title: "Lived-in home renovation", description: "Refresh and improve your home while working around the way you live.", note: "" },
+  { icon: "home", title: "Modular kitchens and wardrobes", description: "Standalone modular kitchen and wardrobe projects, planned for your space.", note: `Warranty: ${projectTerms[1].value} on modular work and ${projectTerms[2].value} on hardware.` },
+  { icon: "calc", title: "Other home works", description: "False ceilings, painting, wallpaper, electrical and plumbing works.", note: "" },
+] as const;
+
+export function Services() {
+  return (
+    <section className="section services-section" id="services">
+      <div className="wrap">
+        <Heading eyebrow="Our services" sub="From complete interiors to focused upgrades, get the work your space needs from one team.">
+          Thoughtful work for <Gold>every space</Gold>
+        </Heading>
+        <ul className="services-grid">
+          {services.map((service) => (
+            <li className="service-card" key={service.title}>
+              <span className="service-icon"><Icon name={service.icon} /></span>
+              <div>
+                <h3>{service.title}</h3>
+                <p>{service.description}</p>
+                {service.note ? <p className="service-note">{service.note}</p> : null}
+              </div>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </section>
+  );
+}
+
 export function CostCards() {
-  const two = calculateEstimate("2 BHK", "essential", []);
-  const three = calculateEstimate("3 BHK", "essential", []);
   return (
     <section className="section tint" id="cost">
       <div className="wrap">
-        <Heading eyebrow="Plan with confidence" sub="Indicative planning ranges for different home sizes. Final pricing follows a site visit and written proposal.">
+        <Heading eyebrow="Plan with confidence" sub="Indicative planning budgets for different home sizes. Final pricing follows a site visit and written proposal.">
           Home interior cost in <Gold>Bangalore</Gold>
         </Heading>
-        <div className="cost-grid">
-          <article className="cost-card">
-            <PremiumImage className="cost-img" src={photos.livingBright.src} alt={photos.livingBright.alt} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" ratio="4 / 5" />
-            <div className="cost-body">
+        <div className="budget-overview">
+          <div className="budget-brands">
+            <h3>Brands used</h3>
+            <dl>
+              {materialBrands.map((item) => (
+                <div key={item.category}><dt>{item.category}</dt><dd>{item.brands}</dd></div>
+              ))}
+            </dl>
+          </div>
+        </div>
+        <div className="cost-grid compact-budget-grid">
+          <article className="cost-card compact-budget-card">
+            <PremiumImage className="cost-img compact-budget-image" src={photos.livingBright.src} alt={photos.livingBright.alt} sizes="140px" ratio="1 / 1" />
+            <div className="cost-body compact-budget-body">
               <span className="icon-tile"><Icon name="grid" /></span>
               <div>
-                <h3>2 BHK interiors</h3>
-                <p>Essential finish from {formatRange(two.low, two.high)}</p>
+                <h3>1 BHK interiors</h3>
+                <p className="compact-budget-caption">Interior planning budget</p>
+                <p className="compact-budget-price compact-budget-price-single"><span>1 BHK</span><strong>₹2L</strong></p>
               </div>
-              <a className="arrow-btn" href="#estimator" data-home="2 BHK" aria-label="Estimate a 2 BHK home">→</a>
             </div>
-            <p className="cost-foot">Indicative · pending approval</p>
+            <a className="compact-budget-cta compact-budget-foot" href="#estimator" data-home="1 BHK" aria-label="Estimate a 1 BHK home">Estimate 1 BHK <span aria-hidden="true">→</span></a>
           </article>
-          <article className="cost-card featured">
-            <PremiumImage className="cost-img" src={photos.livingNeutral.src} alt={photos.livingNeutral.alt} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" ratio="4 / 5" />
-            <div className="cost-body">
+          <article className="cost-card compact-budget-card combined featured">
+            <PremiumImage className="cost-img compact-budget-image" src={photos.kitchenOak.src} alt={photos.kitchenOak.alt} sizes="140px" ratio="1 / 1" />
+            <div className="cost-body compact-budget-body">
               <span className="icon-tile"><Icon name="home" /></span>
               <div>
-                <h3>3 BHK interiors</h3>
-                <p>Essential finish from {formatRange(three.low, three.high)}</p>
+                <h3>2 &amp; 3 BHK interiors</h3>
+                <p className="compact-budget-caption">Interior planning budgets</p>
+                <p className="compact-budget-price compact-budget-price-row"><span>2 BHK</span><strong>₹3L</strong></p>
+                <p className="compact-budget-price compact-budget-price-row"><span>3 BHK</span><strong>₹4–6L</strong></p>
               </div>
-              <a className="arrow-btn" href="#estimator" data-home="3 BHK" aria-label="Estimate a 3 BHK home">→</a>
             </div>
-            <p className="cost-foot">Indicative · pending approval</p>
+            <a className="compact-budget-cta compact-budget-foot" href="#estimator" data-home="2 BHK" aria-label="Estimate a 2 or 3 BHK home">Estimate 2 / 3 BHK <span aria-hidden="true">→</span></a>
           </article>
-          <article className="cost-card calc">
-            <PremiumImage className="cost-img" src={photos.kitchenOak.src} alt={photos.kitchenOak.alt} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" ratio="4 / 5" />
-            <div className="cost-body">
+          <article className="cost-card compact-budget-card calculator-option">
+            <PremiumImage className="cost-img compact-budget-image" src={photos.livingNeutral.src} alt={photos.livingNeutral.alt} sizes="140px" ratio="1 / 1" />
+            <div className="cost-body compact-budget-body">
               <span className="icon-tile"><Icon name="calc" /></span>
               <div>
-                <h3>Cost calculator</h3>
-                <p>Pick a home size, finish level and add-ons for your own range.</p>
+                <h3>Calculate your budget</h3>
+                <p className="compact-budget-caption">Get an estimate for your home.</p>
+                <p className="compact-budget-detail">Select your BHK, finish and add-ons.</p>
               </div>
-              <a className="arrow-btn" href="#estimator" aria-label="Open the cost calculator">→</a>
             </div>
-            <p className="cost-foot">Instant · no sign-up</p>
+            <a className="compact-budget-cta compact-budget-foot" href="#estimator">Open cost calculator <span aria-hidden="true">→</span></a>
           </article>
+        </div>
+        <div className="compact-budget-calculator" id="estimator">
+          <div className="compact-budget-calculator-heading">
+            <span className="eyebrow">Budget estimator</span>
+            <p>Choose your home size, finish and add-ons to see an instant estimate.</p>
+          </div>
+          <Estimator />
         </div>
       </div>
     </section>
@@ -134,7 +184,7 @@ export function CostCards() {
 export function ProjectsHeading() {
   return (
     <div className="projects-head">
-      <Heading align="left" eyebrow="Concept spaces" sub="Illustrative interiors that show the direction we can design towards. Real Leor project photography will replace these as it is approved.">
+      <Heading align="left" eyebrow="Concept spaces" sub="Explore considered spaces shaped around your home, lifestyle and everyday rituals.">
         Spaces to <Gold>inspire</Gold> your home
       </Heading>
     </div>
@@ -154,9 +204,9 @@ export function CtaBand({ title, text, cta = "Get a free consultation", href = "
 
 const highlights = [
   ["pin", "Hebbal", "Studio base in Bangalore", "Serving homeowners across the city."],
-  ["home", "5", "Home sizes planned for", "1 BHK, 2 BHK, 3 BHK, 4 BHK and villas."],
-  ["layers", "6", "Finishes to compare", "Oak, walnut, sage, midnight, ivory and fluted oak."],
-  ["user", "3", "Finish levels", "Essential, Premium and Luxe budgets."],
+  ["home", "80+", "Homes completed", "Interiors planned and delivered by Leor."],
+  ["user", "6+", "Years of experience", "Experience across interior design and renovation."],
+  ["clock", "24 hrs", "Open every day", "Available for enquiries and project support."],
 ] as const;
 
 export function Highlights() {
@@ -164,7 +214,7 @@ export function Highlights() {
     <section className="section" id="highlights">
       <div className="wrap split">
         <div>
-          <Heading align="left" eyebrow="About Leor" sub="Straight facts about how we work. Project counts and client numbers will be added here once Leor confirms them.">
+          <Heading align="left" eyebrow="About Leor" sub="A little about our experience, availability and design studio in Hebbal.">
             What you can <Gold>count</Gold> on
           </Heading>
           <a className="btn btn-gold" href="#enquire">Talk to a designer <span aria-hidden="true">→</span></a>
@@ -179,38 +229,6 @@ export function Highlights() {
             </li>
           ))}
         </ul>
-      </div>
-    </section>
-  );
-}
-
-const tiers = [
-  { tag: "Practical", name: "Essential", photo: photos.wardrobeDressing, text: "Laminate-led finishes and smart storage for homes that need to work hard every day.", meta: "Multiplier ×1.0" },
-  { tag: "Mid-range", name: "Premium", photo: photos.bedroomFeature, text: "Richer veneers, matte and PU finishes, and feature walls that give rooms a signature look.", meta: "Multiplier ×1.5" },
-  { tag: "Bespoke", name: "Luxe", photo: photos.villaArched, text: "Premium veneers and detailed fluting for homes where every surface is considered.", meta: "Multiplier ×2.2" },
-];
-
-export function Packages() {
-  return (
-    <section className="section tint" id="packages">
-      <div className="wrap">
-        <Heading eyebrow="Design options" sub="Three finish levels that drive the calculator above. Inclusions will be confirmed in your written proposal.">
-          Choose your <Gold>level of finish</Gold>
-        </Heading>
-        <div className="tier-grid">
-          {tiers.map((tier) => (
-            <article key={tier.name} className="tier-card">
-              <span className="tier-tag">{tier.tag}</span>
-              <PremiumImage className="tier-img" src={tier.photo.src} alt={tier.photo.alt} sizes="(max-width: 640px) 100vw, (max-width: 1024px) 50vw, 33vw" ratio="3 / 4" />
-              <div className="tier-body">
-                <h3>{tier.name} interiors</h3>
-                <p>{tier.text}</p>
-                <a className="arrow-btn" href="#estimator" aria-label={`Estimate with ${tier.name} finish`}>→</a>
-              </div>
-              <p className="tier-foot">{tier.meta}</p>
-            </article>
-          ))}
-        </div>
       </div>
     </section>
   );
@@ -254,38 +272,6 @@ export function WhyLeor() {
   );
 }
 
-const approach = [
-  { step: "01", title: "Start with how you live", text: "We begin with your routines, your family and your budget, then plan layouts and storage around them before choosing a single finish.", photo: photos.livingBright },
-  { step: "02", title: "Choose materials together", text: "Compare named finishes and levels side by side, and ask which brand and grade is used before you decide.", photo: photos.kitchenTimber },
-  { step: "03", title: "Agree it in writing", text: "A written proposal sets out inclusions, exclusions and any changes, so you know what to expect before work begins.", photo: photos.bedroomFeature },
-];
-
-export function DesignApproach() {
-  return (
-    <section className="section tint" id="approach">
-      <div className="wrap">
-        <Heading eyebrow="Our design approach" sub="How we work with every home, from the first conversation to the written proposal. Client stories will be added once clients have agreed to share them.">
-          Designed around <Gold>how you live</Gold>
-        </Heading>
-        <div className="approach-grid">
-          {approach.map((item) => (
-            <article key={item.step} className="approach-card">
-              <PremiumImage className="approach-photo" src={item.photo.src} alt={item.photo.alt} sizes="(max-width: 640px) 100vw, (max-width: 1280px) 45vw, 520px" ratio="4 / 3">
-                <span className="approach-step">{item.step}</span>
-              </PremiumImage>
-              <div className="approach-body">
-                <h3>{item.title}</h3>
-                <p>{item.text}</p>
-              </div>
-            </article>
-          ))}
-        </div>
-        <p className="approach-note">Photographs are illustrative stock images, not Leor projects.</p>
-        <div className="center"><a className="btn btn-gold" href="#contact">Book a studio visit <span aria-hidden="true">→</span></a></div>
-      </div>
-    </section>
-  );
-}
 export function DesignerCta() {
   return (
     <section className="section" id="designer">
@@ -429,7 +415,7 @@ export function Footer() {
         <p>
           Offer terms: the 10% offer is a front-end preview. Eligibility, validity and the discount scope are pending confirmation by Leor Design, and no codes are issued online.
         </p>
-        <p>Images are illustrative Unsplash stock photographs. Prices are placeholders pending approval. © {site.companyName}.</p>
+        <p>Images are illustrative Unsplash stock photographs. Budgets are indicative and confirmed after a site visit. © {site.companyName}.</p>
       </div>
     </footer>
   );

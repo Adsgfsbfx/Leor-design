@@ -5,13 +5,19 @@ import { useEffect, useRef, useState } from "react";
 import { ButtonLink } from "../../../components/ui/button";
 import { Magnetic } from "../../../components/ui/motion";
 
+const heroVideos = [
+  "/videos/hero-new.mp4",
+  "/videos/VID_20261031_002956.mp4",
+] as const;
+
 export default function Hero() {
   const heroRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const retryListenersRef = useRef(false);
-  const failedRef = useRef(false);
-  const warnedForVideo = useRef(false);
-  const [videoFailed, setVideoFailed] = useState(false);
+  const failedVideoSourcesRef = useRef(new Set<string>());
+  const warnedVideosRef = useRef(new Set<string>());
+  const [videoIndex, setVideoIndex] = useState(0);
+  const [videoFailures, setVideoFailures] = useState<string[]>([]);
   const [touchDevice, setTouchDevice] = useState(false);
   const reduce = useReducedMotion();
   const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
@@ -47,7 +53,8 @@ export default function Hero() {
       window.addEventListener("keydown", retryPlayback);
     };
     const retryPlayback = () => {
-      if (!mounted || failedRef.current) return;
+      if (!mounted) return;
+      if (failedVideoSourcesRef.current.has(video.dataset.heroSource ?? "")) return;
       video.muted = true;
       video.defaultMuted = true;
       try {
@@ -55,14 +62,6 @@ export default function Hero() {
       } catch {
         addRetryListeners();
       }
-    };
-    const restartPlayback = () => {
-      if (!video.ended) {
-        retryPlayback();
-        return;
-      }
-      try { video.currentTime = 0; } catch { /* Playback will retry once the first frame is available. */ }
-      retryPlayback();
     };
     const onVisibilityChange = () => {
       if (document.visibilityState === "visible") retryPlayback();
@@ -73,7 +72,6 @@ export default function Hero() {
     video.addEventListener("canplay", retryPlayback);
     video.addEventListener("stalled", retryPlayback);
     video.addEventListener("waiting", retryPlayback);
-    video.addEventListener("ended", restartPlayback);
     video.addEventListener("pause", retryPlayback);
     document.addEventListener("visibilitychange", onVisibilityChange);
     retryPlayback();
@@ -84,43 +82,45 @@ export default function Hero() {
       video.removeEventListener("canplay", retryPlayback);
       video.removeEventListener("stalled", retryPlayback);
       video.removeEventListener("waiting", retryPlayback);
-      video.removeEventListener("ended", restartPlayback);
       video.removeEventListener("pause", retryPlayback);
       document.removeEventListener("visibilitychange", onVisibilityChange);
     };
   }, []);
 
-  const onVideoError = () => {
-    failedRef.current = true;
-    setVideoFailed(true);
-    if (!warnedForVideo.current) {
-      console.warn("Leor Design hero video '/videos/hero-new.mp4' is unavailable.");
-      warnedForVideo.current = true;
+  const advanceVideo = (currentSource: string) => {
+    const currentIndex = Math.max(0, heroVideos.indexOf(currentSource as (typeof heroVideos)[number]));
+    for (let offset = 1; offset <= heroVideos.length; offset += 1) {
+      const nextSource = heroVideos[(currentIndex + offset) % heroVideos.length];
+      if (failedVideoSourcesRef.current.has(nextSource)) continue;
+      if (nextSource === currentSource) {
+        const video = videoRef.current;
+        if (video) {
+          video.currentTime = 0;
+          void video.play().catch(() => undefined);
+        }
+        return;
+      }
+      setVideoIndex(heroVideos.indexOf(nextSource));
+      return;
     }
   };
+
+  const onVideoError = (source: string) => {
+    failedVideoSourcesRef.current.add(source);
+    setVideoFailures((failures) => failures.includes(source) ? failures : [...failures, source]);
+    if (!warnedVideosRef.current.has(source)) {
+      console.warn(`Leor Design hero video '${source}' is unavailable.`);
+      warnedVideosRef.current.add(source);
+    }
+    advanceVideo(source);
+  };
+
+  const currentVideo = heroVideos[videoIndex];
 
   return <section ref={heroRef} id="top" className="cinematic-hero" aria-labelledby="hero-heading">
     <motion.div className="cinematic-image-reveal" initial={reduce ? false : { clipPath: "inset(0 0 100% 0)" }} animate={{ clipPath: "inset(0 0 0% 0)" }} transition={{ duration: reduce ? 0 : 1.08, delay: reduce ? 0 : .72, ease: [.22, 1, .36, 1] }}>
       <motion.div className="cinematic-image-surface" style={{ y: scrollY }}>
-        <video
-          ref={videoRef}
-          src="/videos/hero-new.mp4"
-          poster="/images/hero-living-room-marble-wall.jpg"
-          className={`cinematic-video-layer${videoFailed ? " is-failed" : ""}`}
-          width={1920}
-          height={1080}
-          autoPlay
-          muted
-          loop
-          playsInline
-          preload="auto"
-          disablePictureInPicture
-          disableRemotePlayback
-          controls={false}
-          aria-hidden="true"
-          tabIndex={-1}
-          onError={onVideoError}
-        />
+        <video ref={videoRef} data-hero-source={currentVideo} src={currentVideo} poster="/images/hero-living-room-marble-wall.jpg" className={`cinematic-video-layer${videoFailures.includes(currentVideo) ? " is-failed" : ""}`} width={1920} height={1080} autoPlay muted playsInline preload="auto" disablePictureInPicture disableRemotePlayback controls={false} aria-hidden="true" tabIndex={-1} onEnded={() => advanceVideo(currentVideo)} onError={() => onVideoError(currentVideo)} />
       </motion.div>
     </motion.div>
     <div className="cinematic-shade" aria-hidden="true" />

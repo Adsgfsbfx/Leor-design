@@ -6,8 +6,8 @@ import { Magnetic } from "../../components/ui/motion";
 import { useScrollLock } from "../../components/smooth-scroll";
 
 const items = [
-  ["Projects", "#projects"], ["Estimate", "#estimator"], ["Packages", "#packages"],
-  ["Finishes", "#finishes"], ["FAQs", "#faq"], ["Contact", "#contact"],
+  ["Services", "#services"], ["About", "#highlights"], ["Estimate", "#estimator"],
+  ["FAQs", "#faq"], ["Contact", "#contact"],
 ] as const;
 
 export default function Navbar() {
