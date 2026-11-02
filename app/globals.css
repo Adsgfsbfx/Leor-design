@@ -782,17 +782,13 @@ body::before {
 }
 
 /* Cinematic home opening */
-.cinematic-hero { position: relative; isolation: isolate; width: 100%; height: 100vh; height: 100svh; min-height: 620px; overflow: hidden; background: var(--color-navy); color: var(--color-ivory); }
+.cinematic-hero { position: relative; isolation: isolate; width: 100%; height: 100vh; height: 100svh; min-height: 620px; overflow: hidden; background: radial-gradient(ellipse at 78% 24%, rgba(var(--gold-rgb),.22), transparent 44%), linear-gradient(125deg, #33250f 0%, var(--color-navy) 56%, #795a24 100%); color: var(--color-ivory); }
 .cinematic-image-reveal,.cinematic-image-surface { position: absolute; inset: -2.2% 0; overflow: hidden; }
 .cinematic-image-reveal { z-index: 0; }
-.cinematic-image-surface { will-change: transform; background: url('/images/hero-living-room-marble-wall.jpg') center 53% / cover no-repeat; }
-.cinematic-video-layer { position: absolute; z-index: 0; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 53%; image-rendering: auto; backface-visibility: hidden; transform: translateZ(0); filter: brightness(1.1) contrast(1.05) saturate(1.1); opacity: 1; pointer-events: none; }
+.cinematic-video-layer { position: absolute; z-index: 0; inset: 0; display: block; width: 100%; height: 100%; object-fit: cover; object-position: center 53%; image-rendering: auto; opacity: 1; pointer-events: none; }
 .cinematic-video-layer.is-failed { opacity: 0 !important; }
 .cinematic-hero::before { position: absolute; z-index: 1; inset: 0 0 auto; height: 140px; content: ""; background: linear-gradient(180deg, rgba(var(--navy-rgb),.25), transparent); pointer-events: none; }
 .cinematic-shade { position: absolute; z-index: 1; inset: 0; background: radial-gradient(ellipse 68% 60% at 0% 100%, rgba(var(--navy-rgb),.35) 0%, rgba(var(--navy-rgb),.2) 43%, transparent 100%); pointer-events: none; }
-.cinematic-curtain { position: absolute; z-index: 8; inset: 0; display: flex; flex-direction: column; justify-content: center; align-items: center; background: var(--color-navy); pointer-events: none; }
-.cinematic-curtain > span { font: 400 clamp(3.8rem, 9vw, 8rem)/.8 var(--font-display); letter-spacing: .19em; padding-left: .19em; }
-.cinematic-curtain > i { margin-top: 18px; color: rgba(var(--ivory-rgb),.57); font: 500 9px/1 var(--font-body); letter-spacing: .24em; text-transform: uppercase; }
 .cinematic-copy { position: absolute; z-index: 2; left: max(6vw, calc((100vw - 1440px) / 2)); bottom: clamp(104px, 14vh, 152px); width: min(870px, 72vw); }
 .cinematic-eyebrow { display: flex; align-items: center; gap: 9px; margin-bottom: 22px; color: var(--ivory); font-size: 15px; font-weight: 600; letter-spacing: .18em; line-height: 1.4; text-transform: uppercase; text-shadow: 0 1px 12px rgba(var(--navy-rgb),.42); }
 .cinematic-eyebrow span { color: var(--gold-light); }
@@ -807,7 +803,7 @@ body::before {
 .cinematic-actions .cinematic-primary > span { color: var(--ink); }
 .cinematic-actions .cinematic-estimate { min-height: 60px; padding: 0 28px; border: 2px solid var(--ivory); background: rgba(var(--ivory-rgb),.02); backdrop-filter: blur(2px); color: var(--ivory); font-size: 17px; font-weight: 700; }
 .cinematic-actions .cinematic-estimate:hover { background: var(--ivory); color: var(--navy); border-color: var(--ivory); }
-.cinematic-nav { position: fixed; z-index: 70; inset: 0 0 auto; color: var(--ivory-soft); border-bottom: 1px solid transparent; transition: color .35s ease, background .35s ease, border-color .35s ease, backdrop-filter .35s ease; }
+.cinematic-nav { position: absolute; z-index: 70; inset: 0 0 auto; color: var(--ivory-soft); border-bottom: 1px solid transparent; transition: color .35s ease, background .35s ease, border-color .35s ease, backdrop-filter .35s ease; }
 .cinematic-nav.is-scrolled { color: var(--ivory-soft); background: rgba(var(--navy-rgb),.85); border-color: var(--line-dark); backdrop-filter: blur(16px); -webkit-backdrop-filter: blur(16px); }
 .cinematic-nav.is-scrolled .cinematic-nav-links > a { color: var(--ivory-soft); text-shadow: none; }
 .cinematic-nav.is-hidden { pointer-events: none; }
@@ -1229,7 +1225,7 @@ body::before {
 #projects .projects-slider { width: 100%; overflow: hidden; padding: 5px 0 20px; mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, #000 7%, #000 93%, transparent); }
 #projects .projects-slider-track { display: flex; width: max-content; animation: projects-marquee var(--projects-loop-duration, 56s) linear infinite; will-change: transform; }
 #projects .projects-marquee-group { display: flex; flex: 0 0 auto; align-items: stretch; gap: 15px; width: max-content; margin: 0; padding: 0 15px 0 0; list-style: none; }
-#projects .projects-marquee-group .project-card { flex: 0 0 clamp(180px, 18vw, 240px); width: clamp(180px, 18vw, 240px); max-height: none; min-width: 0; aspect-ratio: auto; }
+#projects .projects-marquee-group .project-card { flex: 0 0 clamp(230px, 23vw, 320px); width: clamp(230px, 23vw, 320px); max-height: none; min-width: 0; aspect-ratio: auto; }
 #projects .project-card-media { position: relative; width: 100%; max-height: none; aspect-ratio: 4 / 5; overflow: hidden; border: 1px solid rgba(var(--gold-rgb), .16); border-radius: 15px; background: var(--ivory-card); box-shadow: 0 12px 30px -21px rgba(var(--navy-rgb), .55); cursor: pointer; transition: transform .5s ease, box-shadow .5s ease, border-color .3s ease; }
 #projects .project-card-media > .premium-image-frame { width: 100%; height: 100%; max-height: none; border: 0; border-radius: inherit; }
 #projects .project-card .premium-image { opacity: 1; filter: none; transition: transform .65s cubic-bezier(.22,1,.36,1); }
@@ -1247,7 +1243,7 @@ body::before {
 @keyframes projects-marquee { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
 @media (max-width: 700px) {
   #projects .projects-marquee-group { gap: 12px; padding-right: 12px; }
-  #projects .projects-marquee-group .project-card { flex-basis: clamp(165px, 49vw, 190px); width: clamp(165px, 49vw, 190px); }
+  #projects .projects-marquee-group .project-card { flex-basis: clamp(230px, 82vw, 300px); width: clamp(230px, 82vw, 300px); }
   #projects .project-label { top: 10px; left: 10px; font-size: 8px; }
   #projects .project-info { right: 11px; bottom: 11px; left: 11px; }
   #projects .project-info strong { font-size: 17px; }
@@ -1622,4 +1618,144 @@ body::before {
 }
 .btn-whatsapp:hover, .float-wa:hover, .mobile-bar .mobile-wa:hover {
   background-color: #1DA851 !important;
+}
+
+/* Compact four-across service tiles for phone layouts. */
+@media (max-width: 860px), (hover: none) and (pointer: coarse) {
+  #services .services-mobile-heading { display: block; margin: 0 0 16px; color: var(--navy-deep); font: 700 17px/1.2 var(--sans); letter-spacing: -.01em; }
+  #services .heading { margin-bottom: 0; text-align: left; }
+  #services .heading .eyebrow,#services .heading h2,#services .heading .sub { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  #services .services-grid { grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; }
+  #services .service-card {
+    display: flex; min-width: 0; min-height: 102px; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px;
+    padding: 9px 4px 8px; border: 1px solid rgba(var(--navy-rgb), .09); border-radius: 13px;
+    background: linear-gradient(155deg, #fff, var(--ivory-card)); box-shadow: 0 5px 16px -12px rgba(var(--navy-rgb), .38); text-align: center;
+  }
+  #services .service-card::before { display: none; }
+  #services .service-icon { width: 42px; height: 42px; flex: 0 0 42px; border: 1px solid rgba(var(--navy-rgb), .16); border-radius: 12px; background: linear-gradient(145deg, rgba(var(--gold-rgb), .25), rgba(var(--gold-rgb), .08)); color: #10182b; }
+  #services .service-icon svg { width: 25px; height: 25px; stroke-width: 2.8; }
+  #services .service-card > div { width: 100%; min-width: 0; }
+  #services .service-card h3 { margin: 0; color: var(--navy-deep); font: 700 10px/1.15 var(--sans); letter-spacing: -.01em; overflow-wrap: anywhere; }
+  #services .service-card p { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+}
+.services-mobile-heading { display: none; }
+@media (max-width: 360px) {
+  #services .services-grid { gap: 7px; }
+  #services .service-card { min-height: 98px; padding-inline: 3px; }
+  #services .service-icon { width: 38px; height: 38px; flex-basis: 38px; }
+  #services .service-icon svg { width: 23px; height: 23px; }
+  #services .service-card h3 { font-size: 9px; }
+}
+
+.testimonials-section { background: linear-gradient(145deg, var(--ivory-soft), var(--ivory-card)); }
+.testimonials-section .heading { max-width: 760px; margin-left: 0; text-align: left; }
+.testimonial-slider { width: 100%; overflow: hidden; margin-top: 30px; mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent); -webkit-mask-image: linear-gradient(to right, transparent, #000 5%, #000 95%, transparent); }
+.testimonial-track { display: flex; width: max-content; animation: testimonial-marquee 36s linear infinite; will-change: transform; }
+.testimonial-grid { display: flex; flex: 0 0 auto; align-items: stretch; gap: 18px; width: max-content; margin: 0; padding: 0 18px 12px 0; list-style: none; }
+.testimonial-card { display: flex; width: clamp(270px, 30vw, 390px); min-height: 260px; flex: 0 0 auto; flex-direction: column; align-items: flex-start; padding: clamp(22px, 3vw, 34px); border: 1px solid var(--line-light); border-radius: 20px; background: rgba(255,255,255,.76); box-shadow: 0 18px 48px -38px rgba(var(--navy-rgb),.45); }
+.testimonial-draft-label { display: inline-flex; padding: 6px 9px; border-radius: 999px; background: rgba(var(--gold-rgb),.15); color: var(--navy-deep); font: 700 10px/1.1 var(--sans); letter-spacing: .06em; text-transform: uppercase; }
+.testimonial-mark { margin-top: 22px; color: var(--gold-deep); font: 500 68px/.7 var(--serif); }
+.testimonial-card blockquote { margin: 14px 0 24px; color: var(--navy-deep); font: 500 clamp(20px, 2.1vw, 27px)/1.3 var(--serif); }
+.testimonial-attribution { margin: auto 0 0; color: var(--ink-muted); font: 600 11px/1.4 var(--sans); }
+@keyframes testimonial-marquee { from { transform: translate3d(0, 0, 0); } to { transform: translate3d(-50%, 0, 0); } }
+@media (hover: hover) and (pointer: fine) {
+  .testimonial-slider:hover .testimonial-track { animation-play-state: paused; }
+}
+@media (max-width: 560px) {
+  .testimonial-slider { margin-top: 22px; }
+  .testimonial-track { animation-duration: 28s; }
+  .testimonial-grid { gap: 12px; padding-right: 12px; }
+  .testimonial-card { width: min(82vw, 340px); min-height: 0; padding: 22px 20px; }
+}
+@media (hover: none), (pointer: coarse) {
+  .testimonial-slider:active .testimonial-track { animation-play-state: paused; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .testimonial-track { animation: none; }
+}
+
+/* Larger concept imagery with a subtle 3D hover lift on desktop. */
+#projects .projects-slider { perspective: 1400px; }
+#projects .project-card-media { transform-style: preserve-3d; transform-origin: center; transition: transform .48s cubic-bezier(.2,.75,.25,1), box-shadow .35s ease, border-color .3s ease; }
+@media (hover: hover) and (pointer: fine) {
+  #projects .project-card-media:hover { transform: rotateX(4deg) rotateY(-5deg) translateY(-5px); box-shadow: 0 22px 34px -15px rgba(var(--navy-rgb),.42); }
+  #projects .project-card:nth-child(even) .project-card-media:hover { transform: rotateX(4deg) rotateY(5deg) translateY(-5px); }
+  #projects .concept-gallery-image { transition: transform .6s cubic-bezier(.22,1,.36,1); }
+  #projects .project-card-media:hover .concept-gallery-image { transform: translateZ(16px) scale(1.055); }
+}
+@media (prefers-reduced-motion: reduce) {
+  #projects .project-card-media,#projects .concept-gallery-image { transition: none; transform: none; }
+}
+
+/* Compact property-style service cards based on the latest reference. */
+#services .services-grid { grid-template-columns: repeat(6, minmax(0, 1fr)); gap: 10px; }
+#services .service-card {
+  display: flex; min-width: 0; min-height: 132px; flex-direction: column; align-items: flex-start; gap: 8px;
+  padding: 13px 12px 12px; border: 1px solid #e3e7ee; border-radius: 9px; background: #fff;
+  box-shadow: 0 3px 10px rgba(16, 32, 65, .07); text-align: left;
+}
+#services .service-card::before { top: auto; right: 12px; bottom: 0; left: 12px; height: 2px; background: #dca36a; opacity: .8; }
+#services .service-card:hover { transform: translateY(-2px); border-color: #d6deec; box-shadow: 0 7px 16px rgba(16, 32, 65, .11); }
+#services .service-icon { width: 30px; height: 30px; flex: 0 0 30px; border: 0; border-radius: 50%; background: #283e85; color: #fff; }
+#services .service-icon svg { width: 16px; height: 16px; stroke-width: 2; }
+#services .service-card > div { width: 100%; min-width: 0; }
+#services .service-card h3 { display: -webkit-box; margin: 0 0 4px; overflow: hidden; color: #19233f; font: 700 11px/1.2 var(--sans); letter-spacing: -.01em; -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+#services .service-card p { display: -webkit-box; margin: 0; overflow: hidden; color: #747d8e; font: 400 9px/1.3 var(--sans); -webkit-box-orient: vertical; -webkit-line-clamp: 2; }
+#services .service-card p + p { display: none; }
+@media (max-width: 1100px) and (min-width: 861px) {
+  #services .services-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+}
+@media (max-width: 860px), (hover: none) and (pointer: coarse) {
+  #services .services-mobile-heading { display: block; margin: 0 0 12px; color: #202b4b; font: 700 16px/1.2 var(--sans); }
+  #services .heading { margin: 0; text-align: left; }
+  #services .heading .eyebrow,#services .heading h2,#services .heading .sub { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
+  #services .services-grid { display: flex; gap: 8px; margin: 0 -16px; padding: 1px 16px 9px; overflow-x: auto; overscroll-behavior-inline: contain; scroll-snap-type: x mandatory; scrollbar-width: none; }
+  #services .services-grid::-webkit-scrollbar { display: none; }
+  #services .services-grid > li { flex: 0 0 104px; min-width: 0; scroll-snap-align: start; }
+  #services .service-card { min-height: 119px; gap: 7px; padding: 10px 9px 11px; }
+  #services .service-card h3 { font-size: 10px; }
+  #services .service-card p { position: static; width: auto; height: auto; margin: 0; padding: 0; overflow: hidden; clip: auto; color: #747d8e; font: 400 8px/1.25 var(--sans); white-space: normal; border: 0; }
+}
+
+/* Interactive 3D depth for service cards, keeping the existing palette intact. */
+#services .services-grid { perspective: 1100px; }
+#services .service-card {
+  position: relative; width: 100%; align-items: center; text-align: center; transform-style: preserve-3d; transform-origin: center;
+  transition: transform .5s cubic-bezier(.2,.75,.25,1), box-shadow .35s ease, border-color .35s ease;
+}
+#services .service-icon { transform: translateZ(18px); transition: transform .55s cubic-bezier(.2,.75,.25,1), filter .35s ease; }
+#services .service-card > div { transform: translateZ(9px); transition: transform .45s cubic-bezier(.2,.75,.25,1); }
+#services .service-card:focus-visible { outline: 3px solid var(--gold); outline-offset: 4px; }
+@media (hover: hover) and (pointer: fine) {
+  #services .service-card:hover { z-index: 2; transform: rotateX(5deg) rotateY(-4deg) translateY(-5px); box-shadow: 0 15px 24px rgba(16,32,65,.16); }
+  #services .services-grid > li:nth-child(even) .service-card:hover { transform: rotateX(5deg) rotateY(4deg) translateY(-5px); }
+  #services .service-card:hover .service-icon { transform: translateZ(28px) rotateY(180deg); filter: drop-shadow(0 7px 5px rgba(40,62,133,.22)); }
+  #services .service-card:hover > div { transform: translateZ(15px); }
+}
+#services .service-card:active { transform: rotateX(3deg) scale(.985); }
+@media (prefers-reduced-motion: reduce) {
+  #services .service-card,#services .service-icon,#services .service-card > div { transition: none; transform: none; }
+}
+
+/* Keep Services and Concept Spaces visually connected with a small section gap. */
+#services.section { padding-bottom: 32px; }
+#projects.section { padding-top: 32px; }
+@media (max-width: 640px) {
+  #services.section { padding-bottom: 24px; }
+  #projects.section { padding-top: 24px; }
+}
+
+/* Phone layout: compact four-column icon tiles like the supplied reference. */
+@media (max-width: 860px), (hover: none) and (pointer: coarse) {
+  #services .services-grid { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 9px; margin: 0; padding: 0; overflow: visible; }
+  #services .services-grid > li { flex: initial; min-width: 0; scroll-snap-align: unset; }
+  #services .service-card {
+    display: flex; width: 100%; min-height: 104px; flex-direction: column; align-items: center; justify-content: flex-start; gap: 6px;
+    padding: 8px 4px; border-radius: 12px; text-align: center;
+  }
+  #services .service-icon { width: 36px; height: 36px; flex-basis: 36px; align-self: center; }
+  #services .service-icon svg { width: 19px; height: 19px; }
+  #services .service-card > div { width: 100%; text-align: center; }
+  #services .service-card h3 { display: -webkit-box; margin: 0; overflow: hidden; font-size: 9px; line-height: 1.15; overflow-wrap: anywhere; -webkit-box-orient: vertical; -webkit-line-clamp: 3; }
+  #services .service-card p { position: absolute; width: 1px; height: 1px; margin: -1px; padding: 0; overflow: hidden; clip: rect(0, 0, 0, 0); white-space: nowrap; border: 0; }
 }

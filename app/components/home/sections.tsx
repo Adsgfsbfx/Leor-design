@@ -93,18 +93,21 @@ export function Services() {
   return (
     <section className="section services-section" id="services">
       <div className="wrap">
+        <p className="services-mobile-heading" aria-hidden="true">Featured Services</p>
         <Heading eyebrow="Our services" sub="From complete interiors to focused upgrades, get the work your space needs from one team.">
           Thoughtful work for <Gold>every space</Gold>
         </Heading>
         <ul className="services-grid">
           {services.map((service) => (
-            <li className="service-card" key={service.title}>
-              <span className="service-icon"><Icon name={service.icon} /></span>
-              <div>
-                <h3>{service.title}</h3>
-                <p>{service.description}</p>
-                {service.note ? <p className="service-note">{service.note}</p> : null}
-              </div>
+            <li key={service.title}>
+              <a className="service-card" href="#enquire" aria-label={`Get a free consultation about ${service.title}`}>
+                <span className="service-icon"><Icon name={service.icon} /></span>
+                <div>
+                  <h3>{service.title}</h3>
+                  <p>{service.description}</p>
+                  {service.note ? <p className="service-note">{service.note}</p> : null}
+                </div>
+              </a>
             </li>
           ))}
         </ul>
@@ -184,7 +187,7 @@ export function CostCards() {
 export function ProjectsHeading() {
   return (
     <div className="projects-head">
-      <Heading align="left" eyebrow="Concept spaces" sub="Explore considered spaces shaped around your home, lifestyle and everyday rituals.">
+      <Heading align="left" eyebrow="Previous works & concepts">
         Spaces to <Gold>inspire</Gold> your home
       </Heading>
     </div>
@@ -267,6 +270,39 @@ export function WhyLeor() {
         <PremiumImage className="why-photo" variant="arch" src={photos.villaStaircase.src} alt={photos.villaStaircase.alt} sizes="(max-width: 960px) 100vw, (max-width: 1280px) 50vw, 40vw" ratio="16 / 9" overlay>
           <p>Spaces that feel like you</p>
         </PremiumImage>
+      </div>
+    </section>
+  );
+}
+
+export function Testimonials() {
+  const examples = [
+    "We had a rough idea for our kitchen, but Leor helped us make the layout work for our actual routine. The storage is the part I appreciate most.",
+    "The finish options were easy to compare, and we had a much clearer idea of the budget before moving ahead. Really appreciated that.",
+    "It was nice having one person to speak to through the planning. The house feels more like us now, and the process was easier than I expected.",
+  ];
+
+  return (
+    <section className="section testimonials-section" id="testimonials">
+      <div className="wrap">
+        <Heading align="left" eyebrow="Testimonials">
+          A considered home, <Gold>well lived</Gold>
+        </Heading>
+        <div className="testimonial-slider" role="region" aria-label="Sample testimonial cards">
+          <div className="testimonial-track">
+            {[false, true].map((duplicate) => (
+              <ul className={`testimonial-grid${duplicate ? " testimonial-grid-clone" : ""}`} key={String(duplicate)} aria-hidden={duplicate || undefined}>
+                {examples.map((quote) => (
+                  <li className="testimonial-card" key={quote}>
+                    <span className="testimonial-draft-label">Sample copy · not a real review</span>
+                    <span className="testimonial-mark" aria-hidden="true">“</span>
+                    <blockquote>{quote}</blockquote>
+                  </li>
+                ))}
+              </ul>
+            ))}
+          </div>
+        </div>
       </div>
     </section>
   );

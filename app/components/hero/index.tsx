@@ -1,6 +1,5 @@
 "use client";
 
-import { motion, useReducedMotion, useScroll, useTransform } from "framer-motion";
 import { useEffect, useRef, useState } from "react";
 import { ButtonLink } from "../../../components/ui/button";
 import { Magnetic } from "../../../components/ui/motion";
@@ -11,25 +10,12 @@ const heroVideos = [
 ] as const;
 
 export default function Hero() {
-  const heroRef = useRef<HTMLElement>(null);
   const videoRef = useRef<HTMLVideoElement>(null);
   const retryListenersRef = useRef(false);
   const failedVideoSourcesRef = useRef(new Set<string>());
   const warnedVideosRef = useRef(new Set<string>());
   const [videoIndex, setVideoIndex] = useState(0);
   const [videoFailures, setVideoFailures] = useState<string[]>([]);
-  const [touchDevice, setTouchDevice] = useState(false);
-  const reduce = useReducedMotion();
-  const { scrollYProgress } = useScroll({ target: heroRef, offset: ["start start", "end start"] });
-  const scrollY = useTransform(scrollYProgress, [0, 1], reduce || touchDevice ? [0, 0] : [0, 18]);
-
-  useEffect(() => {
-    const coarsePointer = window.matchMedia("(pointer: coarse)");
-    const updateTouchMode = () => setTouchDevice(coarsePointer.matches || navigator.maxTouchPoints > 0);
-    updateTouchMode();
-    coarsePointer.addEventListener("change", updateTouchMode);
-    return () => coarsePointer.removeEventListener("change", updateTouchMode);
-  }, []);
 
   useEffect(() => {
     const video = videoRef.current;
@@ -117,24 +103,23 @@ export default function Hero() {
 
   const currentVideo = heroVideos[videoIndex];
 
-  return <section ref={heroRef} id="top" className="cinematic-hero" aria-labelledby="hero-heading">
-    <motion.div className="cinematic-image-reveal" initial={reduce ? false : { clipPath: "inset(0 0 100% 0)" }} animate={{ clipPath: "inset(0 0 0% 0)" }} transition={{ duration: reduce ? 0 : 1.08, delay: reduce ? 0 : .72, ease: [.22, 1, .36, 1] }}>
-      <motion.div className="cinematic-image-surface" style={{ y: scrollY }}>
-        <video ref={videoRef} data-hero-source={currentVideo} src={currentVideo} poster="/images/hero-living-room-marble-wall.jpg" className={`cinematic-video-layer${videoFailures.includes(currentVideo) ? " is-failed" : ""}`} width={1920} height={1080} autoPlay muted playsInline preload="auto" disablePictureInPicture disableRemotePlayback controls={false} aria-hidden="true" tabIndex={-1} onEnded={() => advanceVideo(currentVideo)} onError={() => onVideoError(currentVideo)} />
-      </motion.div>
-    </motion.div>
+  return <section id="top" className="cinematic-hero" aria-labelledby="hero-heading">
+    <div className="cinematic-image-reveal">
+      <div className="cinematic-image-surface">
+        <video ref={videoRef} data-hero-source={currentVideo} src={currentVideo} className={`cinematic-video-layer${videoFailures.includes(currentVideo) ? " is-failed" : ""}`} width={1920} height={1080} autoPlay muted playsInline preload="auto" disablePictureInPicture disableRemotePlayback controls={false} aria-hidden="true" tabIndex={-1} onEnded={() => advanceVideo(currentVideo)} onError={() => onVideoError(currentVideo)} />
+      </div>
+    </div>
     <div className="cinematic-shade" aria-hidden="true" />
 
-    <motion.div className="cinematic-curtain" aria-hidden="true" initial={reduce ? false : { opacity: 1 }} animate={{ opacity: 0 }} transition={{ duration: reduce ? 0 : .58, delay: reduce ? 0 : .36, ease: [.22, 1, .36, 1] }}><span>LEOR</span><i>Hebbal Â· Bangalore</i></motion.div>
 
     <div className="cinematic-copy">
-      <motion.p className="cinematic-eyebrow" initial={reduce ? false : { opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduce ? 0 : .65, delay: reduce ? 0 : 1.26, ease: [.22, 1, .36, 1] }}>Hebbal, Bangalore <span>·</span> Home interior</motion.p>
-      <h1 id="hero-heading" aria-label="Thoughtful homes, shaped around the way you live."><span className="cinematic-line-mask"><motion.span initial={reduce ? false : { y: "110%" }} animate={{ y: "0%" }} transition={{ duration: reduce ? 0 : .7, delay: reduce ? 0 : 1.34, ease: [.22, 1, .36, 1] }}>Thoughtful homes,</motion.span></span><span className="cinematic-line-mask"><motion.span initial={reduce ? false : { y: "110%" }} animate={{ y: "0%" }} transition={{ duration: reduce ? 0 : .7, delay: reduce ? 0 : 1.5, ease: [.22, 1, .36, 1] }}>shaped around</motion.span></span><span className="cinematic-line-mask"><motion.span className="cinematic-last-line" initial={reduce ? false : { y: "110%" }} animate={{ y: "0%" }} transition={{ duration: reduce ? 0 : .7, delay: reduce ? 0 : 1.66, ease: [.22, 1, .36, 1] }}>the way you live.</motion.span></span></h1>
-      <motion.p className="cinematic-subtext" initial={reduce ? false : { opacity: 0, y: 13 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduce ? 0 : .68, delay: reduce ? 0 : 2.02, ease: [.22, 1, .36, 1] }}>Space planning, modular kitchens, wardrobes and finishes, designed for Bangalore homes. Start with a free conversation.</motion.p>
-      <motion.div className="cinematic-actions" initial={reduce ? false : { opacity: 0, y: 13 }} animate={{ opacity: 1, y: 0 }} transition={{ duration: reduce ? 0 : .68, delay: reduce ? 0 : 2.14, ease: [.22, 1, .36, 1] }}>
+      <p className="cinematic-eyebrow">Hebbal, Bangalore <span>·</span> Home interior</p>
+      <h1 id="hero-heading" aria-label="Thoughtful homes, shaped around the way you live."><span className="cinematic-line-mask"><span>Thoughtful homes,</span></span><span className="cinematic-line-mask"><span>shaped around</span></span><span className="cinematic-line-mask"><span className="cinematic-last-line">the way you live.</span></span></h1>
+      <p className="cinematic-subtext">Space planning, modular kitchens, wardrobes and finishes, designed for Bangalore homes. Start with a free conversation.</p>
+      <div className="cinematic-actions">
         <Magnetic><ButtonLink href="#enquire" className="cinematic-primary">Get a free consultation</ButtonLink></Magnetic>
         <ButtonLink href="#estimator" variant="link" className="cinematic-estimate">Estimate your budget</ButtonLink>
-      </motion.div>
+      </div>
     </div>
 
   </section>;
