@@ -5,11 +5,10 @@ import { FadeUp, ImageReveal, Magnetic, Parallax, Reveal } from "../../component
 import { SectionLabel } from "../../components/ui/section-label";
 
 const colors = [
-  { name: "Redwood", value: "#6A4912", className: "bg-redwood", note: "Primary" },
-  { name: "Tenne", value: "#B76308", className: "bg-tenne", note: "Warm accent" },
-  { name: "Golden Bear", value: "#DEB228", className: "bg-golden-bear", note: "Highlight" },
-  { name: "Aztec Gold", value: "#9F0C1F", className: "bg-aztec-gold", note: "Accent" },
-  { name: "Sand Dollar", value: "#C29F8D", className: "bg-sand-dollar", note: "Material neutral" },
+  { name: "Gargoyle Gas", value: "#FFE14F", className: "bg-golden-bear", note: "Accent" },
+  { name: "Space Cadet", value: "#192853", className: "bg-redwood", note: "Primary" },
+  { name: "Space Cadet Deep", value: "#263B72", className: "bg-tenne", note: "Structure" },
+  { name: "Alice Blue", value: "#ECF4F7", className: "bg-ivory", note: "Canvas" },
 ];
 
 export const metadata = {
@@ -27,7 +26,7 @@ export default function DesignSystemPage() {
     </Container></section>
 
     <section className="ds-section" id="palette"><Container>
-      <div className="ds-section-head"><SectionLabel>01 / Palette</SectionLabel><h2>Grounded in warmth.</h2><p>Redwood and Sand Dollar build the foundation, with Tenne, Golden Bear and Aztec Gold adding warmth and contrast.</p></div>
+      <div className="ds-section-head"><SectionLabel>01 / Palette</SectionLabel><h2>Rooted in calm blues.</h2><p>Midnight and deep blue set the foundation, balanced with pale blue, slate blue and a cool white canvas.</p></div>
       <div className="ds-swatches">{colors.map((color, index) => <FadeUp key={color.name} delay={index * .05} className="ds-swatch"><div className={`ds-swatch-color ${color.className}`} /><div className="ds-swatch-meta"><div><h3>{color.name}</h3><span>{color.note}</span></div><code>{color.value}</code></div></FadeUp>)}</div>
     </Container></section>
 
@@ -48,6 +47,6 @@ export default function DesignSystemPage() {
       <div className="ds-motion-note"><FadeUp><span>FadeUp</span><p>Soft entrance with restrained vertical travel.</p></FadeUp><FadeUp delay={.14}><span>ImageReveal</span><p>A calm clip-path reveal for interior photography.</p></FadeUp><FadeUp delay={.28}><span>Magnetic</span><p>Subtle pointer response on capable devices.</p></FadeUp><FadeUp delay={.42}><span>Parallax</span><p>Low amplitude depth that respects motion preferences.</p></FadeUp></div>
     </Container></section>
 
-    <footer className="ds-footer"><Container><SectionLabel>Enduring by design</SectionLabel><p>Leor <em>Design</em></p><span>Redwood · Golden Bear · Sand Dollar</span></Container></footer>
+    <footer className="ds-footer"><Container><SectionLabel>Enduring by design</SectionLabel><p>Leor <em>Design</em></p><span>Midnight Blue · Slate Blue · Ice White</span></Container></footer>
   </main>;
 }

@@ -19,7 +19,6 @@ export default async function Home() {
         <TrustStrip />
         <Services />
         <Highlights />
-        <WhyLeor />
         <section className="section" id="projects">
           <div className="wrap">
             <ProjectsHeading />
@@ -28,6 +27,7 @@ export default async function Home() {
           </div>
         </section>
         <Testimonials />
+        <WhyLeor />
         <DesignerCta />
         <Comparison />
         <FinalCta />

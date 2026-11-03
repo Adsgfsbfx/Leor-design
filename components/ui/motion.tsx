@@ -14,6 +14,11 @@ export function FadeUp({ children, className = "", delay = 0, ...props }: HTMLMo
   return <motion.div className={className} initial={reduce ? false : { opacity: 0, y: motionDistance.fadeUp }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .2 }} transition={{ duration: reduce ? 0 : motionDuration.fade, delay: reduce ? 0 : delay, ease: editorialEase }} {...props}>{children}</motion.div>;
 }
 
+export function FadeUpListItem({ children, className = "", delay = 0, ...props }: HTMLMotionProps<"li"> & { delay?: number }) {
+  const reduce = useReducedMotion();
+  return <motion.li className={className} initial={reduce ? false : { opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} viewport={{ once: true, amount: .15 }} transition={{ duration: reduce ? 0 : .55, delay: reduce ? 0 : delay, ease: [.22, 1, .36, 1] }} {...props}>{children}</motion.li>;
+}
+
 export function ImageReveal({ children, className = "", delay = 0 }: { children: ReactNode; className?: string; delay?: number }) {
   const reduce = useReducedMotion();
   return <motion.div className={className} initial={reduce ? false : { clipPath: "inset(18% 0 0 0)" }} whileInView={{ clipPath: "inset(0% 0 0 0)" }} viewport={{ once: true, amount: .25 }} transition={{ duration: reduce ? 0 : motionDuration.image, delay: reduce ? 0 : delay, ease: editorialEase }}>{children}</motion.div>;

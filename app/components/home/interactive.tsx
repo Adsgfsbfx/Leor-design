@@ -234,6 +234,7 @@ export function Estimator() {
   const [home, setHome] = useState<HomeType>("2 BHK");
   const [finish, setFinish] = useState<FinishLevelId>("essential");
   const [selected, setSelected] = useState<AddOnId[]>([]);
+  const [showOffer, setShowOffer] = useState(false);
   const [registering, setRegistering] = useState(false);
   const [registered, setRegistered] = useState(false);
   const estimate = calculateEstimate(home, finish, selected);
@@ -243,7 +244,10 @@ export function Estimator() {
   useEffect(() => {
     function onClick(event: MouseEvent) {
       const trigger = (event.target as HTMLElement).closest<HTMLElement>("[data-home]");
-      if (trigger) setHome(trigger.dataset.home as HomeType);
+      if (trigger) {
+        setHome(trigger.dataset.home as HomeType);
+        setShowOffer(true);
+      }
     }
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
@@ -268,7 +272,7 @@ export function Estimator() {
           <legend>1. Home size</legend>
           <div className="pill-row">
             {homeTypes.map((type) => (
-              <button key={type} type="button" className="chip" aria-pressed={home === type} onClick={() => setHome(type)}>
+              <button key={type} type="button" className="chip" aria-pressed={home === type} onClick={() => { setHome(type); setShowOffer(true); }}>
                 {type}
               </button>
             ))}
@@ -279,7 +283,7 @@ export function Estimator() {
           <div className="level-row">
             {finishLevels.map((level) => (
               <label key={level.id} className={`level${finish === level.id ? " active" : ""}`}>
-                <input type="radio" name="finish-level" checked={finish === level.id} onChange={() => setFinish(level.id)} />
+                <input type="radio" name="finish-level" checked={finish === level.id} onChange={() => { setFinish(level.id); setShowOffer(true); }} />
                 <strong>{level.label}</strong>
                 <span>{level.note}</span>
               </label>
@@ -291,16 +295,20 @@ export function Estimator() {
           <div className="addon-list">
             {addOns.map((addOn) => (
               <label key={addOn.id} className="addon">
-                <input type="checkbox" checked={selected.includes(addOn.id)} onChange={() => toggle(addOn.id)} />
+                <input type="checkbox" checked={selected.includes(addOn.id)} onChange={() => { toggle(addOn.id); setShowOffer(true); }} />
                 <span>{addOn.label}</span>
                 <em>+ {formatRupees(addOn.price)}</em>
               </label>
             ))}
           </div>
         </fieldset>
+        <button type="button" className="btn btn-gold estimator-calculate" onClick={() => setShowOffer(true)}>
+          Calculate my budget
+        </button>
       </div>
 
-      <div className="estimator-result">
+      <div className={`estimator-result${registered ? "" : " price-locked"}${showOffer ? " has-offer" : ""}`}>
+        <div className="estimator-result-content" inert={showOffer} aria-hidden={showOffer || undefined}>
         <p className="eyebrow light">Provisional budget range · GST excluded</p>
         <p className="result-number" aria-live="polite" aria-atomic="true">
           <span className="sr-only">{finalRange}</span>
@@ -354,7 +362,7 @@ export function Estimator() {
             With the 10% offer (if confirmed): {formatRange(estimate.discountLow, estimate.discountHigh)}
           </p>
         ) : null}
-        {registering ? (
+        {registered ? null : registering ? (
           <div className="inline-register">
             <RegisterForm compact estimateText={estimateText} onDone={() => setRegistered(true)} />
           </div>
@@ -363,6 +371,24 @@ export function Estimator() {
             Register to unlock flat 10% off <span aria-hidden="true">→</span>
           </button>
         )}
+        </div>
+        {showOffer ? (
+          <div className="estimate-offer-popup" role="dialog" aria-labelledby="estimate-offer-title" aria-modal="false">
+            <div className="estimate-offer-card">
+              <span className="estimate-offer-kicker">A little something for your home</span>
+              <strong className="estimate-offer-value">10% <span>OFF</span></strong>
+              <h3 id="estimate-offer-title">Enjoy 10% off your interiors</h3>
+              <p>Register your interest and Leor Design will confirm the offer details and eligibility.</p>
+              {registering ? (
+                <RegisterForm compact estimateText={estimateText} buttonLabel="Continue to claim 10% off" onDone={() => { setRegistered(true); setRegistering(false); setShowOffer(false); }} />
+              ) : (
+                <button type="button" className="btn btn-gold" onClick={() => setRegistering(true)}>
+                  Register for 10% off
+                </button>
+              )}
+            </div>
+          </div>
+        ) : null}
       </div>
     </div>
   );

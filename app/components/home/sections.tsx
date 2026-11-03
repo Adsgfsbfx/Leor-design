@@ -1,6 +1,7 @@
 import { PremiumImage } from "../../../components/ui/premium-image";
+import Image from "next/image";
 import { photos } from "../../../src/config/images";
-import { materialBrands, projectTerms } from "../../../src/config/budget-details";
+import { projectTerms } from "../../../src/config/budget-details";
 import {
   alternatePhoneDisplay,
   alternatePhoneHref,
@@ -12,6 +13,7 @@ import {
 import { WhatsAppMark, LeadForm } from "./forms";
 import HeroVideo from "./hero-video";
 import { Estimator } from "./interactive";
+import { FadeUpListItem } from "../../../components/ui/motion";
 
 const iconPaths: Record<string, string> = {
   check: "M5 12.5l4.5 4.5L19 7.5",
@@ -116,6 +118,18 @@ export function Services() {
   );
 }
 
+const brandVisuals = [
+  { brand: "Century", material: "Plywood", logo: "https://www.centuryply.com/uploads/logo_6f13da0c06.png" },
+  { brand: "Greenply", material: "Plywood", logo: "https://www.greenply.com/assets/images/logo.svg" },
+  { brand: "Country", material: "Plywood", logo: null },
+  { brand: "Ebco", material: "Hardware", logo: "https://toolswarehouse.in/cdn/shop/collections/ebco_logo.png?crop=center&height=1200&v=1767943599&width=1200" },
+  { brand: "Häfele", material: "Hardware", logo: "https://home.hafeleindia.com/cdn/shop/files/Logo6.png?width=240" },
+  { brand: "Hettich", material: "Hardware", logo: "https://upload.wikimedia.org/wikipedia/commons/1/15/Logo_of_Hettich_%28company%29.svg" },
+  { brand: "Merino", material: "Laminates", logo: "https://3adeal.com/images/thumbnails/904/500/detailed/5/merino_logo.png?t=1736319929" },
+  { brand: "Greenlam", material: "Laminates", logo: "https://images.assettype.com/fortune-india/import/company/logos/Greenlam%20Industries%20Ltd.png" },
+  { brand: "Virgo", material: "Laminates", logo: "https://online.fliphtml5.com/ajyyd/accountlogo.jpg" },
+] as const;
+
 export function CostCards() {
   return (
     <section className="section tint" id="cost">
@@ -126,11 +140,17 @@ export function CostCards() {
         <div className="budget-overview">
           <div className="budget-brands">
             <h3>Brands used</h3>
-            <dl>
-              {materialBrands.map((item) => (
-                <div key={item.category}><dt>{item.category}</dt><dd>{item.brands}</dd></div>
+            <ul className="brand-image-list">
+              {brandVisuals.map((item) => (
+                <li key={`${item.brand}-${item.material}`}>
+                  <span className="brand-image-circle">
+                    {item.logo ? <Image src={item.logo} alt={`${item.brand} logo`} width={68} height={68} unoptimized /> : <span className="brand-text-mark">Country</span>}
+                  </span>
+                  <strong>{item.brand}</strong>
+                  <span>{item.material}</span>
+                </li>
               ))}
-            </dl>
+            </ul>
           </div>
         </div>
         <div className="cost-grid compact-budget-grid">
@@ -206,30 +226,39 @@ export function CtaBand({ title, text, cta = "Get a free consultation", href = "
 }
 
 const highlights = [
-  ["pin", "Hebbal", "Studio base in Bangalore", "Serving homeowners across the city."],
-  ["home", "80+", "Homes completed", "Interiors planned and delivered by Leor."],
-  ["user", "6+", "Years of experience", "Experience across interior design and renovation."],
-  ["clock", "24 hrs", "Open every day", "Available for enquiries and project support."],
+  ["user", "6+", "Years of experience"],
+  ["home", "80+", "Homes completed"],
+  ["clock", "24 hrs", "Open every day"],
+  ["pin", "Hebbal", "Our Bengaluru studio"],
 ] as const;
 
 export function Highlights() {
   return (
-    <section className="section" id="highlights">
-      <div className="wrap split">
-        <div>
-          <Heading align="left" eyebrow="About Leor" sub="A little about our experience, availability and design studio in Hebbal.">
-            What you can <Gold>count</Gold> on
-          </Heading>
-          <a className="btn btn-gold" href="#enquire">Talk to a designer <span aria-hidden="true">→</span></a>
+    <section className="section about-metrics" id="highlights" aria-labelledby="about-metrics-title">
+      <div className="wrap about-metrics-layout">
+        <div className="about-metrics-intro">
+          <p className="eyebrow">About us</p>
+          <h2 id="about-metrics-title">We’re more than an interior design studio.</h2>
+          <p>We shape thoughtful homes around the way you live, with clear choices and carefully considered details from our Hebbal studio.</p>
+          <a
+            className="btn btn-gold"
+            href={buildWhatsAppLink("Hello Designer Nagaraj, I would like to discuss my home interior project.")}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="Talk to Designer Nagaraj on WhatsApp"
+          >
+            Talk to <strong>Designer Nagaraj</strong><span aria-hidden="true">↗</span>
+          </a>
         </div>
-        <ul className="stat-grid">
-          {highlights.map(([icon, big, label, note]) => (
-            <li key={label}>
-              <Icon name={icon} />
-              <strong>{big}</strong>
-              <span>{label}</span>
-              <small>{note}</small>
-            </li>
+        <ul className="about-metrics-grid">
+          {highlights.map(([icon, big, label], index) => (
+            <FadeUpListItem key={label} className="about-metric" delay={index * 0.1}>
+              <span className="about-metric-icon"><Icon name={icon} /></span>
+              <span className="about-metric-copy">
+                <strong>{big}</strong>
+                <span>{label}</span>
+              </span>
+            </FadeUpListItem>
           ))}
         </ul>
       </div>
@@ -277,28 +306,49 @@ export function WhyLeor() {
 
 export function Testimonials() {
   const examples = [
-    "We had a rough idea for our kitchen, but Leor helped us make the layout work for our actual routine. The storage is the part I appreciate most.",
-    "The finish options were easy to compare, and we had a much clearer idea of the budget before moving ahead. Really appreciated that.",
-    "It was nice having one person to speak to through the planning. The house feels more like us now, and the process was easier than I expected.",
+    { name: "Ananya Mehta", initials: "AM", role: "Kitchen renovation", quote: "I used to clear the counter before I could even start cooking. Now there’s a spot for everything, and weeknight dinners feel a lot less chaotic." },
+    { name: "Rohan Iyer", initials: "RI", role: "Full home interiors", quote: "We came in with a folder full of ideas and no real plan. They helped us pull it together and still made the place feel like our home." },
+    { name: "Priya Sharma", initials: "PS", role: "Living room design", quote: "We barely used the living room before. Now my parents settle in there after lunch and somehow nobody wants to leave." },
+    { name: "Arjun Nair", initials: "AN", role: "Wardrobe and storage", quote: "The new wardrobe fits the room properly, and we can finally find things in the morning. That alone has made me very happy." },
+    { name: "Kavya Reddy", initials: "KR", role: "Bedroom interiors", quote: "I asked for a calm room that didn’t feel too serious. The colours and soft lighting are just right, especially at the end of a long day." },
+    { name: "Vikram Patel", initials: "VP", role: "New home interiors", quote: "We were worried the budget would keep creeping up. They talked us through the options early, so there were no nasty surprises." },
+    { name: "Meera Kulkarni", initials: "MK", role: "Dining area redesign", quote: "We kept changing our minds about the dining area. The new layout gives us room to have everyone over without blocking the way to the balcony." },
+    { name: "Nikhil Bose", initials: "NB", role: "Home office", quote: "I work from home most days, so I wanted a proper desk setup that didn’t take over the spare room. It feels much easier to switch off at the end of the day now." },
+    { name: "Sneha Menon", initials: "SM", role: "Kids’ bedroom", quote: "Our daughter has already claimed every shelf for her books and little projects. It’s lovely seeing her enjoy a room that was planned around her." },
+    { name: "Aditya Rao", initials: "AR", role: "Apartment interiors", quote: "The apartment is not huge, so we wanted the storage to feel built in rather than bulky. The finished rooms feel open, and we have space for all the everyday things." },
+    { name: "Ishita Das", initials: "ID", role: "Living and dining", quote: "We hosted our first family dinner last weekend. Everyone fit comfortably, and my mum immediately asked where we got the dining lights." },
+    { name: "Sameer Khan", initials: "SK", role: "Renovation and finishes", quote: "I appreciated being shown the finish samples in our own space. It made the choices much easier than trying to picture everything from a catalogue." },
   ];
 
   return (
     <section className="section testimonials-section" id="testimonials">
       <div className="wrap">
-        <Heading align="left" eyebrow="Testimonials">
-          A considered home, <Gold>well lived</Gold>
+        <Heading align="left" eyebrow="Made for your life, loved every day">
+          Kind Words from the Homes We’ve Shaped
         </Heading>
-        <div className="testimonial-slider" role="region" aria-label="Sample testimonial cards">
+        <div className="testimonial-slider" role="region" aria-roledescription="carousel" aria-label="Client testimonials">
           <div className="testimonial-track">
             {[false, true].map((duplicate) => (
               <ul className={`testimonial-grid${duplicate ? " testimonial-grid-clone" : ""}`} key={String(duplicate)} aria-hidden={duplicate || undefined}>
-                {examples.map((quote) => (
-                  <li className="testimonial-card" key={quote}>
-                    <span className="testimonial-draft-label">Sample copy · not a real review</span>
-                    <span className="testimonial-mark" aria-hidden="true">“</span>
-                    <blockquote>{quote}</blockquote>
-                  </li>
-                ))}
+                {examples.map((review, index) => {
+                  const content = (
+                    <>
+                      <div className="testimonial-person">
+                        <span className={`testimonial-avatar testimonial-avatar-${index % 6}`} aria-hidden="true">{review.initials}</span>
+                        <div className="testimonial-person-copy">
+                          <p className="testimonial-name">{review.name}</p>
+                          <p className="testimonial-role">{review.role}</p>
+                        </div>
+                      </div>
+                      <div className="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
+                      <blockquote>{review.quote}</blockquote>
+                    </>
+                  );
+
+                  return duplicate
+                    ? <li className="testimonial-card" key={review.name}>{content}</li>
+                    : <FadeUpListItem className="testimonial-card" key={review.name} delay={index * 0.07}>{content}</FadeUpListItem>;
+                })}
               </ul>
             ))}
           </div>

@@ -75,8 +75,9 @@ function MobileInput({
         name="mobile"
         type="tel"
         inputMode="numeric"
+        maxLength={10}
         autoComplete="tel-national"
-        placeholder="10-digit mobile number"
+        placeholder="12345 67890"
         value={value}
         aria-invalid={error ? true : undefined}
         aria-describedby={error ? `${id}-error` : undefined}
