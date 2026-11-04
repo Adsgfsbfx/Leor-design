@@ -1,5 +1,5 @@
 import { connection } from "next/server";
-import { Comparison, Commitments, ConsultationSection, CostCards, CtaBand, DesignerCta, FinalCta, Footer, Gold, Heading, Highlights, ProjectsHeading, Services, Testimonials, WhyLeor } from "./components/home/sections";
+import { Commitments, ConsultationSection, CostCards, CtaBand, DesignerCta, Footer, Gold, Heading, Highlights, ProjectsHeading, Services, Testimonials, WhyLeor } from "./components/home/sections";
 import { Faq, Projects } from "./components/home/interactive";
 import TrustStrip from "./components/home/trust-strip";
 import Navbar from "./components/navbar";
@@ -28,19 +28,17 @@ export default async function Home() {
         </section>
         <Testimonials />
         <WhyLeor />
+        <Commitments />
         <DesignerCta />
-        <Comparison />
-        <FinalCta />
         <CostCards />
-        <section className="section" id="faq">
+        <section className="section faq-section" id="faq">
           <div className="wrap">
-            <Heading align="left" eyebrow="FAQs" sub="Everything you need to know about working with Leor Design.">
+            <Heading eyebrow="FAQs" sub="Everything you need to know about working with Leor Design.">
               Frequently asked <Gold>questions</Gold>
             </Heading>
             <Faq />
           </div>
         </section>
-        <Commitments />
         <ConsultationSection>
           <ConsultationForm />
         </ConsultationSection>

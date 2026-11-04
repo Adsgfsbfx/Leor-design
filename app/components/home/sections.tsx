@@ -377,41 +377,6 @@ export function DesignerCta() {
   );
 }
 
-const compareRows = [
-  ["Budget", "A range you can adjust in the calculator", "Ask for a line-by-line breakdown"],
-  ["Materials", "Named finishes and levels you can compare", "Ask which brand and grade is used"],
-  ["Scope", "Inclusions and exclusions in a written proposal", "Ask what is not included"],
-  ["Timeline", "Confirmed in the proposal for your home", "Ask for a dated schedule"],
-  ["Changes", "Discussed and priced before work begins", "Ask how variations are charged"],
-] as const;
-
-export function Comparison() {
-  return (
-    <section className="section tint" id="compare">
-      <div className="wrap narrow-lg">
-        <Heading eyebrow="Choose with confidence" sub="Questions worth asking any interior designer, and how Leor answers them.">
-          What makes us <Gold>different?</Gold>
-        </Heading>
-        <div className="compare" role="table" aria-label="How Leor compares with questions to ask any designer">
-          <div className="compare-row head" role="row">
-            <span role="columnheader">What you care about</span>
-            <span role="columnheader" className="us">Leor Design</span>
-            <span role="columnheader">Ask any designer</span>
-          </div>
-          {compareRows.map(([topic, us, ask]) => (
-            <div key={topic} className="compare-row" role="row">
-              <strong role="cell">{topic}</strong>
-              <span role="cell" className="us"><i aria-hidden="true">✓</i>{us}</span>
-              <span role="cell">{ask}</span>
-            </div>
-          ))}
-        </div>
-        <div className="center"><a className="btn btn-gold" href="#enquire">Get your free consultation <span aria-hidden="true">→</span></a></div>
-      </div>
-    </section>
-  );
-}
-
 export function FinalCta() {
   return (
     <section className="final-cta">
@@ -436,9 +401,9 @@ const commitments = [
 
 export function Commitments() {
   return (
-    <section className="section" id="commitments">
+    <section className="section commitments-section" id="commitments">
       <div className="wrap">
-        <Heading eyebrow="Our commitments" sub="Draft wording pending Leor's final approval. Warranty and delivery terms will be added once confirmed.">
+        <Heading eyebrow="Our commitments" sub="Clear scope, honest estimates and thoughtful support at every step.">
           Promises that build <Gold>better homes</Gold>
         </Heading>
         <ul className="commit-grid">

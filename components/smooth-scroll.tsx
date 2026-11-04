@@ -145,6 +145,32 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
   }, [pathname]);
 
   useEffect(() => {
+    if (pathname !== "/") return;
+
+    const guardKey = "__leorHomeBackGuard";
+    const state = window.history.state ?? {};
+    if (!state[guardKey]) {
+      window.history.pushState({ ...state, [guardKey]: true }, "", window.location.href);
+    }
+
+    const onPopState = () => {
+      if (window.location.pathname !== "/") return;
+
+      const url = `${window.location.pathname}${window.location.search}`;
+      window.history.replaceState({ ...(window.history.state ?? {}), [guardKey]: false }, "", url);
+      if (lenisRef.current) {
+        lenisRef.current.scrollTo(0, { duration: 1.2 });
+      } else {
+        const reducedMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+        window.scrollTo({ top: 0, left: 0, behavior: reducedMotion ? "auto" : "smooth" });
+      }
+    };
+
+    window.addEventListener("popstate", onPopState);
+    return () => window.removeEventListener("popstate", onPopState);
+  }, [pathname, lenis]);
+
+  useEffect(() => {
     const onAnchorClick = (event: MouseEvent) => {
       const current = lenisRef.current;
       if (!current || event.defaultPrevented || event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;

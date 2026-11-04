@@ -7,7 +7,7 @@ import { PremiumImage } from "../../../components/ui/premium-image";
 import { useScrollLock } from "../../../components/smooth-scroll";
 import { concepts, photos, projectCategories, type Photo, type ProjectCategory } from "../../../src/config/images";
 import { materialBrands, projectTerms } from "../../../src/config/budget-details";
-import { alternatePhoneDisplay, buildWhatsAppLink, faqs, phoneDisplay, phoneHref, site } from "../../../src/config/site";
+import { buildWhatsAppLink, faqs, phoneDisplay, phoneHref, site } from "../../../src/config/site";
 import {
   addOns,
   calculateEstimate,
@@ -484,7 +484,6 @@ export function Faq() {
       </ol>
       <aside className="faq-aside">
         <h3>Still have a question?</h3>
-        <p>Call {phoneDisplay} or {alternatePhoneDisplay}, or message us on WhatsApp.</p>
         <a className="btn btn-gold" href={buildWhatsAppLink(site.whatsappMessage)} target="_blank" rel="noopener noreferrer">
           Talk to our team <span aria-hidden="true">→</span>
         </a>
