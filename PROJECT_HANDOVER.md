@@ -17,8 +17,8 @@ Generated from the actual project files, `git` state, and commands run during th
 | Language | TypeScript 5, React 19.3.0 |
 | Styling | Hand-written CSS in `app/globals.css` (~30 KB). Tailwind v4 is installed and loaded via `@import "tailwindcss"` and `@tailwindcss/turbopack`, but components use custom class names, not Tailwind utilities. |
 | Fonts | `next/font/google`: Instrument Serif (`--font-instrument-serif`), Hanken Grotesk (`--font-hanken-grotesk`) |
-| Dependencies | `next`, `react`, `react-dom`, `@supabase/supabase-js`, `googleapis`. Dev: `tailwindcss`, `@tailwindcss/turbopack`, `typescript`, `eslint`, `eslint-config-next`, `@types/*`. |
-| Dependency changes this session | None. `package.json` was not edited. |
+| Dependencies | `next`, `react`, `react-dom`. Dev: `tailwindcss`, `@tailwindcss/turbopack`, `typescript`, `eslint`, `eslint-config-next`, `@types/*`. |
+| Dependency changes this session | Removed the unused hosted database SDK dependency. |
 
 ### Important Next.js note
 `AGENTS.md` warns that this Next.js version has breaking changes. Read the relevant guide in `node_modules/next/dist/docs/` before changing framework-level code. `app/page.tsx` uses `await connection()` and `export const instant = false`; keep these unless you read the docs first.
@@ -31,9 +31,7 @@ app/
   globals.css           ALL styling
   privacy/page.tsx      privacy notice
   api/
-    enquiry/route.ts            POST lead -> Supabase (+ optional Sheets mirror); NOT called by the UI
-    whatsapp-click/route.ts     POST click log -> Supabase; NOT called by the UI
-    whatsapp/webhook/route.ts   WhatsApp Cloud API webhook scaffold; disabled unless 4 env vars set
+    enquiry/route.ts            POST validated enquiry -> Apps Script webhook; called by the consultation form
   components/home/
     sections.tsx        server components: Hero ... Footer
     interactive.tsx     client: Header, Projects, Estimator, Finishes, Faq
@@ -43,8 +41,7 @@ src/
   config/site.ts        business info, FAQs, WhatsApp link builder
   config/images.ts      photo registry + 8 concept projects
   lib/pricing.ts        PRD pricing, estimator maths, mobile validator
-  lib/supabaseAdmin.ts, googleSheets.ts, leadSheetsMirror.ts, rateLimit.ts   (server-side, used only by /api)
-supabase/migrations/0001_init.sql   tables: leads, whatsapp_clicks, whatsapp_messages (RLS enabled)
+  googleSheets.ts, leadSheets.ts, rateLimit.ts   (server-side enquiry storage and validation)
 public/images/          16 Unsplash photos (see ASSETS.md)
 ASSETS.md               Unsplash photo ID table and licence note
 screenshots/            local test screenshots, 92 files, git-ignored (not in repo)
@@ -75,13 +72,13 @@ Do not assume port 3000 or 3100. Use the URL that `next dev` prints.
 - **Project gallery:** 8 illustrative concept projects, filter chips (All shows the first 6; Living rooms / Kitchens / Bedrooms). Photos are Unsplash stock, labelled "Illustrative concept". Tested: Kitchens gives 3 cards, All gives 6.
 - **Cost estimator** (PRD rules, `src/lib/pricing.ts`): home type 1/2/3/4 BHK and Villa; finish Essential/Premium/Luxe; add-ons false ceiling, panelling, painting; animated range; breakdown; EMI (12%, 36 months); "register for 10% off" inline form with an indicative discounted range.
   - Base prices (Rs): 1 BHK 380,000; 2 BHK 620,000; 3 BHK 900,000; 4 BHK 1,250,000; Villa 2,000,000. Multipliers 1.0 / 1.5 / 2.2. Add-ons 120,000 / 90,000 / 60,000.
-  - `mid = base × multiplier + add-ons`; range = mid × 0.92 to mid × 1.08, rounded to the nearest 10,000; discounted × 0.9.
-  - Tested values: 2 BHK Premium Rs 8.6L–10.0L; Villa Luxe plus false ceiling Rs 41.6L–48.8L; 1 BHK Essential Rs 3.5L–4.1L.
+  - `mid = base * multiplier + add-ons`; range = mid * 0.92 to mid * 1.08, rounded to the nearest 10,000; discounted * 0.9.
+  - Tested values: 2 BHK Premium Rs 8.6L-10.0L; Villa Luxe plus false ceiling Rs 41.6L-48.8L; 1 BHK Essential Rs 3.5L-4.1L.
   - The PRD itself says these prices are placeholders pending client approval.
 - **Finish selector:** six finishes. Oak, walnut and fluted oak use real material photos; sage, midnight and ivory use CSS colour previews.
 - **FAQ accordion** (`aria-expanded` / `aria-controls`), tested.
 - **Forms** (`forms.tsx`): hero `LeadForm`, `ConsultationForm` (name, mobile, locality, home type, notes), `RegisterForm` (name, mobile, consent). Validation: name at least 2 characters, mobile `^[6-9][0-9]{9}$`, locality at least 2 characters. Mobile input strips non-digits, handles pasted `+91` / `91` / `0` prefixes, caps at 10 digits. Error states use `aria-invalid` and `role="alert"`. Success state says nothing was sent or stored and offers a WhatsApp hand-off link (`https://wa.me/918050414570?text=...`). Tested.
-- **10% offer popup** (`overlays.tsx` + CSS): a modal dialog with a photo panel, "10 OFF" headline, gold ribbon "Flat 10% off on your interiors", ivory form panel, and a "Claim My 10% Discount" button (disabled until name, valid mobile and consent are all present). Opens after scrolling past `#top-hero` or after 15 s, whichever comes first; once per tab via `sessionStorage["leor-offer-seen"]`; closes with the ✕ button, Escape or a backdrop click; focus trap; body scroll lock; focus is restored on close. Desktop and tablet use a two-column modal, up to 640 px a bottom sheet, and landscape phones a full-height two-column layout. The popup says online registration is not connected and no code is issued.
+- **10% offer popup** (`overlays.tsx` + CSS): a modal dialog with a photo panel, "10 OFF" headline, gold ribbon "Flat 10% off on your interiors", ivory form panel, and a "Claim My 10% Discount" button (disabled until name, valid mobile and consent are all present). Opens after scrolling past `#top-hero` or after 15 s, whichever comes first; once per tab via `sessionStorage["leor-offer-seen"]`; closes with the close button, Escape or a backdrop click; focus trap; body scroll lock; focus is restored on close. Desktop and tablet use a two-column modal, up to 640 px a bottom sheet, and landscape phones a full-height two-column layout. The popup says online registration is not connected and no code is issued.
 - **Floating WhatsApp button** (desktop) and **mobile Call now / WhatsApp bar** (up to 860 px).
 - **Phone / WhatsApp links:** `tel:+918050414570`, `tel:+919180414570`, `wa.me/918050414570`.
 - **Design approach section** (replaced the client-review section). Three photo cards, no fake names, ratings or quotes.
@@ -117,7 +114,7 @@ Do not assume port 3000 or 3100. Use the URL that `next dev` prints.
 
 **Configuration:** `next.config.ts` has `experimental.agentFeedback`, `cacheComponents`, `partialPrefetching`, and a Turbopack CSS rule for `@tailwindcss/turbopack`. These were present before; this redesign did not change them. **New dependencies: none.**
 
-`README.md` documents Supabase setup and says the homepage forms do not submit.
+`README.md` documents the Apps Script enquiry webhook and the client-side discount form.
 
 ---
 
@@ -157,7 +154,7 @@ The Name and Mobile inputs were already controlled React inputs with independent
 5. Production deployment has Vercel Deployment Protection (`vercel_authentication`) enabled, so public visitors may hit a Vercel login page. Check the Vercel project settings.
 6. No custom 404 or error pages checked. **UNKNOWN.**
 7. Accessibility was not audited with a tool; only manual attributes (ARIA, focus trap, labels) are in place.
-8. `app/api/enquiry` and `app/api/whatsapp-click` still reference an older enquiry shape (`enquiryServiceOptions`); they were not retested against the new forms and are not called by them.
+8. The enquiry API now uses the consultation form's validated payload and sends it to the Apps Script webhook.
 
 ---
 
@@ -165,12 +162,11 @@ The Name and Mobile inputs were already controlled React inputs with independent
 
 | Area | Status |
 |---|---|
-| Homepage forms (hero, consultation, popup, estimator register) | **Frontend only.** They validate and show a confirmation plus a WhatsApp hand-off link. Nothing is saved or sent (verified: no `fetch` or `/api/` call in `app/components`). |
-| `POST /api/enquiry` | Code exists: writes to a Supabase `leads` table and optionally mirrors to Google Sheets, with rate limiting. **Not called by the UI. Not tested in this session.** |
-| `POST /api/whatsapp-click` | Code exists (`whatsapp_clicks` or `leads`). Not called by the UI. Untested. |
-| `/api/whatsapp/webhook` | Scaffold. Stays disabled unless `WHATSAPP_VERIFY_TOKEN`, `WHATSAPP_APP_SECRET`, `WHATSAPP_ACCESS_TOKEN`, `WHATSAPP_PHONE_NUMBER_ID` and the Supabase credentials are set. Untested. |
-| Supabase schema | `supabase/migrations/0001_init.sql` defines `leads`, `whatsapp_clicks`, `whatsapp_messages` with RLS enabled. **Whether it has been run on a real Supabase project is UNKNOWN.** |
-| Env vars | `.env.example` lists `SUPABASE_URL`, `SUPABASE_SERVICE_ROLE_KEY`, `GOOGLE_SHEETS_ID`, `GOOGLE_SERVICE_ACCOUNT_EMAIL`, `GOOGLE_PRIVATE_KEY` and the four WhatsApp variables. Whether any are set locally or on Vercel is **UNKNOWN**. No `.env.local` was seen in the project root. |
+| Consultation form | Validates fields and submits to `/api/enquiry`, which posts to Apps Script when webhook credentials are configured. |
+| Other forms (hero, popup, estimator register) | Frontend interactions; they validate and show a confirmation plus a WhatsApp hand-off link. They do not save a lead. |
+| `POST /api/enquiry` | Validates and posts consultation enquiries to Apps Script, with rate limiting and an idempotency key. Called by the consultation form. |
+| Inbound WhatsApp webhook | Removed with its message storage integration. Website click-to-chat remains available. |
+| Env vars | `.env.example` lists `GOOGLE_APPS_SCRIPT_URL` and `LEOR_WEBHOOK_SECRET` for the server-side enquiry webhook. |
 | Discount registration / codes | **Not implemented.** No codes are generated. The UI says so. |
 | Authentication, admin dashboard | **Not implemented.** No auth or admin route exists. |
 | Analytics, email or SMS notifications | **Not implemented / UNKNOWN.** |
@@ -185,28 +181,27 @@ The Name and Mobile inputs were already controlled React inputs with independent
 - Playwright (`playwright-core` + headless Edge, temporary install, since removed), against `http://localhost:3000`:
   - Estimator values, project filter, finish selector, FAQ toggle, form validation errors and success state, and the WhatsApp link on the confirmation.
   - Popup: not shown at load; opens on scroll past the hero; typing; paste of `+91 98765 43210` gives `9876543210`; Backspace; letters stripped; button disabled until consent and valid input; submit gives the "nothing stored" message; close button; no reopen in the same tab.
-  - Viewports with screenshots: 1440×900, 1366×768, 768×1024, 390×844, 320×700 (the first requested set), then 14 devices: iPhone SE 375, iPhone 14 390, Pro Max 430, Pixel 7 412, Galaxy Fold 280, phone landscape 844×390, iPad mini 768, iPad Air 820, iPad Pro 1024×1366, tablet landscape 1024×768, laptop 1280×720, 1366×768, 1920×1080, 2560×1080. Checks were no horizontal overflow, no broken images, no page errors.
+  - Viewports with screenshots: 1440x900, 1366x768, 768x1024, 390x844, 320x700 (the first requested set), then 14 devices: iPhone SE 375, iPhone 14 390, Pro Max 430, Pixel 7 412, Galaxy Fold 280, phone landscape 844x390, iPad mini 768, iPad Air 820, iPad Pro 1024x1366, tablet landscape 1024x768, laptop 1280x720, 1366x768, 1920x1080, 2560x1080. Checks were no horizontal overflow, no broken images, no page errors.
 - **Screenshots were actually captured.** They are in `screenshots/` (92 files, including `screenshots/devices/` with overview sheets). They are **git-ignored** (about 122 MB), so they exist only on this machine.
 
 ### Not tested
-- 15-second popup timer; real phone keyboards and touch hardware; Safari / Firefox; screen readers; dark mode; Lighthouse or performance; `/api/*` routes; Supabase, Google Sheets and WhatsApp integrations; the production site in a browser (only a curl 200); a pixel-level side-by-side comparison with the reference.
+- 15-second popup timer; real phone keyboards and touch hardware; Safari / Firefox; screen readers; dark mode; Lighthouse or performance; Apps Script webhook connectivity; the production site in a browser (only a curl 200); a pixel-level side-by-side comparison with the reference.
 - There is no automated test suite in the repo (no test script in `package.json`).
 
 ---
 
 ## 8. Next steps (prioritised)
 
-**Most important immediate task:** decide the lead-capture approach, then connect the forms to a real, working submission, because right now no lead from the site is saved.
+**Most important immediate task:** configure the Apps Script URL and webhook secret so consultation enquiries can be stored.
 
-1. Confirm with the owner: use Supabase (already scaffolded) or another approach. No paid services without approval.
-2. Create or confirm the Supabase project, run `supabase/migrations/0001_init.sql`, set `SUPABASE_URL` and `SUPABASE_SERVICE_ROLE_KEY` in `.env.local` and in Vercel (Production). Never expose the service role key to the client.
-3. Wire `LeadForm`, `ConsultationForm` and `RegisterForm` to `POST /api/enquiry` (check the request shape in `app/api/enquiry/route.ts` first). Show a success message **only** after a confirmed 2xx. Keep the honest failure and WhatsApp fallback.
-4. Decide discount mechanics with the owner (code generation, validity, terms) before issuing any code. Replace the "not connected" wording only once it is true.
-5. Replace stock images with real Leor project photos when supplied; update `src/config/images.ts` and `ASSETS.md`.
-6. Add verified content: real reviews (with permission), metrics, warranty and delivery terms, approved pricing, offer terms, email address.
-7. SEO: Open Graph and Twitter metadata, canonical URL, `LocalBusiness` JSON-LD, `sitemap.xml`, `robots.txt`, favicon and OG image, `metadataBase`.
-8. Review Vercel Deployment Protection so the public can see the site.
-9. Test the 15 s popup path, real-device keyboard behaviour, Safari and Firefox, and the 280 px width.
+1. Configure `GOOGLE_APPS_SCRIPT_URL` and `LEOR_WEBHOOK_SECRET` in `.env.local` and the deployment environment.
+2. Keep the consultation form success state dependent on a confirmed API response; configure Sheets credentials before accepting production enquiries.
+3. Decide discount mechanics with the owner (code generation, validity, terms) before issuing any code. Replace the "not connected" wording only once it is true.
+4. Replace stock images with real Leor project photos when supplied; update `src/config/images.ts` and `ASSETS.md`.
+5. Add verified content: real reviews (with permission), metrics, warranty and delivery terms, approved pricing, offer terms, email address.
+6. SEO: Open Graph and Twitter metadata, canonical URL, `LocalBusiness` JSON-LD, `sitemap.xml`, `robots.txt`, favicon and OG image, `metadataBase`.
+7. Review Vercel Deployment Protection so the public can see the site.
+8. Test the 15 s popup path, real-device keyboard behaviour, Safari and Firefox, and the 280 px width.
 10. Optional: admin dashboard with authentication to view leads (needs the owner's approval; design before building).
 11. Optional: reduce page length toward the reference; add an automated e2e test script.
 
@@ -231,8 +226,8 @@ npx vercel --prod --yes
 - **Follow the PRD** (pricing, rules). Its extracted text is in the session folder path above; the original PDF location is UNKNOWN, so ask the owner if you need it.
 - **No paid services** without the owner's explicit approval.
 - **Never fabricate** customer names, reviews, ratings, review counts, project stats, awards, warranties, delivery promises, coupon codes, or test results. Keep stock photos labelled illustrative. Do not copy Truww's brand, text, reviews, stats or images.
-- **Be honest about the backend.** The forms are not connected. Do not show "submitted" or "saved" until a real 2xx comes back from a working endpoint. Do not create fake coupon codes.
+- **Be honest about the backend.** The consultation form requires working Apps Script webhook credentials and a successful API response before showing a saved confirmation. Other forms do not save leads. Do not create fake coupon codes.
 - **Fix directly in code and verify.** Run `npx tsc --noEmit`, `npm run lint` and `npm run build`, then check in a real browser at desktop, tablet and mobile widths. Report only tests you actually ran.
-- **Secrets:** never commit `.env*` (already git-ignored) or put the Supabase service role key in client code.
+- **Secrets:** never commit `.env*` (already git-ignored) or expose Apps Script webhook credentials to the browser.
 - **Windows PowerShell:** no `&&` or `||`; use `;`. Write files with an editor tool or `[IO.File]::WriteAllText` with a UTF-8 no-BOM encoding (`Set-Content -Encoding UTF8` adds a BOM).
 - `screenshots/` is git-ignored; do not commit it.

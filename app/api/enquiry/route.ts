@@ -1,8 +1,7 @@
-import { after } from "next/server";
-import { mirrorLeadToGoogleSheets, type LeadSheetsMirrorRecord } from "../../../src/lib/leadSheetsMirror";
+import { saveLeadToAppsScript, type GoogleSheetsLeadRecord } from "../../../src/lib/leadSheets";
 import { isRateLimited } from "../../../src/lib/rateLimit";
 import { enquiryServiceOptions } from "../../../src/config/site";
-import { getSupabaseAdmin, SupabaseConfigurationError } from "../../../src/lib/supabaseAdmin";
+import { GoogleAppsScriptConfigurationError } from "../../../src/lib/googleSheets";
 
 type EnquiryPayload = Record<string, unknown>;
 type DeviceType = "mobile" | "tablet" | "desktop";
@@ -21,28 +20,6 @@ const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
 function invalid(message: string, status = 400) {
   return Response.json({ message }, { status });
-}
-
-function scheduleSheetsMirror(lead: LeadSheetsMirrorRecord) {
-  after(async () => {
-    try {
-      if (!(await mirrorLeadToGoogleSheets(lead))) return;
-      const { error } = await getSupabaseAdmin()
-        .from("leads")
-        .update({ sheets_synced: true })
-        .eq("id", lead.id);
-      if (error) throw error;
-    } catch (error) {
-      const errorCode =
-        typeof error === "object" && error !== null && "code" in error
-          ? String(error.code ?? "")
-          : "";
-      console.error("Optional Google Sheets lead mirror failed.", {
-        code: errorCode,
-        message: error instanceof Error ? error.message : String(error),
-      });
-    }
-  });
 }
 
 export async function POST(request: Request) {
@@ -139,8 +116,10 @@ export async function POST(request: Request) {
   const estimatorData = estimatorSelections
     ? { selections: estimatorSelections }
     : null;
-  const leadInput = {
-    idempotency_key: idempotencyKey,
+  const leadId = idempotencyKey;
+  const leadInput: GoogleSheetsLeadRecord = {
+    id: leadId,
+    created_at: new Date().toISOString(),
     source,
     name,
     mobile,
@@ -165,55 +144,24 @@ export async function POST(request: Request) {
   };
 
   try {
-    const { data: insertedLead, error: insertError } = await getSupabaseAdmin()
-      .from("leads")
-      .insert(leadInput)
-      .select("*")
-      .single();
-
-    if (insertError?.code === "23505") {
-      const { data: existingLead, error: lookupError } = await getSupabaseAdmin()
-        .from("leads")
-        .select("*")
-        .eq("idempotency_key", idempotencyKey)
-        .maybeSingle();
-      if (lookupError) {
-        console.error("Could not check the already-saved enquiry.", {
-          code: lookupError.code,
-          message: lookupError.message,
-        });
-        throw lookupError;
-      }
-      if (!existingLead) throw insertError;
-      if (!existingLead.sheets_synced) {
-        scheduleSheetsMirror(existingLead as LeadSheetsMirrorRecord);
-      }
-      return Response.json({ message: "Enquiry already saved." }, { status: 200 });
-    }
-    if (insertError) throw insertError;
-    if (!insertedLead) throw new Error("Supabase returned no inserted enquiry row.");
-
-    scheduleSheetsMirror(insertedLead as LeadSheetsMirrorRecord);
-    return Response.json({ message: "Enquiry saved." }, { status: 201 });
+    const saved = await saveLeadToAppsScript(leadInput);
+    return Response.json(
+      { message: saved ? "Enquiry saved." : "Enquiry already saved." },
+      { status: saved ? 201 : 200 },
+    );
   } catch (error) {
-    if (error instanceof SupabaseConfigurationError) {
-      console.error("Supabase enquiry insert is not configured.", error.message);
+    if (error instanceof GoogleAppsScriptConfigurationError) {
+      console.error("[enquiry-api] configuration_error");
       return invalid(
         "Our enquiry form is not connected yet. Please try again later or contact us by phone.",
         503,
       );
     }
 
-    console.error(
-      "Supabase enquiry insert failed.",
-      error instanceof Error
-        ? {
-            name: error.name,
-            code: "code" in error ? String(error.code ?? "") : "",
-            message: error.message,
-          }
-        : error,
-    );
+    console.error(`[enquiry-api] submission_failed ${JSON.stringify({
+      errorType: error instanceof Error ? error.name : typeof error,
+      reason: error instanceof Error ? error.message : "unknown_error",
+    })}`);
     return invalid(
       "We couldn't save your enquiry right now. Please try again shortly or contact us by phone.",
       503,

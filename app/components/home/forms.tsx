@@ -1,8 +1,19 @@
 "use client";
 
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
-import { buildWhatsAppLink } from "../../../src/config/site";
+import { buildWhatsAppLink, enquiryServiceOptions } from "../../../src/config/site";
 import { homeTypes, isValidIndianMobile } from "../../../src/lib/pricing";
+
+const consultationHomeTypes = [...homeTypes, "Office or other"] as const;
+type ConsultationHomeType = (typeof consultationHomeTypes)[number];
+const consultationPropertyTypes: Record<ConsultationHomeType, "Apartment" | "Villa" | "Other"> = {
+  "1 BHK": "Apartment",
+  "2 BHK": "Apartment",
+  "3 BHK": "Apartment",
+  "4 BHK": "Apartment",
+  Villa: "Villa",
+  "Office or other": "Other",
+};
 
 export function WhatsAppMark() {
   return (
@@ -12,7 +23,7 @@ export function WhatsAppMark() {
   );
 }
 
-type Errors = Partial<Record<"name" | "mobile" | "location", string>>;
+type Errors = Partial<Record<"name" | "mobile" | "location" | "services" | "consent", string>>;
 
 function validate(values: { name: string; mobile: string; location?: string }, needsLocation: boolean) {
   const errors: Errors = {};
@@ -170,23 +181,96 @@ export function LeadForm() {
 
 export function ConsultationForm() {
   const uid = useId();
-  const [values, setValues] = useState({ name: "", mobile: "", location: "", home: "2 BHK", notes: "" });
+  const [values, setValues] = useState({ name: "", mobile: "", location: "", home: "2 BHK" as ConsultationHomeType, notes: "" });
+  const [services, setServices] = useState<(typeof enquiryServiceOptions)[number][]>([]);
+  const [consent, setConsent] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [done, setDone] = useState(false);
-  const set = (key: keyof typeof values) => (value: string) => setValues((v) => ({ ...v, [key]: value }));
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const submissionInProgressRef = useRef(false);
+  const idempotencyRef = useRef<{ fingerprint: string; key: string } | null>(null);
+  const set = (key: keyof typeof values) => (value: string) => {
+    setValues((v) => ({ ...v, [key]: value }));
+    setSubmitError("");
+  };
 
-  function submit(event: FormEvent) {
+  async function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
+    if (submitting || submissionInProgressRef.current) return;
+
     const next = validate(values, true);
+    if (services.length === 0) next.services = "Choose at least one service so we know how to help.";
+    if (!consent) next.consent = "Please agree to be contacted about your consultation.";
     setErrors(next);
-    if (Object.keys(next).length === 0) setDone(true);
+    setSubmitError("");
+    if (Object.keys(next).length > 0) return;
+
+    const requirements = [
+      `Home type selected: ${values.home}`,
+      values.notes.trim() ? `Additional notes: ${values.notes.trim()}` : "",
+    ].filter(Boolean).join("\n");
+    const search = new URLSearchParams(window.location.search);
+    const payload = {
+      name: values.name.trim(),
+      mobile: values.mobile,
+      locality: values.location.trim(),
+      propertyType: consultationPropertyTypes[values.home],
+      servicesNeeded: services,
+      requirements,
+      consent: true,
+      source: "enquiry form",
+      whatsappClicked: false,
+      deviceType: window.matchMedia("(max-width: 767px)").matches
+        ? "mobile"
+        : window.matchMedia("(max-width: 1023px)").matches
+          ? "tablet"
+          : "desktop",
+      pageUrl: `${window.location.origin}${window.location.pathname}`,
+      utmSource: search.get("utm_source") ?? "",
+      utmMedium: search.get("utm_medium") ?? "",
+      utmCampaign: search.get("utm_campaign") ?? "",
+    };
+    const fingerprint = JSON.stringify(payload);
+    if (idempotencyRef.current?.fingerprint !== fingerprint) {
+      idempotencyRef.current = {
+        fingerprint,
+        key: window.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`,
+      };
+    }
+
+    submissionInProgressRef.current = true;
+    setSubmitting(true);
+    try {
+      const response = await fetch("/api/enquiry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyRef.current.key,
+        },
+        body: fingerprint,
+      });
+      const result = await response.json().catch(() => null) as { message?: unknown } | null;
+      const savedMessages = new Set(["Enquiry saved.", "Enquiry already saved."]);
+      if (!response.ok || typeof result?.message !== "string" || !savedMessages.has(result.message)) {
+        throw new Error(typeof result?.message === "string" ? result.message : "We couldn't save your enquiry. Please try again.");
+      }
+      setDone(true);
+    } catch (error) {
+      setSubmitError(error instanceof Error && error.message
+        ? error.message
+        : "We couldn't reach the server. Check your connection and try again.");
+    } finally {
+      submissionInProgressRef.current = false;
+      setSubmitting(false);
+    }
   }
 
   if (done) {
     const message = `Hello Leor Design, I'm ${values.name.trim()} (${values.mobile}) from ${values.location.trim()}. Home type: ${values.home}.${values.notes.trim() ? ` Notes: ${values.notes.trim()}` : ""} I'd like to book a consultation.`;
     return (
       <Confirmation title={`Thanks, ${values.name.trim()}`} message={message} onReset={() => setDone(false)}>
-        Your details look valid, but the website is not connected to a database yet. Nothing has been sent or stored; use WhatsApp to share them with Leor.
+        Your consultation request has been saved. The Leor Design team will be in touch.
       </Confirmation>
     );
   }
@@ -219,22 +303,58 @@ export function ConsultationForm() {
           />
         </Field>
         <Field label="Home type" id={`${uid}-home`}>
-          <select id={`${uid}-home`} value={values.home} onChange={(e) => set("home")(e.target.value)}>
-            {[...homeTypes, "Office or other"].map((type) => (
+          <select id={`${uid}-home`} value={values.home} onChange={(e) => set("home")(e.target.value as ConsultationHomeType)}>
+            {consultationHomeTypes.map((type) => (
               <option key={type}>{type}</option>
             ))}
           </select>
         </Field>
       </div>
+      <fieldset className="service-fieldset" aria-describedby={errors.services ? `${uid}-services-error` : undefined}>
+        <legend>Services needed <span>(select all that apply)</span></legend>
+        <div className="service-options" role="group" aria-label="Services needed">
+          {enquiryServiceOptions.map((service) => (
+            <label className="service-option" key={service}>
+              <input
+                type="checkbox"
+                checked={services.includes(service)}
+                onChange={(event) => {
+                  setServices((current) => event.target.checked
+                    ? [...current, service]
+                    : current.filter((item) => item !== service));
+                  setErrors((current) => ({ ...current, services: undefined }));
+                  setSubmitError("");
+                }}
+              />
+              <span>{service}</span>
+            </label>
+          ))}
+        </div>
+        {errors.services ? <p className="field-error" id={`${uid}-services-error`} role="alert">{errors.services}</p> : null}
+      </fieldset>
       <Field label="Anything we should know? (optional)" id={`${uid}-notes`}>
         <textarea id={`${uid}-notes`} rows={3} value={values.notes} onChange={(e) => set("notes")(e.target.value)} />
       </Field>
-      <button className="btn btn-gold" type="submit">
-        Book my consultation <span aria-hidden="true">→</span>
+      <label className="consent consultation-consent">
+        <input
+          type="checkbox"
+          checked={consent}
+          aria-invalid={errors.consent ? true : undefined}
+          aria-describedby={errors.consent ? `${uid}-consent-error` : undefined}
+          onChange={(event) => {
+            setConsent(event.target.checked);
+            setErrors((current) => ({ ...current, consent: undefined }));
+            setSubmitError("");
+          }}
+        />
+        <span>I agree to be contacted by Leor Design about my consultation. See the <a href="/privacy">privacy notice</a>.</span>
+      </label>
+      {errors.consent ? <p className="field-error" id={`${uid}-consent-error`} role="alert">{errors.consent}</p> : null}
+      {submitError ? <p className="field-error" role="alert">{submitError} You can retry; your details are still here.</p> : null}
+      <button className="btn btn-gold" type="submit" disabled={submitting} aria-busy={submitting}>
+        {submitting ? "Sending your enquiry…" : "Book my consultation"} {!submitting ? <span aria-hidden="true">→</span> : null}
       </button>
-      <p className="form-note">
-        Front-end preview: no database is connected yet, so submitting only checks your details and offers a WhatsApp hand-off.
-      </p>
+      <p className="form-note">{submitting ? "Please wait while we save your enquiry." : "Your details will only be used to follow up about this consultation."}</p>
     </form>
   );
 }

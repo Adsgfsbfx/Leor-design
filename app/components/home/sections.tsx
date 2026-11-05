@@ -242,12 +242,12 @@ export function Highlights() {
           <p>We shape thoughtful homes around the way you live, with clear choices and carefully considered details from our Hebbal studio.</p>
           <a
             className="btn btn-gold"
-            href={buildWhatsAppLink("Hello Designer Nagaraj, I would like to discuss my home interior project.")}
+            href={buildWhatsAppLink("Hello Leor Design, I would like to discuss my home interior project.")}
             target="_blank"
             rel="noopener noreferrer"
-            aria-label="Talk to Designer Nagaraj on WhatsApp"
+            aria-label="Talk to a designer on WhatsApp"
           >
-            Talk to <strong>Designer Nagaraj</strong><span aria-hidden="true">↗</span>
+            <strong>Talk to Designer</strong><span aria-hidden="true">↗</span>
           </a>
         </div>
         <ul className="about-metrics-grid">
