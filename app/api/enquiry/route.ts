@@ -18,6 +18,94 @@ const stringValue = (value: unknown) =>
   typeof value === "string" ? value.trim() : "";
 const isEmail = (value: string) => /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value);
 
+function validateEnquiry(payload: EnquiryPayload) {
+  const enteredMobile = stringValue(payload.mobile);
+  const normalizedMobile = enteredMobile.replace(/[\s-]/g, "");
+  const mobile = normalizedMobile.startsWith("+91")
+    ? normalizedMobile.slice(3)
+    : normalizedMobile;
+  const email = stringValue(payload.email);
+  const propertyType = stringValue(payload.propertyType);
+  const servicesNeeded = Array.isArray(payload.servicesNeeded)
+    ? [...new Set(
+        payload.servicesNeeded.filter(
+          (service): service is (typeof enquiryServiceOptions)[number] =>
+            typeof service === "string" &&
+            enquiryServiceOptions.some((option) => option === service),
+        ),
+      )]
+    : [];
+  const requestedSource = stringValue(payload.source);
+  const source = sourceMapping[requestedSource];
+  const deviceType = stringValue(payload.deviceType) as DeviceType;
+  const name = stringValue(payload.name);
+  const locality = stringValue(payload.locality);
+  const requirements = stringValue(payload.requirements);
+  const estimatorSelections = stringValue(payload.estimatorSelections);
+  const indicativeEstimate = stringValue(payload.indicativeEstimate);
+  const whatsappClicked = payload.whatsappClicked === true;
+  const whatsappMessage = stringValue(payload.whatsappMessage);
+
+  const errors: string[] = [];
+
+  if (!name) errors.push("name is empty");
+  if (name && name.length > 120) errors.push("name is too long");
+  if (!/^[6-9]\d{9}$/.test(mobile)) errors.push(`mobile is invalid: "${mobile}" does not match pattern`);
+  if (email !== "" && !isEmail(email)) errors.push("email format is invalid");
+  if (email !== "" && email.length > 254) errors.push("email is too long");
+  if (!allowedPropertyTypes.has(propertyType)) errors.push(`propertyType "${propertyType}" not in allowed list`);
+  if (!locality) errors.push("locality is empty");
+  if (locality && locality.length > 120) errors.push("locality is too long");
+  if (!requirements) errors.push("requirements is empty");
+  if (requirements && requirements.length > 2_000) errors.push("requirements is too long");
+  if (servicesNeeded.length === 0) errors.push("servicesNeeded is empty");
+  if (payload.consent !== true) errors.push("consent is not true");
+  if (!source) errors.push(`source "${requestedSource}" not found in mapping`);
+  if (!allowedDevices.has(deviceType)) errors.push(`deviceType "${deviceType}" not in allowed list`);
+  if (typeof payload.whatsappClicked !== "boolean") {
+    errors.push(`whatsappClicked is not a boolean, got: ${typeof payload.whatsappClicked} = ${JSON.stringify(payload.whatsappClicked)}`);
+  }
+  if (estimatorSelections && estimatorSelections.length > 500) errors.push("estimatorSelections is too long");
+  if (indicativeEstimate && indicativeEstimate.length > 100) errors.push("indicativeEstimate is too long");
+  if (whatsappClicked && (!whatsappMessage || whatsappMessage.length > 2_000)) {
+    errors.push(`whatsappMessage is required when whatsappClicked=true, got length=${whatsappMessage.length}`);
+  }
+
+  const pageUrl = stringValue(payload.pageUrl);
+  if (pageUrl && pageUrl.length > 2_000) errors.push("pageUrl is too long");
+
+  const utmSource = stringValue(payload.utmSource);
+  const utmMedium = stringValue(payload.utmMedium);
+  const utmCampaign = stringValue(payload.utmCampaign);
+  if (utmSource.length > 200) errors.push("utmSource is too long");
+  if (utmMedium.length > 200) errors.push("utmMedium is too long");
+  if (utmCampaign.length > 200) errors.push("utmCampaign is too long");
+
+  return {
+    isValid: errors.length === 0,
+    errors,
+    parsed: {
+      name,
+      mobile,
+      email,
+      propertyType,
+      servicesNeeded,
+      source,
+      deviceType,
+      locality,
+      requirements,
+      estimatorSelections,
+      indicativeEstimate,
+      whatsappClicked,
+      whatsappMessage,
+      pageUrl,
+      utmSource,
+      utmMedium,
+      utmCampaign,
+    },
+  };
+}
+
 function invalid(message: string, status = 400) {
   return Response.json({ message }, { status });
 }
@@ -52,66 +140,41 @@ export async function POST(request: Request) {
     return invalid("Please check the enquiry details and try again.");
   }
 
-  const enteredMobile = stringValue(payload.mobile);
-  const normalizedMobile = enteredMobile.replace(/[\s-]/g, "");
-  const mobile = normalizedMobile.startsWith("+91")
-    ? normalizedMobile.slice(3)
-    : normalizedMobile;
-  const email = stringValue(payload.email);
-  const propertyType = stringValue(payload.propertyType);
-  const servicesNeeded = Array.isArray(payload.servicesNeeded)
-    ? [...new Set(
-        payload.servicesNeeded.filter(
-          (service): service is (typeof enquiryServiceOptions)[number] =>
-            typeof service === "string" &&
-            enquiryServiceOptions.some((option) => option === service),
-        ),
-      )]
-    : [];
-  const requestedSource = stringValue(payload.source);
-  const source = sourceMapping[requestedSource];
-  const deviceType = stringValue(payload.deviceType) as DeviceType;
-  const name = stringValue(payload.name);
-  const locality = stringValue(payload.locality);
-  const requirements = stringValue(payload.requirements);
-  const estimatorSelections = stringValue(payload.estimatorSelections);
-  const indicativeEstimate = stringValue(payload.indicativeEstimate);
-  const whatsappClicked = payload.whatsappClicked === true;
-  const whatsappMessage = stringValue(payload.whatsappMessage);
+  // Log raw payload for debugging
+  console.error("[enquiry-api] Received payload:", {
+    whatsappClicked_type: typeof payload.whatsappClicked,
+    whatsappClicked_value: payload.whatsappClicked,
+    whatsappClicked_string: JSON.stringify(payload.whatsappClicked),
+  });
 
-  if (
-    !name ||
-    name.length > 120 ||
-    !/^[6-9]\d{9}$/.test(mobile) ||
-    (email !== "" && (!isEmail(email) || email.length > 254)) ||
-    !allowedPropertyTypes.has(propertyType) ||
-    !locality ||
-    locality.length > 120 ||
-    !requirements ||
-    requirements.length > 2_000 ||
-    servicesNeeded.length === 0 ||
-    payload.consent !== true ||
-    !source ||
-    !allowedDevices.has(deviceType) ||
-    typeof payload.whatsappClicked !== "boolean" ||
-    estimatorSelections.length > 500 ||
-    indicativeEstimate.length > 100 ||
-    (whatsappClicked && (!whatsappMessage || whatsappMessage.length > 2_000))
-  ) {
+  const validation = validateEnquiry(payload);
+  if (!validation.isValid) {
+    // Log detailed errors for debugging
+    console.error("[enquiry-api] Validation failed:", validation.errors);
     return invalid("Please check the required fields, consent, services, and Indian mobile number.");
   }
 
-  const pageUrl = stringValue(payload.pageUrl);
-  if (pageUrl.length > 2_000) {
-    return invalid("Please check the enquiry details and try again.");
-  }
-
-  const utmSource = stringValue(payload.utmSource);
-  const utmMedium = stringValue(payload.utmMedium);
-  const utmCampaign = stringValue(payload.utmCampaign);
-  if (utmSource.length > 200 || utmMedium.length > 200 || utmCampaign.length > 200) {
-    return invalid("Please check the enquiry details and try again.");
-  }
+  const {
+    parsed: {
+      name,
+      mobile,
+      email,
+      propertyType,
+      servicesNeeded,
+      source,
+      deviceType,
+      locality,
+      requirements,
+      estimatorSelections,
+      indicativeEstimate,
+      whatsappClicked,
+      whatsappMessage,
+      pageUrl,
+      utmSource,
+      utmMedium,
+      utmCampaign,
+    },
+  } = validation;
 
   const estimatorData = estimatorSelections
     ? { selections: estimatorSelections }
@@ -146,7 +209,10 @@ export async function POST(request: Request) {
   try {
     const saved = await saveLeadToAppsScript(leadInput);
     return Response.json(
-      { message: saved ? "Enquiry saved." : "Enquiry already saved." },
+      {
+        message: saved ? "Enquiry saved." : "Enquiry already saved.",
+        whatsapp_clicked: whatsappClicked,
+      },
       { status: saved ? 201 : 200 },
     );
   } catch (error) {

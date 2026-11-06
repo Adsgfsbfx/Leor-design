@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect } from "react";
+import { useEffect, useRef } from "react";
 import { captureUtmParameters, initializeWhatsAppClickTracking } from "../../src/lib/tracking";
 
 /**
@@ -13,12 +13,29 @@ import { captureUtmParameters, initializeWhatsAppClickTracking } from "../../src
  * This component does not render anything; it only sets up event listeners and storage.
  */
 export function TrackingInitializer() {
+  const initializeRef = useRef(false);
+
   useEffect(() => {
+    // Only initialize once per component mount
+    if (initializeRef.current) return;
+    initializeRef.current = true;
+
     // Capture UTM on page load (only if not already captured)
     captureUtmParameters();
 
     // Initialize WhatsApp click tracking
     const cleanup = initializeWhatsAppClickTracking();
+
+    // Log initialization for debugging
+    if (typeof window !== "undefined" && typeof sessionStorage !== "undefined") {
+      const wasClicked = sessionStorage.getItem("leor_whatsapp_clicked") === "true";
+      console.debug("[tracking-init]", {
+        utm_source: sessionStorage.getItem("leor_utm_source"),
+        utm_medium: sessionStorage.getItem("leor_utm_medium"),
+        utm_campaign: sessionStorage.getItem("leor_utm_campaign"),
+        whatsapp_previously_clicked: wasClicked,
+      });
+    }
 
     return () => {
       if (typeof cleanup === "function") {

@@ -97,7 +97,13 @@ export function initializeWhatsAppClickTracking(): (() => void) | void {
     }
   }
 
+  // Use capture phase to catch clicks early
   document.addEventListener("click", handleClick, true);
+
+  // Log that tracking was initialized
+  if (typeof console !== "undefined") {
+    console.debug("[tracking] WhatsApp click tracking initialized");
+  }
 
   return () => {
     document.removeEventListener("click", handleClick, true);
