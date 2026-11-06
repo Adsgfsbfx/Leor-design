@@ -296,7 +296,7 @@ button { cursor: pointer; }
 .estimator-result .fine { color: var(--ivory-70); }
 .discount-banner { display: flex; width: 100%; justify-content: space-between; align-items: center; margin-top: 22px; padding: 16px 20px; border-radius: 14px; border: 0; background: var(--gold); color: var(--ink); font-weight: 800; transition: background 0.2s; }
 .discount-banner:hover { background: var(--gold-light); }
-.discount-result { margin-top: 18px; padding: 12px 16px; border-radius: 12px; background: rgba(var(--gold-rgb),0.2); font-weight: 700; }
+.discount-result { margin-top: 18px; padding: 12px 16px; border-radius: 12px; background: rgba(var(--gold-rgb),0.2); font-weight: 700; filter: blur(7px); user-select: none; }
 .inline-register { margin-top: 20px; background: var(--ivory); color: var(--navy); border-radius: 18px; padding: 18px; }
 
 /* Packages */
@@ -621,7 +621,7 @@ button { cursor: pointer; }
 .result-number { color: var(--ivory-soft); }
 .result-sub, .estimator-result .fine { color: var(--ivory-80); }
 .breakdown, .breakdown div { border-color: var(--line-dark); }
-.discount-result { background-color: rgba(var(--gold-rgb),.18); }
+.discount-result { background-color: rgba(var(--gold-rgb),.18); filter: blur(7px); user-select: none; }
 .designer { background-color: var(--ivory-soft); border-color: rgba(var(--gold-rgb),.2); color: var(--navy); }
 .designer-copy p:not(.eyebrow) { color: var(--ink-muted); }
 .designer-copy .eyebrow { color: var(--navy); }
