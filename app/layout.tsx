@@ -4,6 +4,7 @@ import type { ReactNode } from "react";
 import { site } from "../src/config/site";
 import { SmoothScrollProvider } from "../components/smooth-scroll";
 import { TrackingInitializer } from "./components/tracking-initializer";
+import { CookieBanner } from "./components/cookie-banner";
 import "./globals.css";
 
 const inter = localFont({
@@ -34,6 +35,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
       <body>
         <TrackingInitializer />
         <SmoothScrollProvider>{children}</SmoothScrollProvider>
+        <CookieBanner />
       </body>
     </html>
   );

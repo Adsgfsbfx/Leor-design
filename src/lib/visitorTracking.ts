@@ -1,4 +1,4 @@
-import { getCookieConsent } from "./cookies";
+import { getCookieConsent, hasAnalyticsConsent } from "./cookies";
 
 export interface VisitorTrackingPayload {
   eventName: string;
@@ -160,6 +160,12 @@ function getReferralSource(): string {
 }
 
 export async function sendVisitorEvent(payload: Partial<VisitorTrackingPayload>) {
+  // Only send visitor events if analytics consent is granted
+  if (!hasAnalyticsConsent()) {
+    console.debug("[visitor-tracking] Skipping event - analytics consent not granted");
+    return;
+  }
+
   const visitorId = getOrCreateVisitorId();
   const sessionId = getOrCreateSessionId();
   const eventId = generateEventId();

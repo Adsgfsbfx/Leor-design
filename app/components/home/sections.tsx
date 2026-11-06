@@ -14,6 +14,7 @@ import { WhatsAppMark, LeadForm } from "./forms";
 import HeroVideo from "./hero-video";
 import { Estimator } from "./interactive";
 import { FadeUpListItem } from "../../../components/ui/motion";
+import { CookieSettingsButton } from "../cookie-settings-button";
 
 const iconPaths: Record<string, string> = {
   check: "M5 12.5l4.5 4.5L19 7.5",
@@ -467,6 +468,7 @@ export function Footer() {
           Offer terms: the 10% offer is a front-end preview. Eligibility, validity and the discount scope are pending confirmation by Leor Design, and no codes are issued online.
         </p>
         <p>Images are illustrative Unsplash stock photographs. Budgets are indicative and confirmed after a site visit. © {site.companyName}.</p>
+        <p><CookieSettingsButton /></p>
       </div>
     </footer>
   );
