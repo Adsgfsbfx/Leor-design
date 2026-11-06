@@ -4,6 +4,7 @@ import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { buildWhatsAppLink, enquiryServiceOptions } from "../../../src/config/site";
 import { homeTypes, isValidIndianMobile } from "../../../src/lib/pricing";
 import { getPersistedUtmParameters, wasWhatsAppClicked, recordWhatsAppClick } from "../../../src/lib/tracking";
+import { sendVisitorEvent } from "../../../src/lib/visitorTracking";
 
 const consultationHomeTypes = [...homeTypes, "Office or other"] as const;
 type ConsultationHomeType = (typeof consultationHomeTypes)[number];
@@ -297,6 +298,10 @@ export function ConsultationForm() {
       if (!response.ok || typeof result?.message !== "string" || !savedMessages.has(result.message)) {
         throw new Error(typeof result?.message === "string" ? result.message : "We couldn't save your enquiry. Please try again.");
       }
+      
+      // Track form submission event
+      void sendVisitorEvent({ eventName: "form_submit", ctaName: "consultation-form" });
+      
       setDone(true);
     } catch (error) {
       setSubmitError(error instanceof Error && error.message
@@ -507,6 +512,10 @@ export function RegisterForm({
       if (!response.ok || typeof result?.message !== "string" || !savedMessages.has(result.message)) {
         throw new Error(typeof result?.message === "string" ? result.message : "We couldn't save your enquiry. Please try again.");
       }
+      
+      // Track form submission event
+      void sendVisitorEvent({ eventName: "form_submit", ctaName: "estimator-form" });
+      
       setDone(true);
       onDone?.();
     } catch (error) {

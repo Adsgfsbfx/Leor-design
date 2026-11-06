@@ -2,6 +2,7 @@
 
 import { useEffect, useRef } from "react";
 import { captureUtmParameters, initializeWhatsAppClickTracking } from "../../src/lib/tracking";
+import { initializePageTracking, trackPageLeave } from "../../src/lib/visitorTracking";
 
 /**
  * TrackingInitializer: Initializes campaign and engagement tracking.
@@ -9,6 +10,7 @@ import { captureUtmParameters, initializeWhatsAppClickTracking } from "../../src
  *
  * - Captures UTM parameters from the landing page URL on first load
  * - Sets up click tracking for WhatsApp links across the entire page
+ * - Initializes visitor tracking with page views and device detection
  *
  * This component does not render anything; it only sets up event listeners and storage.
  */
@@ -26,6 +28,15 @@ export function TrackingInitializer() {
     // Initialize WhatsApp click tracking
     const cleanup = initializeWhatsAppClickTracking();
 
+    // Initialize visitor tracking
+    initializePageTracking();
+
+    // Track page leave when user navigates away
+    const handleBeforeUnload = () => {
+      trackPageLeave();
+    };
+    window.addEventListener("beforeunload", handleBeforeUnload);
+
     // Log initialization for debugging
     if (typeof window !== "undefined" && typeof sessionStorage !== "undefined") {
       const wasClicked = sessionStorage.getItem("leor_whatsapp_clicked") === "true";
@@ -41,6 +52,7 @@ export function TrackingInitializer() {
       if (typeof cleanup === "function") {
         cleanup();
       }
+      window.removeEventListener("beforeunload", handleBeforeUnload);
     };
   }, []);
 
