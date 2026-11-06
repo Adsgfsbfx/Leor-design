@@ -3,6 +3,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { buildWhatsAppLink, enquiryServiceOptions } from "../../../src/config/site";
 import { homeTypes, isValidIndianMobile } from "../../../src/lib/pricing";
+import { getPersistedUtmParameters, wasWhatsAppClicked, recordWhatsAppClick } from "../../../src/lib/tracking";
 
 const consultationHomeTypes = [...homeTypes, "Office or other"] as const;
 type ConsultationHomeType = (typeof consultationHomeTypes)[number];
@@ -23,12 +24,18 @@ export function WhatsAppMark() {
   );
 }
 
-type Errors = Partial<Record<"name" | "mobile" | "location" | "services" | "consent", string>>;
+type Errors = Partial<Record<"name" | "mobile" | "email" | "location" | "services" | "consent", string>>;
 
-function validate(values: { name: string; mobile: string; location?: string }, needsLocation: boolean) {
+const isValidEmail = (email: string): boolean => {
+  if (!email.trim()) return true; // Email is optional
+  return /^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email) && email.length <= 254;
+};
+
+function validate(values: { name: string; mobile: string; email?: string; location?: string }, needsLocation: boolean) {
   const errors: Errors = {};
   if (values.name.trim().length < 2) errors.name = "Enter your name (at least 2 characters).";
   if (!isValidIndianMobile(values.mobile)) errors.mobile = "Enter a valid 10-digit Indian mobile number starting with 6–9.";
+  if (values.email && !isValidEmail(values.email)) errors.email = "Enter a valid email address.";
   if (needsLocation && (values.location ?? "").trim().length < 2) errors.location = "Enter your locality (at least 2 characters).";
   return errors;
 }
@@ -111,12 +118,17 @@ function Confirmation({
 }) {
   const ref = useRef<HTMLDivElement>(null);
   useEffect(() => ref.current?.focus(), []);
+  
+  const handleWhatsAppClick = () => {
+    recordWhatsAppClick();
+  };
+  
   return (
     <div className="confirmation" ref={ref} tabIndex={-1} role="status">
       <h3>{title}</h3>
       <p>{children}</p>
       <div className="confirmation-actions">
-        <a className="btn btn-whatsapp" href={buildWhatsAppLink(message)} target="_blank" rel="noopener noreferrer">
+        <a className="btn btn-whatsapp" href={buildWhatsAppLink(message)} target="_blank" rel="noopener noreferrer" onClick={handleWhatsAppClick}>
           <WhatsAppMark /> Send details on WhatsApp
         </a>
         <button type="button" className="btn-link" onClick={onReset}>
@@ -131,12 +143,13 @@ export function LeadForm() {
   const uid = useId();
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
   const [errors, setErrors] = useState<Errors>({});
   const [done, setDone] = useState(false);
 
   function submit(event: FormEvent) {
     event.preventDefault();
-    const next = validate({ name, mobile }, false);
+    const next = validate({ name, mobile, email }, false);
     setErrors(next);
     if (Object.keys(next).length === 0) setDone(true);
   }
@@ -171,6 +184,19 @@ export function LeadForm() {
       <Field label="Mobile number" id={`${uid}-mobile`} error={errors.mobile}>
         <MobileInput id={`${uid}-mobile`} value={mobile} onChange={setMobile} error={errors.mobile} />
       </Field>
+      <Field label="Email (optional)" id={`${uid}-email`} error={errors.email}>
+        <input
+          id={`${uid}-email`}
+          name="email"
+          type="email"
+          autoComplete="email"
+          placeholder="your@email.com"
+          value={email}
+          aria-invalid={errors.email ? true : undefined}
+          aria-describedby={errors.email ? `${uid}-email-error` : undefined}
+          onChange={(event) => setEmail(event.target.value)}
+        />
+      </Field>
       <button className="btn btn-gold btn-block" type="submit">
         Get a free consultation <span aria-hidden="true">→</span>
       </button>
@@ -181,7 +207,7 @@ export function LeadForm() {
 
 export function ConsultationForm() {
   const uid = useId();
-  const [values, setValues] = useState({ name: "", mobile: "", location: "", home: "2 BHK" as ConsultationHomeType, notes: "" });
+  const [values, setValues] = useState({ name: "", mobile: "", email: "", location: "", home: "2 BHK" as ConsultationHomeType, notes: "" });
   const [services, setServices] = useState<(typeof enquiryServiceOptions)[number][]>([]);
   const [consent, setConsent] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
@@ -210,26 +236,42 @@ export function ConsultationForm() {
       `Home type selected: ${values.home}`,
       values.notes.trim() ? `Additional notes: ${values.notes.trim()}` : "",
     ].filter(Boolean).join("\n");
+    
+    // Get persisted UTM parameters (from landing page or current URL)
+    const persistedUtm = getPersistedUtmParameters();
     const search = new URLSearchParams(window.location.search);
+    const utmSource = search.get("utm_source") ?? persistedUtm.utm_source;
+    const utmMedium = search.get("utm_medium") ?? persistedUtm.utm_medium;
+    const utmCampaign = search.get("utm_campaign") ?? persistedUtm.utm_campaign;
+    
+    // Check if WhatsApp was clicked during this session
+    const whatsappClicked = wasWhatsAppClicked();
+    
+    const whatsappMessage = whatsappClicked
+      ? `Hello Leor Design, I'm ${values.name.trim()} (${values.mobile}) from ${values.location.trim()}. Home type: ${values.home}.${values.notes.trim() ? ` Notes: ${values.notes.trim()}` : ""} I'd like to book a consultation.`
+      : undefined;
+    
     const payload = {
       name: values.name.trim(),
       mobile: values.mobile,
+      email: values.email.trim() || undefined,
       locality: values.location.trim(),
       propertyType: consultationPropertyTypes[values.home],
       servicesNeeded: services,
       requirements,
       consent: true,
       source: "enquiry form",
-      whatsappClicked: false,
+      whatsappClicked,
+      ...(whatsappMessage && { whatsappMessage }),
       deviceType: window.matchMedia("(max-width: 767px)").matches
         ? "mobile"
         : window.matchMedia("(max-width: 1023px)").matches
           ? "tablet"
           : "desktop",
       pageUrl: `${window.location.origin}${window.location.pathname}`,
-      utmSource: search.get("utm_source") ?? "",
-      utmMedium: search.get("utm_medium") ?? "",
-      utmCampaign: search.get("utm_campaign") ?? "",
+      utmSource,
+      utmMedium,
+      utmCampaign,
     };
     const fingerprint = JSON.stringify(payload);
     if (idempotencyRef.current?.fingerprint !== fingerprint) {
@@ -290,6 +332,17 @@ export function ConsultationForm() {
         </Field>
         <Field label="Mobile number" id={`${uid}-mobile`} error={errors.mobile}>
           <MobileInput id={`${uid}-mobile`} value={values.mobile} onChange={set("mobile")} error={errors.mobile} />
+        </Field>
+        <Field label="Email address (optional)" id={`${uid}-email`} error={errors.email}>
+          <input
+            id={`${uid}-email`}
+            type="email"
+            autoComplete="email"
+            value={values.email}
+            aria-invalid={errors.email ? true : undefined}
+            aria-describedby={errors.email ? `${uid}-email-error` : undefined}
+            onChange={(e) => set("email")(e.target.value)}
+          />
         </Field>
         <Field label="Locality in Bangalore" id={`${uid}-loc`} error={errors.location}>
           <input
@@ -373,29 +426,108 @@ export function RegisterForm({
   const uid = useId();
   const [name, setName] = useState("");
   const [mobile, setMobile] = useState("");
+  const [email, setEmail] = useState("");
   const [consent, setConsent] = useState(false);
   const [errors, setErrors] = useState<Errors>({});
   const [done, setDone] = useState(false);
-  const canSubmit = consent && Object.keys(validate({ name, mobile }, false)).length === 0;
+  const [submitting, setSubmitting] = useState(false);
+  const [submitError, setSubmitError] = useState("");
+  const submissionInProgressRef = useRef(false);
+  const idempotencyRef = useRef<{ fingerprint: string; key: string } | null>(null);
 
-  function submit(event: FormEvent) {
+  const canSubmit = consent && Object.keys(validate({ name, mobile, email }, false)).length === 0;
+
+  async function submit(event: FormEvent) {
     event.preventDefault();
-    const next = validate({ name, mobile }, false);
+    if (submitting || submissionInProgressRef.current) return;
+
+    const next = validate({ name, mobile, email }, false);
     setErrors(next);
-    if (Object.keys(next).length === 0) {
+    setSubmitError("");
+    if (Object.keys(next).length > 0) return;
+
+    // Get persisted UTM parameters
+    const persistedUtm = getPersistedUtmParameters();
+    const search = new URLSearchParams(window.location.search);
+    const utmSource = search.get("utm_source") ?? persistedUtm.utm_source;
+    const utmMedium = search.get("utm_medium") ?? persistedUtm.utm_medium;
+    const utmCampaign = search.get("utm_campaign") ?? persistedUtm.utm_campaign;
+
+    // Check if WhatsApp was clicked
+    const whatsappClicked = wasWhatsAppClicked();
+
+    const whatsappMessage = whatsappClicked
+      ? `Hello Leor Design, I'm ${name.trim()} (${mobile}). I'd like to claim the 10% offer.${estimateText ? ` ${estimateText}` : ""}`
+      : undefined;
+
+    const payload = {
+      name: name.trim(),
+      mobile,
+      email: email.trim() || undefined,
+      locality: "Unknown (Popup)",
+      propertyType: "Other",
+      servicesNeeded: ["Other"],
+      requirements: `10% off offer registration.${estimateText ? ` ${estimateText}` : ""}`,
+      consent: true,
+      source: "enquiry form",
+      whatsappClicked,
+      ...(whatsappMessage && { whatsappMessage }),
+      deviceType: window.matchMedia("(max-width: 767px)").matches
+        ? "mobile"
+        : window.matchMedia("(max-width: 1023px)").matches
+          ? "tablet"
+          : "desktop",
+      pageUrl: `${window.location.origin}${window.location.pathname}`,
+      utmSource,
+      utmMedium,
+      utmCampaign,
+    };
+
+    const fingerprint = JSON.stringify(payload);
+    if (idempotencyRef.current?.fingerprint !== fingerprint) {
+      idempotencyRef.current = {
+        fingerprint,
+        key: window.crypto?.randomUUID?.() ?? `${Date.now().toString(36)}-${Math.random().toString(36).slice(2)}-${Math.random().toString(36).slice(2)}`,
+      };
+    }
+
+    submissionInProgressRef.current = true;
+    setSubmitting(true);
+    try {
+      const response = await fetch("/api/enquiry", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          "Idempotency-Key": idempotencyRef.current.key,
+        },
+        body: fingerprint,
+      });
+      const result = await response.json().catch(() => null) as { message?: unknown } | null;
+      const savedMessages = new Set(["Enquiry saved.", "Enquiry already saved."]);
+      if (!response.ok || typeof result?.message !== "string" || !savedMessages.has(result.message)) {
+        throw new Error(typeof result?.message === "string" ? result.message : "We couldn't save your enquiry. Please try again.");
+      }
       setDone(true);
       onDone?.();
+    } catch (error) {
+      setSubmitError(error instanceof Error && error.message
+        ? error.message
+        : "We couldn't reach the server. Check your connection and try again.");
+    } finally {
+      submissionInProgressRef.current = false;
+      setSubmitting(false);
     }
   }
 
   if (done) {
+    const message = `Hello Leor Design, I'm ${name.trim()} (${mobile}). I'd like to claim the 10% offer.${estimateText ? ` ${estimateText}` : ""}`;
     return (
       <Confirmation
         title="Almost there"
-        message={`Hello Leor Design, I'm ${name.trim()} (${mobile}). I'd like to claim the 10% offer.${estimateText ? ` ${estimateText}` : ""}`}
+        message={message}
         onReset={() => setDone(false)}
       >
-        Registration is not stored yet and no code has been issued. Message Leor on WhatsApp and the team can confirm the offer terms.
+        Your registration has been saved. The Leor Design team will contact you shortly. You can also message them on WhatsApp to confirm the offer details.
       </Confirmation>
     );
   }
@@ -416,6 +548,17 @@ export function RegisterForm({
         <Field label="Mobile" id={`${uid}-mobile`} error={errors.mobile}>
           <MobileInput id={`${uid}-mobile`} compact value={mobile} onChange={setMobile} error={errors.mobile} />
         </Field>
+        <Field label="Email (optional)" id={`${uid}-email`} error={errors.email}>
+          <input
+            id={`${uid}-email`}
+            type="email"
+            autoComplete="email"
+            value={email}
+            aria-invalid={errors.email ? true : undefined}
+            aria-describedby={errors.email ? `${uid}-email-error` : undefined}
+            onChange={(e) => setEmail(e.target.value)}
+          />
+        </Field>
       </div>
       <label className="consent">
         <input type="checkbox" checked={consent} onChange={(e) => setConsent(e.target.checked)} />
@@ -423,8 +566,9 @@ export function RegisterForm({
           I agree to be contacted about this offer. See the <a href="/privacy">privacy notice</a>.
         </span>
       </label>
-      <button className="btn btn-gold btn-block" type="submit" disabled={!canSubmit}>
-        {buttonLabel}
+      {submitError ? <p className="field-error" role="alert">{submitError}</p> : null}
+      <button className="btn btn-gold btn-block" type="submit" disabled={!canSubmit || submitting} aria-busy={submitting}>
+        {submitting ? "Saving..." : buttonLabel}
       </button>
     </form>
   );

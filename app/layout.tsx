@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { site } from "../src/config/site";
 import { SmoothScrollProvider } from "../components/smooth-scroll";
+import { TrackingInitializer } from "./components/tracking-initializer";
 import "./globals.css";
 
 const inter = localFont({
@@ -30,7 +31,10 @@ export const metadata: Metadata = {
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
-      <body><SmoothScrollProvider>{children}</SmoothScrollProvider></body>
+      <body>
+        <TrackingInitializer />
+        <SmoothScrollProvider>{children}</SmoothScrollProvider>
+      </body>
     </html>
   );
 }
