@@ -290,7 +290,7 @@ export function ConsultationForm() {
           "Content-Type": "application/json",
           "Idempotency-Key": idempotencyRef.current.key,
         },
-        body: fingerprint,
+        body: JSON.stringify(payload),
       });
       const result = await response.json().catch(() => null) as { message?: unknown } | null;
       const savedMessages = new Set(["Enquiry saved.", "Enquiry already saved."]);
@@ -500,7 +500,7 @@ export function RegisterForm({
           "Content-Type": "application/json",
           "Idempotency-Key": idempotencyRef.current.key,
         },
-        body: fingerprint,
+        body: JSON.stringify(payload),
       });
       const result = await response.json().catch(() => null) as { message?: unknown } | null;
       const savedMessages = new Set(["Enquiry saved.", "Enquiry already saved."]);
