@@ -14,26 +14,72 @@ export interface ConsentPreferences {
 
 const CONSENT_PREFERENCES_KEY = "leor-cookie-preferences";
 const CONSENT_BANNER_DISMISSED_KEY = "leor-consent-banner-dismissed";
+const CONSENT_COOKIE_MAX_AGE = 60 * 60 * 24 * 180;
+
+function readCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+
+  try {
+    const prefix = `${name}=`;
+    const entry = document.cookie.split(";").map((cookie) => cookie.trim()).find((cookie) => cookie.startsWith(prefix));
+    return entry ? decodeURIComponent(entry.slice(prefix.length)) : null;
+  } catch {
+    return null;
+  }
+}
+
+function writeCookie(name: string, value: string) {
+  if (typeof document === "undefined") return;
+
+  try {
+    const secure = window.location.protocol === "https:" ? "; Secure" : "";
+    document.cookie = `${name}=${encodeURIComponent(value)}; Path=/; Max-Age=${CONSENT_COOKIE_MAX_AGE}; SameSite=Lax${secure}`;
+  } catch {
+    // Cookies may be disabled by the browser; local storage remains a fallback.
+  }
+}
+
+function deleteCookie(name: string) {
+  if (typeof document === "undefined") return;
+
+  try {
+    document.cookie = `${name}=; Path=/; Max-Age=0; SameSite=Lax`;
+  } catch {
+    // Ignore unavailable cookie storage.
+  }
+}
+
+function parsePreferences(value: string | null): ConsentPreferences | null {
+  if (!value) return null;
+
+  try {
+    const parsed = JSON.parse(value) as Partial<ConsentPreferences>;
+    if (typeof parsed.analytics !== "boolean" || typeof parsed.essential !== "boolean") return null;
+    return {
+      analytics: parsed.analytics,
+      essential: parsed.essential,
+      timestamp: typeof parsed.timestamp === "number" ? parsed.timestamp : 0,
+    };
+  } catch {
+    return null;
+  }
+}
 
 /**
  * Get the current consent preferences.
  * Returns default (analytics: false) if not set.
  */
 export function getConsentPreferences(): ConsentPreferences {
-  if (typeof window === "undefined" || typeof localStorage === "undefined") {
-    return { analytics: false, essential: false, timestamp: 0 };
-  }
+  const fromCookie = parsePreferences(readCookie(CONSENT_PREFERENCES_KEY));
+  if (fromCookie) return fromCookie;
 
-  try {
-    const stored = localStorage.getItem(CONSENT_PREFERENCES_KEY);
-    if (stored) {
-      const parsed = JSON.parse(stored) as ConsentPreferences;
-      if (parsed && typeof parsed.analytics === "boolean") {
-        return parsed;
-      }
+  if (typeof window !== "undefined") {
+    try {
+      const fromStorage = parsePreferences(window.localStorage.getItem(CONSENT_PREFERENCES_KEY));
+      if (fromStorage) return fromStorage;
+    } catch {
+      // localStorage may be unavailable.
     }
-  } catch {
-    // localStorage may not be available or JSON parse failed
   }
 
   return { analytics: false, essential: false, timestamp: 0 };
@@ -44,20 +90,17 @@ export function getConsentPreferences(): ConsentPreferences {
  * Called when user makes a choice in the consent banner.
  */
 export function setConsentPreferences(preferences: ConsentPreferences) {
-  if (typeof window === "undefined" || typeof localStorage === "undefined") {
-    return;
-  }
+  if (typeof window === "undefined") return;
+
+  const toStore: ConsentPreferences = { ...preferences, timestamp: Date.now() };
+  writeCookie(CONSENT_PREFERENCES_KEY, JSON.stringify(toStore));
+  writeCookie(CONSENT_BANNER_DISMISSED_KEY, "true");
 
   try {
-    const toStore: ConsentPreferences = {
-      ...preferences,
-      timestamp: Date.now(),
-    };
-    localStorage.setItem(CONSENT_PREFERENCES_KEY, JSON.stringify(toStore));
-    // Dismiss banner after setting preferences
-    localStorage.setItem(CONSENT_BANNER_DISMISSED_KEY, "true");
+    window.localStorage.setItem(CONSENT_PREFERENCES_KEY, JSON.stringify(toStore));
+    window.localStorage.setItem(CONSENT_BANNER_DISMISSED_KEY, "true");
   } catch {
-    // localStorage may not be available
+    // The consent cookie remains the persistence fallback when localStorage is blocked.
   }
 }
 
@@ -65,12 +108,12 @@ export function setConsentPreferences(preferences: ConsentPreferences) {
  * Check if the banner has been dismissed (user made a choice).
  */
 export function hasBannerBeenDismissed(): boolean {
-  if (typeof window === "undefined" || typeof localStorage === "undefined") {
-    return false;
-  }
+  if (typeof window === "undefined") return false;
+  if (readCookie(CONSENT_BANNER_DISMISSED_KEY) === "true") return true;
+  if (parsePreferences(readCookie(CONSENT_PREFERENCES_KEY))?.essential) return true;
 
   try {
-    return localStorage.getItem(CONSENT_BANNER_DISMISSED_KEY) === "true";
+    return window.localStorage.getItem(CONSENT_BANNER_DISMISSED_KEY) === "true";
   } catch {
     return false;
   }
@@ -104,11 +147,8 @@ export function getCookieConsentStatus(): "accepted" | "rejected" | "unknown" | 
   const prefs = getConsentPreferences();
   if (prefs.analytics === true) {
     return "accepted";
-  } else if (prefs.analytics === false && prefs.essential === true) {
-    return "customized";
-  } else {
-    return "rejected";
   }
+  return prefs.essential ? "rejected" : "unknown";
 }
 
 /**
@@ -117,8 +157,7 @@ export function getCookieConsentStatus(): "accepted" | "rejected" | "unknown" | 
  */
 export function getCookieConsent(): "accepted" | "rejected" | "unknown" {
   const status = getCookieConsentStatus();
-  if (status === "customized") return "accepted"; // Treat customized as accepted (user gave some consent)
-  return status;
+  return status === "customized" ? "rejected" : status;
 }
 
 /**
@@ -133,13 +172,13 @@ export function canTrack(): boolean {
  * Reset all consent preferences (for testing).
  */
 export function resetConsentPreferences() {
-  if (typeof window === "undefined" || typeof localStorage === "undefined") {
-    return;
-  }
+  deleteCookie(CONSENT_PREFERENCES_KEY);
+  deleteCookie(CONSENT_BANNER_DISMISSED_KEY);
+  if (typeof window === "undefined") return;
 
   try {
-    localStorage.removeItem(CONSENT_PREFERENCES_KEY);
-    localStorage.removeItem(CONSENT_BANNER_DISMISSED_KEY);
+    window.localStorage.removeItem(CONSENT_PREFERENCES_KEY);
+    window.localStorage.removeItem(CONSENT_BANNER_DISMISSED_KEY);
   } catch {
     // localStorage may not be available
   }

@@ -254,15 +254,23 @@
   .cookie-consent-actions { justify-content: flex-start; }
 }
 @media (max-width: 520px) {
-  .cookie-consent-banner { inset-inline: 10px; bottom: calc(10px + env(safe-area-inset-bottom)); padding: 16px 15px; }
+  .cookie-consent-banner {
+    inset-inline: 10px;
+    bottom: calc(10px + env(safe-area-inset-bottom));
+    max-height: 75dvh;
+    overflow-y: auto;
+    overscroll-behavior: contain;
+    padding: 16px 15px;
+  }
   .cookie-consent-inner { grid-template-columns: 38px minmax(0, 1fr); gap: 10px 12px; }
   .cookie-consent-mark { width: 38px; height: 38px; }
   .cookie-consent-mark svg { width: 23px; height: 23px; }
   .cookie-consent-kicker { margin-bottom: 5px; font-size: 9px; }
   .cookie-consent-copy h2 { max-width: 19ch; font-size: 25px; }
   .cookie-consent-description { margin-top: 6px; font-size: 12px; line-height: 1.55; }
-  .cookie-consent-actions { display: grid; grid-column: 1 / -1; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 7px; }
-  .cookie-action { min-width: 0; min-height: 46px; padding-inline: 7px; font-size: 10px; letter-spacing: 0; }
+  .cookie-consent-actions { display: grid; grid-column: 1 / -1; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
+  .cookie-consent-actions .cookie-action-primary { grid-column: 1 / -1; }
+  .cookie-action { min-width: 0; min-height: 46px; padding-inline: 8px; font-size: 11px; letter-spacing: 0; }
   .cookie-consent-overlay { align-items: flex-end; padding: 12px 12px max(12px, env(safe-area-inset-bottom)); }
   .cookie-consent-dialog { max-height: 90dvh; padding: 27px 20px 20px; }
   .cookie-consent-close { top: 10px; right: 10px; }
@@ -273,12 +281,12 @@
   .cookie-consent-preference p { max-width: 31ch; font-size: 11px; }
   .cookie-consent-dialog-actions { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 8px; }
   .cookie-consent-dialog-actions .cookie-action-primary { grid-column: 1 / -1; grid-row: 1; }
-  .cookie-consent-dialog-actions .cookie-action { min-height: 46px; }
+  .cookie-consent-dialog-actions .cookie-action { min-height: 46px; padding-inline: 8px; font-size: 11px; }
 }
 @media (max-width: 360px) {
   .cookie-consent-banner { inset-inline: 8px; padding-inline: 12px; }
-  .cookie-consent-actions { gap: 5px; }
-  .cookie-action { padding-inline: 4px; font-size: 9px; }
+  .cookie-consent-actions { gap: 7px; }
+  .cookie-action { padding-inline: 6px; font-size: 10px; }
   .cookie-consent-dialog { padding-inline: 16px; }
   .cookie-consent-switch { gap: 6px; }
   .cookie-consent-switch-state { min-width: 18px; font-size: 9px; }

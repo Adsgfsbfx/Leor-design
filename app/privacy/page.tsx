@@ -58,10 +58,11 @@ export default function PrivacyPage() {
           can be attached to later visitor events after an enquiry is submitted.
         </p>
         <p>
-          The browser stores consent choices and, after analytics consent, anonymous visitor and
-          session identifiers, attribution values and queued events in local or session storage.
-          Withdrawing analytics consent stops optional tracking and clears locally queued events and
-          identifiers. Withdrawal does not delete events already sent to Google Sheets.
+          The browser stores your consent choice in an essential cookie for up to 180 days, with
+          local storage as a compatibility fallback. After analytics consent, anonymous visitor and
+          session identifiers, attribution values and queued events are stored in local or session
+          storage. Withdrawing analytics consent stops optional tracking and clears locally queued
+          events and identifiers. Withdrawal does not delete events already sent to Google Sheets.
         </p>
       </section>
       <section>
