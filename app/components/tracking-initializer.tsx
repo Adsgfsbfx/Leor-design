@@ -1,74 +1,111 @@
 "use client";
 
-import { useEffect, useRef } from "react";
-import { captureUtmParameters, initializeWhatsAppClickTracking } from "../../src/lib/tracking";
-import { initializePageTracking, trackPageLeave } from "../../src/lib/visitorTracking";
+import { useEffect } from "react";
+import { initializePageTracking, trackPageLeave, sendVisitorEvent, clearQueuedTracking, flushQueuedTracking, updateSessionVisibility } from "../../src/lib/visitorTracking";
 import { hasAnalyticsConsent } from "../../src/lib/cookies";
 
 /**
  * TrackingInitializer: Initializes campaign and engagement tracking.
  * Must be used in a client component and placed early in the app (e.g., in layout or page).
  *
- * - Captures UTM parameters from the landing page URL on first load (no consent needed)
- * - Sets up click tracking for WhatsApp links across the entire page (no consent needed)
- * - Initializes visitor tracking with page views and device detection (requires analytics consent)
+ * Optional visitor activity is recorded only after analytics consent.
  *
  * This component does not render anything; it only sets up event listeners and storage.
  */
 export function TrackingInitializer() {
-  const initializeRef = useRef(false);
-
   useEffect(() => {
-    // Only initialize once per component mount
-    if (initializeRef.current) return;
-    initializeRef.current = true;
-
-    // Capture UTM on page load (only if not already captured) - no consent needed
-    captureUtmParameters();
-
-    // Initialize WhatsApp click tracking - no consent needed
-    const cleanup = initializeWhatsAppClickTracking();
-
-    // Initialize visitor tracking only if analytics consent is granted
+    let lastScrollEventAt = 0;
+    const sentScrollDepths = new Set<number>();
     if (hasAnalyticsConsent()) {
       initializePageTracking();
+      flushQueuedTracking();
     }
 
-    // Track page leave when user navigates away
-    const handleBeforeUnload = () => {
-      if (hasAnalyticsConsent()) {
-        trackPageLeave();
+    const handlePageHide = () => trackPageLeave();
+    const handlePageShow = (event: PageTransitionEvent) => {
+      if (event.persisted && hasAnalyticsConsent()) initializePageTracking();
+    };
+    const handleClick = (event: MouseEvent) => {
+      if (!hasAnalyticsConsent()) return;
+      const target = event.target;
+      if (!(target instanceof Element)) return;
+      const control = target.closest<HTMLElement>("a, button");
+      if (!control || control.closest("[aria-hidden='true']")) return;
+      const href = control instanceof HTMLAnchorElement ? control.getAttribute("href") ?? "" : "";
+      const label = (control.getAttribute("aria-label") || control.innerText || control.getAttribute("title") || "").trim().slice(0, 120);
+      const semantic = control.dataset.analyticsName || control.getAttribute("aria-label") || control.getAttribute("title") || "";
+      const safeHref = href.startsWith("/") && !href.startsWith("//") ? href.split(/[?#]/, 1)[0] : "";
+      const clickedElement = [control.tagName.toLowerCase(), semantic.slice(0, 80), safeHref].filter(Boolean).join(":").slice(0, 160);
+      const sendClick = (eventName: string, ctaName: string) => void sendVisitorEvent({ eventName, ctaName, clickedElement });
+      if (/^tel:/i.test(href)) sendClick("phone_click", label || "phone-link");
+      else if (/wa\.me|whatsapp/i.test(href) || control.hasAttribute("data-whatsapp")) sendClick("whatsapp_click", label || "whatsapp-link");
+      else if (control.closest(".project-card")) sendClick("project_interaction", label || "project");
+      else if (control.closest(".service-card")) sendClick("service_interaction", label || "service");
+      else if (control.matches(".estimator-calculate")) sendClick("estimator_complete", label || "calculate-estimate");
+      else if (control.closest(".estimator")) sendClick("estimator_interaction", label || control.getAttribute("type") || "estimator-control");
+      else if (href === "#estimator") sendClick("estimator_open", label || "estimator-link");
+      else if (control.matches(".btn, .button, [data-track-cta]")) sendClick("cta_click", label || "cta");
+      else if (href.startsWith("#") && href.length > 1) sendClick("navigation", href.slice(1));
+      else if (safeHref) sendClick("navigation", label || safeHref);
+      else if (/^https?:/i.test(href)) {
+        try {
+          const destination = new URL(href);
+          if (destination.origin === window.location.origin) sendClick("navigation", label || destination.pathname);
+        } catch { /* Ignore malformed destinations. */ }
       }
     };
-    window.addEventListener("beforeunload", handleBeforeUnload);
+    const handleScroll = () => {
+      if (!hasAnalyticsConsent()) return;
+      const now = Date.now();
+      if (now - lastScrollEventAt < 500) return;
+      lastScrollEventAt = now;
+      const height = document.documentElement.scrollHeight - window.innerHeight;
+      const depth = height > 0 ? Math.min(100, Math.floor((window.scrollY / height) * 100)) : 100;
+      for (const milestone of [25, 50, 75, 100]) {
+        if (depth >= milestone && !sentScrollDepths.has(milestone)) {
+          sentScrollDepths.add(milestone);
+          void sendVisitorEvent({ eventName: "scroll_depth", scrollDepth: milestone, clickedElement: "document:scroll" });
+        }
+      }
+    };
+    const handleVisibility = () => updateSessionVisibility();
+    window.addEventListener("pagehide", handlePageHide);
+    window.addEventListener("pageshow", handlePageShow);
+    document.addEventListener("click", handleClick, true);
+    document.addEventListener("scroll", handleScroll, { passive: true });
+    document.addEventListener("visibilitychange", handleVisibility);
 
     // Listen for consent changes and initialize tracking if user grants consent
     const handleConsentChanged = (event: Event) => {
       const customEvent = event as CustomEvent;
       if (customEvent.detail?.analytics === true) {
+        sentScrollDepths.clear();
+        updateSessionVisibility();
         initializePageTracking();
+        flushQueuedTracking();
+      } else if (customEvent.detail?.analytics === false) {
+        sentScrollDepths.clear();
+        clearQueuedTracking();
       }
     };
     window.addEventListener("consent-changed", handleConsentChanged);
-
-    // Log initialization for debugging
-    if (typeof window !== "undefined" && typeof sessionStorage !== "undefined") {
-      const wasClicked = sessionStorage.getItem("leor_whatsapp_clicked") === "true";
-      console.debug("[tracking-init]", {
-        utm_source: sessionStorage.getItem("leor_utm_source"),
-        utm_medium: sessionStorage.getItem("leor_utm_medium"),
-        utm_campaign: sessionStorage.getItem("leor_utm_campaign"),
-        whatsapp_previously_clicked: wasClicked,
-        analytics_consent: hasAnalyticsConsent(),
-      });
-    }
+    const handleStorage = (event: StorageEvent) => {
+      if (event.key !== "leor-cookie-preferences") return;
+      if (hasAnalyticsConsent()) {
+        initializePageTracking();
+        flushQueuedTracking();
+      } else clearQueuedTracking();
+    };
+    window.addEventListener("storage", handleStorage);
 
     return () => {
-      if (typeof cleanup === "function") {
-        cleanup();
-      }
-      window.removeEventListener("beforeunload", handleBeforeUnload);
+      window.removeEventListener("pagehide", handlePageHide);
+      window.removeEventListener("pageshow", handlePageShow);
+      document.removeEventListener("click", handleClick, true);
+      document.removeEventListener("scroll", handleScroll);
+      document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("consent-changed", handleConsentChanged);
+      window.removeEventListener("storage", handleStorage);
     };
   }, []);
 

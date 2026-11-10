@@ -14,7 +14,6 @@ import { WhatsAppMark, LeadForm } from "./forms";
 import HeroVideo from "./hero-video";
 import { Estimator } from "./interactive";
 import { FadeUpListItem } from "../../../components/ui/motion";
-import { CookieSettingsButton } from "../cookie-settings-button";
 
 const iconPaths: Record<string, string> = {
   check: "M5 12.5l4.5 4.5L19 7.5",
@@ -445,34 +444,60 @@ export function Footer() {
   return (
     <footer className="footer">
       <div className="wrap footer-grid">
-        <div>
+        <div className="footer-brand-column">
           <p className="footer-brand">Leor <small>Design</small></p>
-          <p>Home interiors in Bangalore.</p>
+          <p>Thoughtful residential and commercial interiors, planned around the way you live and work.</p>
+          <p className="footer-area-note">Based in Hebbal, serving homes across Bangalore.</p>
+        </div>
+        <nav aria-label="Footer quick links">
+          <h3>Explore</h3>
+          <ul className="footer-link-list">
+            <li><a href="#top">Home</a></li>
+            <li><a href="#highlights">About</a></li>
+            <li><a href="#services">Services</a></li>
+            <li><a href="#projects">Projects</a></li>
+            <li><a href="#why">Design Process</a></li>
+            <li><a href="#estimator">Cost Estimator</a></li>
+            <li><a href="#contact">Contact</a></li>
+            <li><a href="#faq">FAQs</a></li>
+          </ul>
+        </nav>
+        <div>
+          <h3>Our services</h3>
+          <ul className="footer-link-list footer-service-list">
+            <li>Residential and apartment interiors</li>
+            <li>Villa interiors</li>
+            <li>Kitchen, bedroom and living room interiors</li>
+            <li>Commercial interiors</li>
+            <li>Renovation and civil works</li>
+            <li>Modular kitchens and wardrobes</li>
+            <li>Painting, electrical and plumbing work</li>
+          </ul>
         </div>
         <div>
           <h3>Contact</h3>
-          <p><a href={phoneHref}>{phoneDisplay}</a> · <a href={alternatePhoneHref}>{alternatePhoneDisplay}</a></p>
-          <p><a href={buildWhatsAppLink(site.whatsappMessage)} target="_blank" rel="noopener noreferrer">WhatsApp {phoneDisplay}</a></p>
-          <p>{site.address}</p>
-        </div>
-        <div>
-          <h3>Explore</h3>
-          <p><a href="#projects">Projects</a></p>
-          <p><a href="#estimator">Cost estimator</a></p>
-          <p><a href="#faq">FAQs</a></p>
-          <p><a href="/privacy">Privacy</a></p>
+          <ul className="footer-link-list footer-contact-list">
+            <li><a href={phoneHref}>Call: +91 {phoneDisplay}</a></li>
+            <li><a href={alternatePhoneHref}>Alternate phone: +91 {alternatePhoneDisplay}</a></li>
+            <li><a href={buildWhatsAppLink(site.whatsappMessage)} target="_blank" rel="noopener noreferrer">WhatsApp: +91 {phoneDisplay}</a></li>
+            <li><span>Studio area: {site.address}</span></li>
+            <li><span>Service area: {site.serviceArea}</span></li>
+          </ul>
         </div>
       </div>
-      <div className="wrap footer-legal" id="offer-terms">
-        <p>
-          Offer terms: the 10% offer is a front-end preview. Eligibility, validity and the discount scope are pending confirmation by Leor Design, and no codes are issued online.
-        </p>
-        <p>Images are illustrative Unsplash stock photographs. Budgets are indicative and confirmed after a site visit. © {site.companyName}.</p>
-        <p><CookieSettingsButton /></p>
+      <div className="wrap footer-legal">
+        <div className="footer-legal-bottom">
+          <p>© 2026 Leor Design. All rights reserved.</p>
+          <nav className="footer-legal-links" aria-label="Legal information">
+            <a href="/privacy">Privacy Policy</a>
+            <a href="/privacy#terms">Terms and Conditions</a>
+            <a href="/privacy#cookies">Cookie Policy</a>
+            <a href="/privacy#disclaimer">Disclaimer</a>
+          </nav>
+        </div>
       </div>
     </footer>
   );
 }
-
 export { Heading, Gold };
 

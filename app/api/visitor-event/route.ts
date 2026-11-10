@@ -7,13 +7,19 @@ type VisitorEventPayload = Record<string, unknown>;
 const allowedEventNames = new Set([
   "page_view",
   "page_leave",
+  "navigation",
+  "project_interaction",
+  "service_interaction",
   "whatsapp_click",
   "phone_click",
   "form_start",
   "form_submit",
   "estimator_open",
   "estimator_complete",
+  "estimator_interaction",
+  "form_error",
   "cta_click",
+  "scroll_depth",
 ]);
 
 const stringValue = (value: unknown) =>
@@ -41,6 +47,14 @@ function validateVisitorEvent(payload: VisitorEventPayload) {
   const ctaName = stringValue(payload.ctaName);
   const cookieConsent = stringValue(payload.cookieConsent);
   const leadId = stringValue(payload.leadId);
+  const entryPage = stringValue(payload.entryPage);
+  const exitPage = stringValue(payload.exitPage);
+  const sessionDuration = numberValue(payload.sessionDuration);
+  const pageCategory = stringValue(payload.pageCategory);
+  const clickedElement = stringValue(payload.clickedElement);
+  const scrollDepth = numberValue(payload.scrollDepth);
+  const screenResolution = stringValue(payload.screenResolution);
+  const language = stringValue(payload.language);
 
   const errors: string[] = [];
 
@@ -66,10 +80,15 @@ function validateVisitorEvent(payload: VisitorEventPayload) {
   if (timeOnPage < 0) errors.push("timeOnPage cannot be negative");
   if (ctaName && ctaName.length > 200) errors.push("ctaName is too long");
   if (!cookieConsent) errors.push("cookieConsent is required");
-  if (cookieConsent && !["accepted", "rejected", "unknown"].includes(cookieConsent)) {
-    errors.push("cookieConsent must be 'accepted', 'rejected', or 'unknown'");
+  if (cookieConsent !== "accepted") {
+    errors.push("Analytics consent is required to record visitor events");
   }
   if (leadId && leadId.length > 100) errors.push("leadId is too long");
+  if (entryPage.length > 2_000 || exitPage.length > 2_000) errors.push("entryPage or exitPage is too long");
+  if (sessionDuration < 0 || sessionDuration > 31_536_000) errors.push("sessionDuration is outside the allowed range");
+  if (pageCategory.length > 80 || clickedElement.length > 160) errors.push("pageCategory or clickedElement is too long");
+  if (payload.scrollDepth !== "" && payload.scrollDepth !== undefined && (scrollDepth < 0 || scrollDepth > 100)) errors.push("scrollDepth must be between 0 and 100");
+  if (screenResolution.length > 32 || language.length > 80) errors.push("screenResolution or language is too long");
 
   return {
     isValid: errors.length === 0,
@@ -93,6 +112,14 @@ function validateVisitorEvent(payload: VisitorEventPayload) {
       ctaName,
       cookieConsent,
       leadId,
+      entryPage,
+      exitPage,
+      sessionDuration,
+      pageCategory,
+      clickedElement,
+      scrollDepth: payload.scrollDepth === "" || payload.scrollDepth === undefined ? "" as const : scrollDepth,
+      screenResolution,
+      language,
     },
   };
 }
@@ -150,6 +177,14 @@ export async function POST(request: Request) {
       ctaName,
       cookieConsent,
       leadId,
+      entryPage,
+      exitPage,
+      sessionDuration,
+      pageCategory,
+      clickedElement,
+      scrollDepth,
+      screenResolution,
+      language,
     },
   } = validation;
 
@@ -172,16 +207,27 @@ export async function POST(request: Request) {
     cta_name: ctaName,
     cookie_consent: cookieConsent,
     lead_id: leadId,
+    entry_page: entryPage,
+    exit_page: exitPage,
+    session_duration_seconds: sessionDuration,
+    visit_count: "", // Calculated durably by Apps Script from Session Registry.
+    page_category: pageCategory,
+    clicked_element: clickedElement,
+    scroll_depth_percent: scrollDepth,
+    screen_resolution: screenResolution,
+    language,
+    approximate_location: trustedApproximateLocation(request),
   };
 
   try {
-    await saveVisitorEventToAppsScript(visitorEvent);
+    const saved = await saveVisitorEventToAppsScript(visitorEvent);
     return Response.json(
       {
-        message: "Visitor event recorded.",
+        message: saved ? "Visitor event recorded." : "Visitor event already recorded.",
         eventId,
+        duplicate: !saved,
       },
-      { status: 201 },
+      { status: saved ? 201 : 200 },
     );
   } catch (error) {
     if (error instanceof GoogleAppsScriptConfigurationError) {
@@ -191,4 +237,13 @@ export async function POST(request: Request) {
     console.error("[visitor-event-api] error:", error);
     return invalid("Failed to record visitor event.", 500);
   }
+}
+
+function trustedApproximateLocation(request: Request) {
+  // These headers are meaningful only when the hosting edge strips client-supplied copies.
+  // Country/region are coarse; raw IP and city are never collected.
+  const country = request.headers.get("x-vercel-ip-country")?.trim().slice(0, 8) ?? "";
+  const region = request.headers.get("x-vercel-ip-country-region")?.trim().slice(0, 32) ?? "";
+  if (!/^[A-Z]{2}$/i.test(country)) return "";
+  return [country.toUpperCase(), region].filter(Boolean).join("-");
 }

@@ -26,6 +26,16 @@ export const visitorHeaders = [
   "CTA Name",
   "Cookie Consent Status",
   "Lead ID",
+  "Entry Page",
+  "Exit Page",
+  "Session Duration (Seconds)",
+  "Visit Count",
+  "Page Category",
+  "Clicked Element",
+  "Scroll Depth (%)",
+  "Screen Resolution",
+  "Language",
+  "Approximate Location",
 ] as const;
 
 export type GoogleSheetsVisitorEvent = {
@@ -47,6 +57,16 @@ export type GoogleSheetsVisitorEvent = {
   cta_name: string;
   cookie_consent: string;
   lead_id: string;
+  entry_page: string;
+  exit_page: string;
+  session_duration_seconds: number;
+  visit_count: number | "";
+  page_category: string;
+  clicked_element: string;
+  scroll_depth_percent: number | "";
+  screen_resolution: string;
+  language: string;
+  approximate_location: string;
 };
 
 const completedSubmissions = new Set<string>();
@@ -132,6 +152,16 @@ export async function saveVisitorEventToAppsScript(event: GoogleSheetsVisitorEve
     text(event.cta_name, 200),
     text(event.cookie_consent, 20),
     text(event.lead_id, 100),
+    text(event.entry_page, 2_000),
+    text(event.exit_page, 2_000),
+    String(Math.max(0, event.session_duration_seconds)),
+    event.visit_count === "" ? "" : String(Math.max(1, event.visit_count)),
+    text(event.page_category, 80),
+    text(event.clicked_element, 160),
+    event.scroll_depth_percent === "" ? "" : String(Math.min(100, Math.max(0, event.scroll_depth_percent))),
+    text(event.screen_resolution, 32),
+    text(event.language, 80),
+    text(event.approximate_location, 80),
   ];
 
   if (row.length !== visitorHeaders.length) {

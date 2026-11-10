@@ -1,4 +1,3 @@
-import { connection } from "next/server";
 import { Commitments, ConsultationSection, CostCards, CtaBand, DesignerCta, Footer, Gold, Heading, Highlights, ProjectsHeading, Services, Testimonials, WhyLeor } from "./components/home/sections";
 import { Faq, Projects } from "./components/home/interactive";
 import TrustStrip from "./components/home/trust-strip";
@@ -9,8 +8,7 @@ import { FloatingActions, OfferPopup } from "./components/home/overlays";
 
 export const instant = false;
 
-export default async function Home() {
-  await connection();
+export default function Home() {
   return (
     <>
       <Navbar />

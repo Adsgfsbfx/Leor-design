@@ -19,9 +19,13 @@ export default function HeroVideo() {
       void video.play().catch(() => undefined);
     };
 
-    syncPlayback();
+    // Let the page content paint before downloading the decorative background video.
+    const playbackTimer = window.setTimeout(syncPlayback, 1_200);
     motionPreference.addEventListener("change", syncPlayback);
-    return () => motionPreference.removeEventListener("change", syncPlayback);
+    return () => {
+      window.clearTimeout(playbackTimer);
+      motionPreference.removeEventListener("change", syncPlayback);
+    };
   }, []);
 
   return (
@@ -31,7 +35,8 @@ export default function HeroVideo() {
       muted
       loop
       playsInline
-      preload="metadata"
+      preload="none"
+      poster="/images/hero-living-room-marble-wall.jpg"
       aria-hidden="true"
       tabIndex={-1}
     >

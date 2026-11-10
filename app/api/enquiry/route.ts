@@ -140,17 +140,9 @@ export async function POST(request: Request) {
     return invalid("Please check the enquiry details and try again.");
   }
 
-  // Log raw payload for debugging
-  console.error("[enquiry-api] Received payload:", {
-    whatsappClicked_type: typeof payload.whatsappClicked,
-    whatsappClicked_value: payload.whatsappClicked,
-    whatsappClicked_string: JSON.stringify(payload.whatsappClicked),
-  });
-
   const validation = validateEnquiry(payload);
   if (!validation.isValid) {
-    // Log detailed errors for debugging
-    console.error("[enquiry-api] Validation failed:", validation.errors);
+    console.error("[enquiry-api] Validation failed.");
     return invalid("Please check the required fields, consent, services, and Indian mobile number.");
   }
 
@@ -211,6 +203,7 @@ export async function POST(request: Request) {
     return Response.json(
       {
         message: saved ? "Enquiry saved." : "Enquiry already saved.",
+        leadId,
         whatsapp_clicked: whatsappClicked,
       },
       { status: saved ? 201 : 200 },

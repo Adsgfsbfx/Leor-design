@@ -147,11 +147,13 @@ export function LeadForm() {
   const [email, setEmail] = useState("");
   const [errors, setErrors] = useState<Errors>({});
   const [done, setDone] = useState(false);
+  const startedRef = useRef(false);
 
   function submit(event: FormEvent) {
     event.preventDefault();
     const next = validate({ name, mobile, email }, false);
     setErrors(next);
+    if (Object.keys(next).length) void sendVisitorEvent({ eventName: "form_error", ctaName: "lead-form-validation" });
     if (Object.keys(next).length === 0) setDone(true);
   }
 
@@ -168,7 +170,7 @@ export function LeadForm() {
   }
 
   return (
-    <form className="lead-form" onSubmit={submit} noValidate>
+    <form className="lead-form" onFocusCapture={() => { if (!startedRef.current) { startedRef.current = true; void sendVisitorEvent({ eventName: "form_start", ctaName: "lead-form" }); } }} onSubmit={submit} noValidate>
       <h2>Begin your interior journey</h2>
       <Field label="Full name" id={`${uid}-name`} error={errors.name}>
         <input
@@ -216,6 +218,7 @@ export function ConsultationForm() {
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const submissionInProgressRef = useRef(false);
+  const startedRef = useRef(false);
   const idempotencyRef = useRef<{ fingerprint: string; key: string } | null>(null);
   const set = (key: keyof typeof values) => (value: string) => {
     setValues((v) => ({ ...v, [key]: value }));
@@ -229,6 +232,7 @@ export function ConsultationForm() {
     const next = validate(values, true);
     if (services.length === 0) next.services = "Choose at least one service so we know how to help.";
     if (!consent) next.consent = "Please agree to be contacted about your consultation.";
+    if (Object.keys(next).length) void sendVisitorEvent({ eventName: "form_error", ctaName: "consultation-form-validation" });
     setErrors(next);
     setSubmitError("");
     if (Object.keys(next).length > 0) return;
@@ -293,17 +297,18 @@ export function ConsultationForm() {
         },
         body: JSON.stringify(payload),
       });
-      const result = await response.json().catch(() => null) as { message?: unknown } | null;
+      const result = await response.json().catch(() => null) as { message?: unknown; leadId?: unknown } | null;
       const savedMessages = new Set(["Enquiry saved.", "Enquiry already saved."]);
       if (!response.ok || typeof result?.message !== "string" || !savedMessages.has(result.message)) {
         throw new Error(typeof result?.message === "string" ? result.message : "We couldn't save your enquiry. Please try again.");
       }
       
       // Track form submission event
-      void sendVisitorEvent({ eventName: "form_submit", ctaName: "consultation-form" });
+      void sendVisitorEvent({ eventName: "form_submit", ctaName: "consultation-form", leadId: typeof result?.leadId === "string" ? result.leadId : "" });
       
       setDone(true);
     } catch (error) {
+      void sendVisitorEvent({ eventName: "form_error", ctaName: "consultation-form-submit" });
       setSubmitError(error instanceof Error && error.message
         ? error.message
         : "We couldn't reach the server. Check your connection and try again.");
@@ -323,7 +328,7 @@ export function ConsultationForm() {
   }
 
   return (
-    <form className="consult-form" onSubmit={submit} noValidate>
+    <form className="consult-form" onFocusCapture={() => { if (!startedRef.current) { startedRef.current = true; void sendVisitorEvent({ eventName: "form_start", ctaName: "consultation-form" }); } }} onSubmit={submit} noValidate>
       <div className="form-grid">
         <Field label="Full name" id={`${uid}-name`} error={errors.name}>
           <input
@@ -438,6 +443,7 @@ export function RegisterForm({
   const [submitting, setSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState("");
   const submissionInProgressRef = useRef(false);
+  const startedRef = useRef(false);
   const idempotencyRef = useRef<{ fingerprint: string; key: string } | null>(null);
 
   const canSubmit = consent && Object.keys(validate({ name, mobile, email }, false)).length === 0;
@@ -448,6 +454,7 @@ export function RegisterForm({
 
     const next = validate({ name, mobile, email }, false);
     setErrors(next);
+    if (Object.keys(next).length) void sendVisitorEvent({ eventName: "form_error", ctaName: "estimator-form-validation" });
     setSubmitError("");
     if (Object.keys(next).length > 0) return;
 
@@ -507,18 +514,19 @@ export function RegisterForm({
         },
         body: JSON.stringify(payload),
       });
-      const result = await response.json().catch(() => null) as { message?: unknown } | null;
+      const result = await response.json().catch(() => null) as { message?: unknown; leadId?: unknown } | null;
       const savedMessages = new Set(["Enquiry saved.", "Enquiry already saved."]);
       if (!response.ok || typeof result?.message !== "string" || !savedMessages.has(result.message)) {
         throw new Error(typeof result?.message === "string" ? result.message : "We couldn't save your enquiry. Please try again.");
       }
       
       // Track form submission event
-      void sendVisitorEvent({ eventName: "form_submit", ctaName: "estimator-form" });
+      void sendVisitorEvent({ eventName: "form_submit", ctaName: "estimator-form", leadId: typeof result?.leadId === "string" ? result.leadId : "" });
       
       setDone(true);
       onDone?.();
     } catch (error) {
+      void sendVisitorEvent({ eventName: "form_error", ctaName: "estimator-form-submit" });
       setSubmitError(error instanceof Error && error.message
         ? error.message
         : "We couldn't reach the server. Check your connection and try again.");
@@ -542,7 +550,7 @@ export function RegisterForm({
   }
 
   return (
-    <form className={`register-form${compact ? " compact" : ""}`} onSubmit={submit} noValidate>
+    <form className={`register-form${compact ? " compact" : ""}`} onFocusCapture={() => { if (!startedRef.current) { startedRef.current = true; void sendVisitorEvent({ eventName: "form_start", ctaName: "estimator-form" }); } }} onSubmit={submit} noValidate>
       <div className="register-fields">
         <Field label="Name" id={`${uid}-name`} error={errors.name}>
           <input

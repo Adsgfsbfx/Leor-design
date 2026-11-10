@@ -116,7 +116,7 @@ export function Projects() {
               {shown.map((c, index) => (
                 <motion.li key={c.id} className="project-card" layout={!reduce} initial={reduce ? false : { opacity: 0, y: 18 }} whileInView={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 12 }} viewport={{ once: true, amount: .15 }} transition={{ duration: reduce ? 0 : .55, delay: reduce ? 0 : index * .07, ease: [.22, 1, .36, 1] }} onPointerMove={moveProjectCursor} onPointerLeave={() => updateProjectCursor({ ...projectCursorRef.current, visible: false })}>
                   <button type="button" className="project-card-media" aria-label={`View ${c.title}`} onClick={() => { setSelectedIndex(index); updateProjectCursor({ ...projectCursorRef.current, visible: false }); }}>
-                    <Image className="concept-gallery-image" src={c.photo.src} alt={c.photo.alt} fill sizes="(max-width: 700px) 50vw, (max-width: 1024px) 30vw, 245px" quality={85} loading="eager" decoding="async" />
+                    <Image className="concept-gallery-image" src={c.photo.src} alt={c.photo.alt} fill sizes="(max-width: 700px) 50vw, (max-width: 1024px) 30vw, 245px" quality={85} decoding="async" />
                     <span className="project-label">{c.category}</span>
                   </button>
                   <div className="project-info">
@@ -131,7 +131,7 @@ export function Projects() {
             {shown.map((c) => (
               <li key={`clone-${c.id}`} className="project-card">
                 <div className="project-card-media">
-                  <Image className="concept-gallery-image" src={c.photo.src} alt="" fill sizes="(max-width: 700px) 50vw, (max-width: 1024px) 30vw, 245px" quality={85} loading="eager" decoding="async" />
+                  <Image className="concept-gallery-image" src={c.photo.src} alt="" fill sizes="(max-width: 700px) 50vw, (max-width: 1024px) 30vw, 245px" quality={85} decoding="async" />
                   <span className="project-label">{c.category}</span>
                 </div>
                 <div className="project-info">

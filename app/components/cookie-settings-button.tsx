@@ -12,6 +12,8 @@ export function CookieSettingsButton() {
         onClick={() => setShowModal(true)}
         className="cookie-settings-btn"
         type="button"
+        aria-haspopup="dialog"
+        aria-expanded={showModal}
       >
         Cookie Settings
       </button>
