@@ -5,6 +5,7 @@ import { PremiumImage } from "../../../components/ui/premium-image";
 import { useScrollLock } from "../../../components/smooth-scroll";
 import { buildWhatsAppLink, phoneHref, site } from "../../../src/config/site";
 import { photos } from "../../../src/config/images";
+import { hasBannerBeenDismissed } from "../../../src/lib/cookies";
 import { RegisterForm, WhatsAppMark } from "./forms";
 
 const SEEN_KEY = "leor-offer-seen";
@@ -25,6 +26,8 @@ export function OfferPopup() {
     }
     if (seen) return;
 
+    let timer: number | undefined;
+    let activated = false;
     const show = () => {
       if (shown.current) return;
       shown.current = true;
@@ -39,11 +42,29 @@ export function OfferPopup() {
       const hero = document.getElementById("top");
       if (hero && window.scrollY > hero.offsetHeight) show();
     };
-    const timer = window.setTimeout(show, 15000);
-    window.addEventListener("scroll", onScroll, { passive: true });
+    const activateOffer = () => {
+      if (activated || shown.current) return;
+      activated = true;
+      timer = window.setTimeout(show, 15000);
+      window.addEventListener("scroll", onScroll, { passive: true });
+    };
+    const waitForConsent = () => {
+      if (!hasBannerBeenDismissed()) return;
+      window.removeEventListener("consent-changed", waitForConsent);
+      window.removeEventListener("storage", waitForConsent);
+      activateOffer();
+    };
+
+    if (hasBannerBeenDismissed()) activateOffer();
+    else {
+      window.addEventListener("consent-changed", waitForConsent);
+      window.addEventListener("storage", waitForConsent);
+    }
     return () => {
-      window.clearTimeout(timer);
+      if (timer !== undefined) window.clearTimeout(timer);
       window.removeEventListener("scroll", onScroll);
+      window.removeEventListener("consent-changed", waitForConsent);
+      window.removeEventListener("storage", waitForConsent);
     };
   }, []);
 
