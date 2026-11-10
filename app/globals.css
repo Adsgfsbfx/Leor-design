@@ -276,8 +276,10 @@ button { cursor: pointer; }
 .estimator-result.price-locked:not(.has-offer) .breakdown dd { filter: blur(7px); user-select: none; }
 .estimator-result.has-offer .estimator-result-content { filter: blur(7px); user-select: none; }
 .estimate-offer-popup { position: absolute; z-index: 2; inset: 14px; display: grid; place-items: center; min-width: 0; min-height: 0; overflow-y: auto; overscroll-behavior: contain; padding: 18px; border-radius: 18px; background: rgba(var(--navy-rgb), .42); backdrop-filter: blur(3px); }
-.estimate-offer-card { box-sizing: border-box; width: min(100%, 370px); max-height: 100%; min-width: 0; overflow-y: auto; padding: 28px 24px; border: 1px solid rgba(var(--gold-rgb), .55); border-radius: 22px; background: var(--ivory); color: var(--navy-deep); text-align: center; box-shadow: 0 20px 55px rgba(var(--navy-rgb), .35); animation: rise .3s ease-out; }
-.estimate-offer-kicker { display: block; color: var(--gold-deep); font-size: .68rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
+.estimate-offer-card { position: relative; box-sizing: border-box; width: min(100%, 370px); max-height: 100%; min-width: 0; overflow-y: auto; padding: 28px 24px; border: 1px solid rgba(var(--gold-rgb), .55); border-radius: 22px; background: var(--ivory); color: var(--navy-deep); text-align: center; box-shadow: 0 20px 55px rgba(var(--navy-rgb), .35); animation: rise .3s ease-out; }
+.estimate-offer-close { position: absolute; z-index: 1; top: 8px; right: 8px; display: grid; width: 44px; height: 44px; place-items: center; border: 1px solid rgba(var(--navy-rgb), .16); border-radius: 50%; background: var(--ivory-soft); color: var(--navy); font: 400 1.5rem/1 var(--sans); cursor: pointer; }
+.estimate-offer-close:focus-visible { outline: 3px solid var(--gold-deep); outline-offset: 2px; }
+.estimate-offer-kicker { display: block; padding-right: 36px; color: var(--gold-deep); font-size: .68rem; font-weight: 800; letter-spacing: .14em; text-transform: uppercase; }
 .estimate-offer-value { display: block; margin: 8px 0; color: var(--navy); font: 700 clamp(3rem, 6vw, 4.5rem)/.95 var(--serif); }
 .estimate-offer-value span { color: var(--gold-deep); font: italic 600 .42em var(--serif); }
 .estimate-offer-card h3 { margin: 10px 0 7px; font: 600 1.35rem/1.2 var(--serif); }

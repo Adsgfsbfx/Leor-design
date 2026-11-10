@@ -1,13 +1,14 @@
 "use client";
 
 import { AnimatePresence, motion, useReducedMotion } from "framer-motion";
-import { useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import Image from "next/image";
 import { PremiumImage } from "../../../components/ui/premium-image";
 import { useScrollLock } from "../../../components/smooth-scroll";
 import { concepts, photos, projectCategories, type Photo, type ProjectCategory } from "../../../src/config/images";
 import { materialBrands, projectTerms } from "../../../src/config/budget-details";
 import { buildWhatsAppLink, faqs, phoneDisplay, phoneHref, site } from "../../../src/config/site";
+import { hasBannerBeenDismissed } from "../../../src/lib/cookies";
 import {
   addOns,
   calculateEstimate,
@@ -235,23 +236,47 @@ export function Estimator() {
   const [finish, setFinish] = useState<FinishLevelId>("essential");
   const [selected, setSelected] = useState<AddOnId[]>([]);
   const [showOffer, setShowOffer] = useState(false);
+  const [offerPendingConsent, setOfferPendingConsent] = useState(false);
   const [registering, setRegistering] = useState(false);
   const [registered, setRegistered] = useState(false);
   const estimate = calculateEstimate(home, finish, selected);
   const low = useAnimated(estimate.low);
   const high = useAnimated(estimate.high);
+  const requestOffer = useCallback(() => {
+    if (hasBannerBeenDismissed()) setShowOffer(true);
+    else setOfferPendingConsent(true);
+  }, []);
 
   useEffect(() => {
     function onClick(event: MouseEvent) {
       const trigger = (event.target as HTMLElement).closest<HTMLElement>("[data-home]");
       if (trigger) {
         setHome(trigger.dataset.home as HomeType);
-        setShowOffer(true);
+        requestOffer();
       }
     }
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
-  }, []);
+  }, [requestOffer]);
+
+  useEffect(() => {
+    if (!offerPendingConsent) return;
+    const openAfterConsent = () => {
+      if (!hasBannerBeenDismissed()) return;
+      setOfferPendingConsent(false);
+      setShowOffer(true);
+    };
+    if (hasBannerBeenDismissed()) {
+      openAfterConsent();
+      return;
+    }
+    window.addEventListener("consent-changed", openAfterConsent);
+    window.addEventListener("storage", openAfterConsent);
+    return () => {
+      window.removeEventListener("consent-changed", openAfterConsent);
+      window.removeEventListener("storage", openAfterConsent);
+    };
+  }, [offerPendingConsent]);
 
   const rangeText = formatRange(low, high);
   const finalRange = formatRange(estimate.low, estimate.high);
@@ -272,7 +297,7 @@ export function Estimator() {
           <legend>1. Home size</legend>
           <div className="pill-row">
             {homeTypes.map((type) => (
-              <button key={type} type="button" className="chip" aria-pressed={home === type} onClick={() => { setHome(type); setShowOffer(true); }}>
+              <button key={type} type="button" className="chip" aria-pressed={home === type} onClick={() => { setHome(type); requestOffer(); }}>
                 {type}
               </button>
             ))}
@@ -283,7 +308,7 @@ export function Estimator() {
           <div className="level-row">
             {finishLevels.map((level) => (
               <label key={level.id} className={`level${finish === level.id ? " active" : ""}`}>
-                <input type="radio" name="finish-level" checked={finish === level.id} onChange={() => { setFinish(level.id); setShowOffer(true); }} />
+                <input type="radio" name="finish-level" checked={finish === level.id} onChange={() => { setFinish(level.id); requestOffer(); }} />
                 <strong>{level.label}</strong>
                 <span>{level.note}</span>
               </label>
@@ -295,14 +320,14 @@ export function Estimator() {
           <div className="addon-list">
             {addOns.map((addOn) => (
               <label key={addOn.id} className="addon">
-                <input type="checkbox" checked={selected.includes(addOn.id)} onChange={() => { toggle(addOn.id); setShowOffer(true); }} />
+                <input type="checkbox" checked={selected.includes(addOn.id)} onChange={() => { toggle(addOn.id); requestOffer(); }} />
                 <span>{addOn.label}</span>
                 <em>+ {formatRupees(addOn.price)}</em>
               </label>
             ))}
           </div>
         </fieldset>
-        <button type="button" className="btn btn-gold estimator-calculate" onClick={() => setShowOffer(true)}>
+        <button type="button" className="btn btn-gold estimator-calculate" onClick={requestOffer}>
           Calculate my budget
         </button>
       </div>
@@ -375,6 +400,7 @@ export function Estimator() {
         {showOffer ? (
           <div className="estimate-offer-popup" role="dialog" aria-labelledby="estimate-offer-title" aria-modal="false">
             <div className="estimate-offer-card">
+              <button type="button" className="estimate-offer-close" aria-label="Close 10% offer" onClick={() => { setShowOffer(false); setRegistering(false); }}>×</button>
               <span className="estimate-offer-kicker">A little something for your home</span>
               <strong className="estimate-offer-value">10% <span>OFF</span></strong>
               <h3 id="estimate-offer-title">Enjoy 10% off your interiors</h3>
