@@ -77,8 +77,9 @@ export default function PrivacyPage() {
         <h2>Call and WhatsApp</h2>
         <p>
           If you choose to call, your call is handled by your phone provider. If you open WhatsApp,
-          WhatsApp handles messages sent there. The website may record the click as an optional
-          analytics event only when analytics consent has been accepted.
+          WhatsApp handles messages sent there. The website keeps a session-only marker of WhatsApp
+          clicks so it can include that choice if you later submit an enquiry. It records the click
+          as an optional visitor analytics event only when analytics consent has been accepted.
         </p>
       </section>
       <section>

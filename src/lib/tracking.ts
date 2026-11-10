@@ -9,6 +9,7 @@ const UTM_SOURCE_KEY = "leor_utm_source";
 const UTM_MEDIUM_KEY = "leor_utm_medium";
 const UTM_CAMPAIGN_KEY = "leor_utm_campaign";
 const WHATSAPP_CLICKED_KEY = "leor_whatsapp_clicked";
+const WHATSAPP_LEAD_ID_KEY = "leor_whatsapp_lead_id";
 
 function getSessionStorage(): Storage | null {
   if (typeof window === "undefined") return null;
@@ -21,22 +22,25 @@ function getSessionStorage(): Storage | null {
 
 /**
  * Extract and persist UTM parameters from the current URL to sessionStorage.
- * Only overwrites stored values if parameters are present in the URL.
- * Call this once on page load to capture landing page UTM values.
+ * Captures a complete campaign tuple when any UTM parameter is present, clearing
+ * omitted values so a previous campaign is not mixed into a new attribution.
+ * Call this once on page load to capture landing-page UTM values for a form submit.
  */
 export function captureUtmParameters(): void {
   const storage = getSessionStorage();
   if (!storage) return;
 
   const search = new URLSearchParams(window.location.search);
-  const utmSource = search.get("utm_source");
-  const utmMedium = search.get("utm_medium");
-  const utmCampaign = search.get("utm_campaign");
+  const keys = ["utm_source", "utm_medium", "utm_campaign"] as const;
+  if (!keys.some((key) => search.has(key))) return;
 
   try {
-    if (utmSource) storage.setItem(UTM_SOURCE_KEY, utmSource);
-    if (utmMedium) storage.setItem(UTM_MEDIUM_KEY, utmMedium);
-    if (utmCampaign) storage.setItem(UTM_CAMPAIGN_KEY, utmCampaign);
+    const storageKeys = [UTM_SOURCE_KEY, UTM_MEDIUM_KEY, UTM_CAMPAIGN_KEY] as const;
+    keys.forEach((key, index) => {
+      const value = search.get(key)?.trim().slice(0, 200) ?? "";
+      if (value) storage.setItem(storageKeys[index], value);
+      else storage.removeItem(storageKeys[index]);
+    });
   } catch {
     // Campaign storage is optional; it must not block a form or navigation.
   }
@@ -89,6 +93,26 @@ export function wasWhatsAppClicked(): boolean {
   }
 }
 
+/** Remember the most recent saved lead so a later WhatsApp click can be linked
+ * to that lead in visitor analytics (when the visitor has opted into analytics).
+ */
+export function rememberWhatsAppLead(leadId: string): void {
+  if (!leadId) return;
+  try {
+    getSessionStorage()?.setItem(WHATSAPP_LEAD_ID_KEY, leadId.slice(0, 100));
+  } catch {
+    // Linkage is optional; it must not block confirmation or WhatsApp navigation.
+  }
+}
+
+export function getWhatsAppLeadId(): string {
+  try {
+    return getSessionStorage()?.getItem(WHATSAPP_LEAD_ID_KEY) ?? "";
+  } catch {
+    return "";
+  }
+}
+
 /**
  * Initialize click tracking for all WhatsApp links.
  * Adds a click listener to document that records clicks on WhatsApp buttons/links.
@@ -100,18 +124,17 @@ export function initializeWhatsAppClickTracking(): (() => void) | void {
   }
 
   function handleClick(event: Event) {
-    const target = event.target as HTMLElement;
-    // Check for clicks on:
-    // 1. Anchor tags with wa.me href
-    // 2. Any element with onclick containing wa.me or whatsapp
-    // 3. Buttons or elements inside a WhatsApp link
-    const link = target.closest<HTMLElement>("a[href*='wa.me']");
-    const button = target.closest<HTMLElement>("[onclick*='wa.me'], [onclick*='whatsapp']");
-    const dataAttr = target.closest<HTMLElement>("[data-whatsapp]");
-    
-    if (link || button || dataAttr) {
-      recordWhatsAppClick();
-    }
+    const rawTarget = event.target;
+    const target = rawTarget instanceof Element
+      ? rawTarget
+      : rawTarget instanceof Node
+        ? rawTarget.parentElement
+        : null;
+    if (!target) return;
+
+    const link = target.closest<HTMLAnchorElement>("a[href]");
+    const href = link?.getAttribute("href") ?? "";
+    if (/wa\.me|whatsapp/i.test(href) || target.closest("[data-whatsapp]")) recordWhatsAppClick();
   }
 
   // Use capture phase to catch clicks early

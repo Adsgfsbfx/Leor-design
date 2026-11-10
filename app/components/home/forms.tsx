@@ -3,7 +3,7 @@
 import { useEffect, useId, useRef, useState, type FormEvent } from "react";
 import { buildWhatsAppLink, enquiryServiceOptions } from "../../../src/config/site";
 import { homeTypes, isValidIndianMobile } from "../../../src/lib/pricing";
-import { getPersistedUtmParameters, wasWhatsAppClicked, recordWhatsAppClick } from "../../../src/lib/tracking";
+import { getPersistedUtmParameters, wasWhatsAppClicked, recordWhatsAppClick, rememberWhatsAppLead } from "../../../src/lib/tracking";
 import { sendVisitorEvent } from "../../../src/lib/visitorTracking";
 
 const consultationHomeTypes = [...homeTypes, "Office or other"] as const;
@@ -302,6 +302,8 @@ export function ConsultationForm() {
       if (!response.ok || typeof result?.message !== "string" || !savedMessages.has(result.message)) {
         throw new Error(typeof result?.message === "string" ? result.message : "We couldn't save your enquiry. Please try again.");
       }
+
+      if (typeof result?.leadId === "string") rememberWhatsAppLead(result.leadId);
       
       // Track form submission event
       void sendVisitorEvent({ eventName: "form_submit", ctaName: "consultation-form", leadId: typeof result?.leadId === "string" ? result.leadId : "" });
@@ -519,6 +521,8 @@ export function RegisterForm({
       if (!response.ok || typeof result?.message !== "string" || !savedMessages.has(result.message)) {
         throw new Error(typeof result?.message === "string" ? result.message : "We couldn't save your enquiry. Please try again.");
       }
+
+      if (typeof result?.leadId === "string") rememberWhatsAppLead(result.leadId);
       
       // Track form submission event
       void sendVisitorEvent({ eventName: "form_submit", ctaName: "estimator-form", leadId: typeof result?.leadId === "string" ? result.leadId : "" });

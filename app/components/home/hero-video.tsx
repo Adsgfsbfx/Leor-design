@@ -37,7 +37,6 @@ export default function HeroVideo() {
       loop
       playsInline
       preload="none"
-      poster="/images/hero-living-room-marble-wall.jpg"
       aria-hidden="true"
       tabIndex={-1}
     >

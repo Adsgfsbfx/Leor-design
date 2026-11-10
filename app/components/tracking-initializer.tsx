@@ -2,6 +2,7 @@
 
 import { useEffect } from "react";
 import { initializePageTracking, trackPageLeave, sendVisitorEvent, clearQueuedTracking, flushQueuedTracking, updateSessionVisibility } from "../../src/lib/visitorTracking";
+import { captureUtmParameters, getWhatsAppLeadId, initializeWhatsAppClickTracking } from "../../src/lib/tracking";
 import { hasAnalyticsConsent } from "../../src/lib/cookies";
 
 /**
@@ -16,6 +17,8 @@ export function TrackingInitializer() {
   useEffect(() => {
     let lastScrollEventAt = 0;
     const sentScrollDepths = new Set<number>();
+    captureUtmParameters();
+    const stopWhatsAppClickTracking = initializeWhatsAppClickTracking();
     if (hasAnalyticsConsent()) {
       initializePageTracking();
       flushQueuedTracking();
@@ -36,7 +39,14 @@ export function TrackingInitializer() {
       const semantic = control.dataset.analyticsName || control.getAttribute("aria-label") || control.getAttribute("title") || "";
       const safeHref = href.startsWith("/") && !href.startsWith("//") ? href.split(/[?#]/, 1)[0] : "";
       const clickedElement = [control.tagName.toLowerCase(), semantic.slice(0, 80), safeHref].filter(Boolean).join(":").slice(0, 160);
-      const sendClick = (eventName: string, ctaName: string) => void sendVisitorEvent({ eventName, ctaName, clickedElement });
+      const sendClick = (eventName: string, ctaName: string) => void sendVisitorEvent({
+        eventName,
+        ctaName,
+        clickedElement,
+        ...(eventName === "whatsapp_click" && getWhatsAppLeadId()
+          ? { leadId: getWhatsAppLeadId() }
+          : {}),
+      });
       if (/^tel:/i.test(href)) sendClick("phone_click", label || "phone-link");
       else if (/wa\.me|whatsapp/i.test(href) || control.hasAttribute("data-whatsapp")) sendClick("whatsapp_click", label || "whatsapp-link");
       else if (control.closest(".project-card")) sendClick("project_interaction", label || "project");
@@ -106,6 +116,7 @@ export function TrackingInitializer() {
       document.removeEventListener("visibilitychange", handleVisibility);
       window.removeEventListener("consent-changed", handleConsentChanged);
       window.removeEventListener("storage", handleStorage);
+      stopWhatsAppClickTracking?.();
     };
   }, []);
 

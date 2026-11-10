@@ -1,4 +1,5 @@
 import { getCookieConsent, hasAnalyticsConsent } from "./cookies";
+import { getPersistedUtmParameters } from "./tracking";
 
 export interface VisitorTrackingPayload {
   eventName: string;
@@ -258,6 +259,7 @@ export function captureAttribution() {
   if (!hasAnalyticsConsent()) return;
   const params = new URLSearchParams(window.location.search);
   const existing = attribution();
+  const sessionUtm = getPersistedUtmParameters();
   const hasCampaign = ["utm_source", "utm_medium", "utm_campaign"].some((key) => params.has(key));
   let referral = existing.referral;
   if (!existing.source && !existing.medium && !existing.campaign && document.referrer) {
@@ -265,7 +267,12 @@ export function captureAttribution() {
   }
   const next = hasCampaign ? {
     source: params.get("utm_source") ?? "", medium: params.get("utm_medium") ?? "", campaign: params.get("utm_campaign") ?? "", referral,
-  } : { ...existing, referral: existing.referral || referral };
+  } : {
+    source: existing.source || sessionUtm.utm_source,
+    medium: existing.medium || sessionUtm.utm_medium,
+    campaign: existing.campaign || sessionUtm.utm_campaign,
+    referral: existing.referral || referral,
+  };
   safeSet("local", ATTRIBUTION_KEY, JSON.stringify(next));
   safeSet("session", "leor_utm_source", next.source);
   safeSet("session", "leor_utm_medium", next.medium);
