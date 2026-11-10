@@ -10,24 +10,36 @@ const UTM_MEDIUM_KEY = "leor_utm_medium";
 const UTM_CAMPAIGN_KEY = "leor_utm_campaign";
 const WHATSAPP_CLICKED_KEY = "leor_whatsapp_clicked";
 
+function getSessionStorage(): Storage | null {
+  if (typeof window === "undefined") return null;
+  try {
+    return window.sessionStorage;
+  } catch {
+    return null;
+  }
+}
+
 /**
  * Extract and persist UTM parameters from the current URL to sessionStorage.
  * Only overwrites stored values if parameters are present in the URL.
  * Call this once on page load to capture landing page UTM values.
  */
 export function captureUtmParameters(): void {
-  if (typeof window === "undefined" || typeof sessionStorage === "undefined") {
-    return;
-  }
+  const storage = getSessionStorage();
+  if (!storage) return;
 
   const search = new URLSearchParams(window.location.search);
   const utmSource = search.get("utm_source");
   const utmMedium = search.get("utm_medium");
   const utmCampaign = search.get("utm_campaign");
 
-  if (utmSource) sessionStorage.setItem(UTM_SOURCE_KEY, utmSource);
-  if (utmMedium) sessionStorage.setItem(UTM_MEDIUM_KEY, utmMedium);
-  if (utmCampaign) sessionStorage.setItem(UTM_CAMPAIGN_KEY, utmCampaign);
+  try {
+    if (utmSource) storage.setItem(UTM_SOURCE_KEY, utmSource);
+    if (utmMedium) storage.setItem(UTM_MEDIUM_KEY, utmMedium);
+    if (utmCampaign) storage.setItem(UTM_CAMPAIGN_KEY, utmCampaign);
+  } catch {
+    // Campaign storage is optional; it must not block a form or navigation.
+  }
 }
 
 /**
@@ -39,15 +51,18 @@ export function getPersistedUtmParameters(): {
   utm_medium: string;
   utm_campaign: string;
 } {
-  if (typeof sessionStorage === "undefined") {
-    return { utm_source: "", utm_medium: "", utm_campaign: "" };
+  const empty = { utm_source: "", utm_medium: "", utm_campaign: "" };
+  const storage = getSessionStorage();
+  if (!storage) return empty;
+  try {
+    return {
+      utm_source: storage.getItem(UTM_SOURCE_KEY) ?? "",
+      utm_medium: storage.getItem(UTM_MEDIUM_KEY) ?? "",
+      utm_campaign: storage.getItem(UTM_CAMPAIGN_KEY) ?? "",
+    };
+  } catch {
+    return empty;
   }
-
-  return {
-    utm_source: sessionStorage.getItem(UTM_SOURCE_KEY) ?? "",
-    utm_medium: sessionStorage.getItem(UTM_MEDIUM_KEY) ?? "",
-    utm_campaign: sessionStorage.getItem(UTM_CAMPAIGN_KEY) ?? "",
-  };
 }
 
 /**
@@ -55,8 +70,10 @@ export function getPersistedUtmParameters(): {
  * Sets a flag in sessionStorage to indicate engagement.
  */
 export function recordWhatsAppClick(): void {
-  if (typeof sessionStorage !== "undefined") {
-    sessionStorage.setItem(WHATSAPP_CLICKED_KEY, "true");
+  try {
+    getSessionStorage()?.setItem(WHATSAPP_CLICKED_KEY, "true");
+  } catch {
+    // Click tracking is optional and must not block opening WhatsApp.
   }
 }
 
@@ -65,11 +82,11 @@ export function recordWhatsAppClick(): void {
  * Returns true if any WhatsApp click has been recorded.
  */
 export function wasWhatsAppClicked(): boolean {
-  if (typeof sessionStorage === "undefined") {
+  try {
+    return getSessionStorage()?.getItem(WHATSAPP_CLICKED_KEY) === "true";
+  } catch {
     return false;
   }
-
-  return sessionStorage.getItem(WHATSAPP_CLICKED_KEY) === "true";
 }
 
 /**

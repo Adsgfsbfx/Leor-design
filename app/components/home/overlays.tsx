@@ -36,7 +36,7 @@ export function OfferPopup() {
       setOpen(true);
     };
     const onScroll = () => {
-      const hero = document.getElementById("top-hero");
+      const hero = document.getElementById("top");
       if (hero && window.scrollY > hero.offsetHeight) show();
     };
     const timer = window.setTimeout(show, 15000);
@@ -50,7 +50,9 @@ export function OfferPopup() {
   useEffect(() => {
     if (!open) return;
     const previous = document.activeElement as HTMLElement | null;
-    dialogRef.current?.querySelector<HTMLInputElement>("input")?.focus({ preventScroll: true });
+    const firstInput = dialogRef.current?.querySelector<HTMLInputElement>("input");
+    if (window.matchMedia("(pointer: coarse)").matches || navigator.maxTouchPoints > 0) closeRef.current?.focus({ preventScroll: true });
+    else firstInput?.focus({ preventScroll: true });
 
     const onKey = (event: KeyboardEvent) => {
       if (event.key === "Escape") {

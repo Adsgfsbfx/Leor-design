@@ -1,6 +1,7 @@
 "use client";
 
 import { useEffect, useRef } from "react";
+import { subscribeMediaQuery } from "../../../src/lib/media-query";
 
 export default function HeroVideo() {
   const videoRef = useRef<HTMLVideoElement>(null);
@@ -21,10 +22,10 @@ export default function HeroVideo() {
 
     // Let the page content paint before downloading the decorative background video.
     const playbackTimer = window.setTimeout(syncPlayback, 1_200);
-    motionPreference.addEventListener("change", syncPlayback);
+    const unsubscribeMotionPreference = subscribeMediaQuery(motionPreference, syncPlayback);
     return () => {
       window.clearTimeout(playbackTimer);
-      motionPreference.removeEventListener("change", syncPlayback);
+      unsubscribeMotionPreference();
     };
   }, []);
 

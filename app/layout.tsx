@@ -1,4 +1,4 @@
-import type { Metadata } from "next";
+import type { Metadata, Viewport } from "next";
 import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { site } from "../src/config/site";
@@ -27,6 +27,12 @@ export const metadata: Metadata = {
   title: `${site.companyName} | Home Interiors in Hebbal, Bangalore`,
   description:
     "Thoughtful home interiors in Bangalore. Explore illustrative spaces, finishes, provisional budget ranges, and design services from Leor Design in Hebbal.",
+};
+
+export const viewport: Viewport = {
+  width: "device-width",
+  initialScale: 1,
+  viewportFit: "cover",
 };
 
 export default function RootLayout({ children }: { children: ReactNode }) {

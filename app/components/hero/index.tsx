@@ -106,7 +106,7 @@ export default function Hero() {
   return <section id="top" className="cinematic-hero" aria-labelledby="hero-heading">
     <div className="cinematic-image-reveal">
       <div className="cinematic-image-surface">
-        <video ref={videoRef} data-hero-source={currentVideo} src={currentVideo} className={`cinematic-video-layer${videoFailures.includes(currentVideo) ? " is-failed" : ""}`} width={1920} height={1080} autoPlay muted playsInline preload="auto" disablePictureInPicture disableRemotePlayback controls={false} aria-hidden="true" tabIndex={-1} onEnded={() => advanceVideo(currentVideo)} onError={() => onVideoError(currentVideo)} />
+        <video ref={videoRef} data-hero-source={currentVideo} src={currentVideo} poster="/images/hero-living-room-marble-wall.jpg" className={`cinematic-video-layer${videoFailures.includes(currentVideo) ? " is-failed" : ""}`} width={1920} height={1080} autoPlay muted playsInline preload="metadata" disablePictureInPicture disableRemotePlayback controls={false} aria-hidden="true" tabIndex={-1} onEnded={() => advanceVideo(currentVideo)} onError={() => onVideoError(currentVideo)} />
       </div>
     </div>
     <div className="cinematic-shade" aria-hidden="true" />

@@ -3,6 +3,7 @@
 import Lenis, { type ScrollToOptions } from "lenis";
 import { usePathname } from "next/navigation";
 import { createContext, useCallback, useContext, useEffect, useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
+import { subscribeMediaQuery } from "../src/lib/media-query";
 
 type ScrollTarget = number | string | Element;
 type PendingScroll = { target: ScrollTarget; options?: ScrollToOptions };
@@ -104,13 +105,13 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
     };
 
     syncScrollingMode();
-    reducedMotion.addEventListener("change", syncScrollingMode);
-    coarsePointer.addEventListener("change", syncScrollingMode);
-    noHover.addEventListener("change", syncScrollingMode);
+    const unsubscribeReducedMotion = subscribeMediaQuery(reducedMotion, syncScrollingMode);
+    const unsubscribeCoarsePointer = subscribeMediaQuery(coarsePointer, syncScrollingMode);
+    const unsubscribeNoHover = subscribeMediaQuery(noHover, syncScrollingMode);
     return () => {
-      reducedMotion.removeEventListener("change", syncScrollingMode);
-      coarsePointer.removeEventListener("change", syncScrollingMode);
-      noHover.removeEventListener("change", syncScrollingMode);
+      unsubscribeReducedMotion();
+      unsubscribeCoarsePointer();
+      unsubscribeNoHover();
       destroyLenis();
     };
   }, []);
