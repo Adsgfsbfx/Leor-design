@@ -8,7 +8,6 @@ import { useScrollLock } from "../../../components/smooth-scroll";
 import { concepts, photos, projectCategories, type Photo, type ProjectCategory } from "../../../src/config/images";
 import { materialBrands, projectTerms } from "../../../src/config/budget-details";
 import { buildWhatsAppLink, faqs, phoneDisplay, phoneHref, site } from "../../../src/config/site";
-import { hasBannerBeenDismissed } from "../../../src/lib/cookies";
 import {
   addOns,
   calculateEstimate,
@@ -236,47 +235,24 @@ export function Estimator() {
   const [finish, setFinish] = useState<FinishLevelId>("essential");
   const [selected, setSelected] = useState<AddOnId[]>([]);
   const [showOffer, setShowOffer] = useState(false);
-  const [offerPendingConsent, setOfferPendingConsent] = useState(false);
   const [registering, setRegistering] = useState(false);
   const [registered, setRegistered] = useState(false);
+  useScrollLock(showOffer);
   const estimate = calculateEstimate(home, finish, selected);
   const low = useAnimated(estimate.low);
   const high = useAnimated(estimate.high);
-  const requestOffer = useCallback(() => {
-    if (hasBannerBeenDismissed()) setShowOffer(true);
-    else setOfferPendingConsent(true);
-  }, []);
+  const requestOffer = useCallback(() => setShowOffer(true), []);
 
   useEffect(() => {
     function onClick(event: MouseEvent) {
       const trigger = (event.target as HTMLElement).closest<HTMLElement>("[data-home]");
       if (trigger) {
         setHome(trigger.dataset.home as HomeType);
-        requestOffer();
       }
     }
     document.addEventListener("click", onClick);
     return () => document.removeEventListener("click", onClick);
-  }, [requestOffer]);
-
-  useEffect(() => {
-    if (!offerPendingConsent) return;
-    const openAfterConsent = () => {
-      if (!hasBannerBeenDismissed()) return;
-      setOfferPendingConsent(false);
-      setShowOffer(true);
-    };
-    if (hasBannerBeenDismissed()) {
-      openAfterConsent();
-      return;
-    }
-    window.addEventListener("consent-changed", openAfterConsent);
-    window.addEventListener("storage", openAfterConsent);
-    return () => {
-      window.removeEventListener("consent-changed", openAfterConsent);
-      window.removeEventListener("storage", openAfterConsent);
-    };
-  }, [offerPendingConsent]);
+  }, []);
 
   const rangeText = formatRange(low, high);
   const finalRange = formatRange(estimate.low, estimate.high);
@@ -398,7 +374,7 @@ export function Estimator() {
         )}
         </div>
         {showOffer ? (
-          <div className="estimate-offer-popup" role="dialog" aria-labelledby="estimate-offer-title" aria-modal="false">
+          <div className="estimate-offer-popup" role="dialog" aria-labelledby="estimate-offer-title" aria-modal="true">
             <div className="estimate-offer-card">
               <button type="button" className="estimate-offer-close" aria-label="Close 10% offer" onClick={() => { setShowOffer(false); setRegistering(false); }}>×</button>
               <span className="estimate-offer-kicker">A little something for your home</span>

@@ -75,7 +75,7 @@ export function CookiePreferencesModal({ onClose, onSaved, onRejected }: CookieP
   };
 
   return (
-    <div className="cookie-consent-overlay" onMouseDown={handleBackdropClick}>
+    <div className="cookie-consent-overlay" onClick={handleBackdropClick}>
       <div
         className="cookie-consent-dialog"
         ref={dialogRef}

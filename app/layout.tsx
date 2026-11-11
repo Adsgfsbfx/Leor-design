@@ -40,8 +40,10 @@ export default function RootLayout({ children }: { children: ReactNode }) {
     <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
       <body>
         <TrackingInitializer />
-        <SmoothScrollProvider>{children}</SmoothScrollProvider>
-        <CookieBanner />
+        <SmoothScrollProvider>
+          {children}
+          <CookieBanner />
+        </SmoothScrollProvider>
       </body>
     </html>
   );

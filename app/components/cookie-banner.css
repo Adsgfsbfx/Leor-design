@@ -1,6 +1,7 @@
 .cookie-consent-banner {
   position: fixed;
   z-index: 999;
+  pointer-events: auto;
   inset: auto 24px calc(24px + env(safe-area-inset-bottom));
   left: calc(24px + env(safe-area-inset-left));
   right: calc(24px + env(safe-area-inset-right));
@@ -90,6 +91,8 @@
   letter-spacing: .035em;
   text-align: center;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-appearance: none;
   transition: color .2s ease, background-color .2s ease, border-color .2s ease, transform .2s ease;
 }
 .cookie-action:hover { transform: translateY(-1px); }
@@ -115,6 +118,7 @@
   position: fixed;
   z-index: 1000;
   inset: 0;
+  touch-action: manipulation;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -130,6 +134,7 @@
   max-height: min(86vh, 760px);
   max-height: min(86dvh, 760px);
   overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   overscroll-behavior: contain;
   padding: clamp(26px, 5vw, 44px);
   border: 1px solid rgba(var(--navy-rgb), .16);
@@ -154,6 +159,8 @@
   color: var(--navy);
   font: 300 26px/1 var(--font-inter), Arial, sans-serif;
   cursor: pointer;
+  touch-action: manipulation;
+  -webkit-appearance: none;
   transition: color .2s ease, background-color .2s ease, border-color .2s ease;
 }
 .cookie-consent-close:hover { border-color: var(--navy); background: var(--navy); color: var(--ivory); }
@@ -184,6 +191,7 @@
 }
 
 .cookie-consent-switch { position: relative; display: inline-flex; min-height: 44px; flex: 0 0 auto; align-items: center; gap: 9px; padding-block: 6px; cursor: pointer; }
+.cookie-consent-switch input { touch-action: manipulation; }
 .cookie-consent-switch input {
   position: absolute;
   top: 50%;
@@ -264,6 +272,7 @@
     max-height: 75vh;
     max-height: 75dvh;
     overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
     overscroll-behavior: contain;
     padding: 16px 15px;
   }

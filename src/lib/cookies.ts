@@ -15,6 +15,7 @@ export interface ConsentPreferences {
 const CONSENT_PREFERENCES_KEY = "leor-cookie-preferences";
 const CONSENT_BANNER_DISMISSED_KEY = "leor-consent-banner-dismissed";
 const CONSENT_COOKIE_MAX_AGE = 60 * 60 * 24 * 180;
+let memoryPreferences: ConsentPreferences | null = null;
 
 function readCookie(name: string): string | null {
   if (typeof document === "undefined") return null;
@@ -82,6 +83,8 @@ export function getConsentPreferences(): ConsentPreferences {
     }
   }
 
+  if (memoryPreferences) return memoryPreferences;
+
   return { analytics: false, essential: false, timestamp: 0 };
 }
 
@@ -93,6 +96,7 @@ export function setConsentPreferences(preferences: ConsentPreferences) {
   if (typeof window === "undefined") return;
 
   const toStore: ConsentPreferences = { ...preferences, timestamp: Date.now() };
+  memoryPreferences = toStore;
   writeCookie(CONSENT_PREFERENCES_KEY, JSON.stringify(toStore));
   writeCookie(CONSENT_BANNER_DISMISSED_KEY, "true");
 
@@ -113,10 +117,11 @@ export function hasBannerBeenDismissed(): boolean {
   if (parsePreferences(readCookie(CONSENT_PREFERENCES_KEY))?.essential) return true;
 
   try {
-    return window.localStorage.getItem(CONSENT_BANNER_DISMISSED_KEY) === "true";
+    if (window.localStorage.getItem(CONSENT_BANNER_DISMISSED_KEY) === "true") return true;
   } catch {
-    return false;
+    // Keep the choice available in memory when browser storage is blocked.
   }
+  return memoryPreferences?.essential === true;
 }
 
 /**
@@ -172,6 +177,7 @@ export function canTrack(): boolean {
  * Reset all consent preferences (for testing).
  */
 export function resetConsentPreferences() {
+  memoryPreferences = null;
   deleteCookie(CONSENT_PREFERENCES_KEY);
   deleteCookie(CONSENT_BANNER_DISMISSED_KEY);
   if (typeof window === "undefined") return;

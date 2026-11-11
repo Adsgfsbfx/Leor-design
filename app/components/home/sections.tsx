@@ -14,6 +14,9 @@ import { WhatsAppMark, LeadForm } from "./forms";
 import HeroVideo from "./hero-video";
 import { Estimator } from "./interactive";
 import { FadeUpListItem } from "../../../components/ui/motion";
+import { CookiePreferencesLink } from "../cookie-preferences-link";
+import { ConsultationLink } from "./consultation-link";
+import { EstimatorLink } from "./estimator-link";
 
 const iconPaths: Record<string, string> = {
   check: "M5 12.5l4.5 4.5L19 7.5",
@@ -102,14 +105,14 @@ export function Services() {
         <ul className="services-grid">
           {services.map((service) => (
             <li key={service.title}>
-              <a className="service-card" href="#enquire" aria-label={`Get a free consultation about ${service.title}`}>
+              <ConsultationLink className="service-card" href="#enquire" label={`Get a free consultation about ${service.title}`}>
                 <span className="service-icon"><Icon name={service.icon} /></span>
                 <div>
                   <h3>{service.title}</h3>
                   <p>{service.description}</p>
                   {service.note ? <p className="service-note">{service.note}</p> : null}
                 </div>
-              </a>
+              </ConsultationLink>
             </li>
           ))}
         </ul>
@@ -164,7 +167,7 @@ export function CostCards() {
                 <p className="compact-budget-price compact-budget-price-single"><span>1 BHK</span><strong>₹2L</strong></p>
               </div>
             </div>
-            <a className="compact-budget-cta compact-budget-foot" href="#estimator" data-home="1 BHK" aria-label="Estimate a 1 BHK home">Estimate 1 BHK <span aria-hidden="true">→</span></a>
+            <EstimatorLink home="1 BHK" label="Estimate a 1 BHK home">Estimate 1 BHK <span aria-hidden="true">→</span></EstimatorLink>
           </article>
           <article className="cost-card compact-budget-card combined featured">
             <PremiumImage className="cost-img compact-budget-image" src={photos.kitchenOak.src} alt={photos.kitchenOak.alt} sizes="140px" ratio="1 / 1" />
@@ -177,7 +180,7 @@ export function CostCards() {
                 <p className="compact-budget-price compact-budget-price-row"><span>3 BHK</span><strong>₹4–6L</strong></p>
               </div>
             </div>
-            <a className="compact-budget-cta compact-budget-foot" href="#estimator" data-home="2 BHK" aria-label="Estimate a 2 or 3 BHK home">Estimate 2 / 3 BHK <span aria-hidden="true">→</span></a>
+            <EstimatorLink home="2 BHK" label="Estimate a 2 or 3 BHK home">Estimate 2 / 3 BHK <span aria-hidden="true">→</span></EstimatorLink>
           </article>
           <article className="cost-card compact-budget-card calculator-option">
             <PremiumImage className="cost-img compact-budget-image" src={photos.livingNeutral.src} alt={photos.livingNeutral.alt} sizes="140px" ratio="1 / 1" />
@@ -189,7 +192,7 @@ export function CostCards() {
                 <p className="compact-budget-detail">Select your BHK, finish and add-ons.</p>
               </div>
             </div>
-            <a className="compact-budget-cta compact-budget-foot" href="#estimator">Open cost calculator <span aria-hidden="true">→</span></a>
+            <EstimatorLink label="Open cost calculator">Open cost calculator <span aria-hidden="true">→</span></EstimatorLink>
           </article>
         </div>
         <div className="compact-budget-calculator" id="estimator">
@@ -218,9 +221,9 @@ export function CtaBand({ title, text, cta = "Get a free consultation", href = "
   return (
     <div className="cta-inline">
       {text ? <p>{text}</p> : null}
-      <a className="btn btn-gold" href={href} aria-label={title}>
+      <ConsultationLink className="btn btn-gold" href={href} label={title}>
         {cta} <span aria-hidden="true">→</span>
-      </a>
+      </ConsultationLink>
     </div>
   );
 }
@@ -294,7 +297,7 @@ export function WhyLeor() {
               </li>
             ))}
           </ul>
-          <a className="btn btn-gold" href="#enquire">Start your interior journey <span aria-hidden="true">→</span></a>
+          <ConsultationLink className="btn btn-gold" href="#enquire" label="Start your interior journey">Start your interior journey <span aria-hidden="true">→</span></ConsultationLink>
         </div>
         <PremiumImage className="why-photo" variant="arch" src={photos.villaStaircase.src} alt={photos.villaStaircase.alt} sizes="(max-width: 960px) 100vw, (max-width: 1280px) 50vw, 40vw" ratio="16 / 9" overlay>
           <p>Spaces that feel like you</p>
@@ -492,6 +495,7 @@ export function Footer() {
             <a href="/privacy">Privacy Policy</a>
             <a href="/privacy#terms">Terms and Conditions</a>
             <a href="/privacy#cookies">Cookie Policy</a>
+            <CookiePreferencesLink />
             <a href="/privacy#disclaimer">Disclaimer</a>
           </nav>
         </div>

@@ -1,8 +1,9 @@
 "use client";
 
-import { useCallback, useState, useSyncExternalStore } from "react";
+import { useCallback, useEffect, useState, useSyncExternalStore } from "react";
 import { hasBannerBeenDismissed, setConsentPreferences } from "../../src/lib/cookies";
 import { CookiePreferencesModal } from "./cookie-preferences-modal";
+import { useScrollLock } from "../../components/smooth-scroll";
 import "./cookie-banner.css";
 
 function subscribeToConsentChanges(onChange: () => void) {
@@ -21,10 +22,17 @@ export function CookieBanner() {
   const shouldShowBanner = useSyncExternalStore(subscribeToConsentChanges, getBannerSnapshot, getServerBannerSnapshot);
   const [dismissedInView, setDismissedInView] = useState(false);
   const [showCustomize, setShowCustomize] = useState(false);
+  useScrollLock(showCustomize);
   const handleCloseCustomize = useCallback(() => setShowCustomize(false), []);
   const handlePreferencesDone = useCallback(() => {
     setDismissedInView(true);
     setShowCustomize(false);
+  }, []);
+
+  useEffect(() => {
+    const openPreferences = () => setShowCustomize(true);
+    window.addEventListener("leor:open-cookie-settings", openPreferences);
+    return () => window.removeEventListener("leor:open-cookie-settings", openPreferences);
   }, []);
 
   const saveConsent = (analytics: boolean) => {

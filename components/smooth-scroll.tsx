@@ -31,7 +31,24 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       pendingScrollRef.current = { target, options };
       return;
     }
-    lenisRef.current?.scrollTo(target, options);
+    const current = lenisRef.current;
+    if (current) {
+      current.scrollTo(target, options);
+      return;
+    }
+
+    let top: number;
+    if (typeof target === "number") {
+      top = target;
+    } else {
+      const destination = typeof target === "string"
+        ? document.querySelector<HTMLElement>(target) ?? document.getElementById(target.replace(/^#/, ""))
+        : target;
+      if (!destination) return;
+      top = window.scrollY + destination.getBoundingClientRect().top + (options?.offset ?? 0);
+    }
+    // Numeric scrollTo is supported by older Safari releases too.
+    window.scrollTo(0, Math.max(0, top));
   }, []);
 
   const setScrollLock = useCallback((token: symbol, locked: boolean) => {

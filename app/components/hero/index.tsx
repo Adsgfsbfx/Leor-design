@@ -1,8 +1,9 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { ButtonLink } from "../../../components/ui/button";
 import { Magnetic } from "../../../components/ui/motion";
+import { useSmoothScroll } from "../../../components/smooth-scroll";
 
 const heroVideos = [
   "/videos/hero-new.mp4",
@@ -16,6 +17,19 @@ export default function Hero() {
   const warnedVideosRef = useRef(new Set<string>());
   const [videoIndex, setVideoIndex] = useState(0);
   const [videoFailures, setVideoFailures] = useState<string[]>([]);
+  const { scrollTo } = useSmoothScroll();
+
+  const navigateToSection = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || event.button !== 0) return;
+    const href = event.currentTarget.getAttribute("href");
+    if (!href?.startsWith("#")) return;
+    const target = document.getElementById(href.slice(1));
+    if (!target) return;
+
+    event.preventDefault();
+    if (window.location.hash !== href) window.history.pushState(null, "", href);
+    scrollTo(target, { offset: -84, duration: 1.2 });
+  };
 
   useEffect(() => {
     const video = videoRef.current;
@@ -117,8 +131,8 @@ export default function Hero() {
       <h1 id="hero-heading" aria-label="Thoughtful homes, shaped around the way you live."><span className="cinematic-line-mask"><span>Thoughtful homes,</span></span><span className="cinematic-line-mask"><span>shaped around</span></span><span className="cinematic-line-mask"><span className="cinematic-last-line">the way you live.</span></span></h1>
       <p className="cinematic-subtext">Space planning, modular kitchens, wardrobes and finishes, designed for Bangalore homes. Start with a free conversation.</p>
       <div className="cinematic-actions">
-        <Magnetic><ButtonLink href="#enquire" className="cinematic-primary">Get a free consultation</ButtonLink></Magnetic>
-        <ButtonLink href="#estimator" variant="link" className="cinematic-estimate">Estimate your budget</ButtonLink>
+        <Magnetic><ButtonLink href="#enquire" onClick={navigateToSection} className="cinematic-primary">Get a free consultation</ButtonLink></Magnetic>
+        <ButtonLink href="#estimator" onClick={navigateToSection} variant="link" className="cinematic-estimate">Estimate your budget</ButtonLink>
       </div>
     </div>
 
