@@ -122,7 +122,7 @@ export function OfferPopup() {
           <p className="offer-lead">Share your details and we will talk you through the offer, with no obligation.</p>
           <RegisterForm compact buttonLabel="Claim My 10% Discount" />
           <p className="offer-terms">
-            Online registration is not connected yet: no code is issued or stored here, and you will finish on WhatsApp. <a href="#offer-terms" onClick={() => setOpen(false)}>Offer terms</a>
+            Online registration is not connected yet: no code is issued or stored here, and you will finish on WhatsApp. <a href="/privacy#terms" onClick={() => setOpen(false)}>Offer terms</a>
           </p>
         </div>
       </div>

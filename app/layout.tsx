@@ -23,14 +23,35 @@ const cormorant = localFont({
   display: "swap",
 });
 
+const homepageTitle = `Luxury Interior Designers in Bangalore | ${site.companyName}`;
+const homepageDescription =
+  "Explore luxury home interiors in Bangalore by Leor Design in Hebbal, from space planning and modular kitchens to wardrobes and considered finishes.";
+const socialImage = {
+  url: "/images/hero-living-room-marble-wall.jpg",
+  alt: "Illustrative stock interior photo; not a completed Leor Design project.",
+};
+
 export const metadata: Metadata = {
   metadataBase: new URL("https://leordesign.com"),
   alternates: {
     canonical: "/",
   },
-  title: `${site.companyName} | Luxury Interior Design in Bangalore`,
-  description:
-    "Explore luxury home interiors in Bangalore, with space planning, modular kitchens, wardrobes, finishes and indicative budget guidance from Leor Design in Hebbal.",
+  title: homepageTitle,
+  description: homepageDescription,
+  openGraph: {
+    type: "website",
+    url: "https://leordesign.com/",
+    siteName: site.companyName,
+    title: homepageTitle,
+    description: homepageDescription,
+    images: [socialImage],
+  },
+  twitter: {
+    card: "summary_large_image",
+    title: homepageTitle,
+    description: homepageDescription,
+    images: [socialImage],
+  },
 };
 
 export const viewport: Viewport = {

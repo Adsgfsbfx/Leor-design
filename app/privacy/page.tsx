@@ -4,12 +4,26 @@ import { buildWhatsAppLink, phoneDisplay, phoneHref, site } from "../../src/conf
 
 const privacyMessage =
   "Hi Leor Design, I have a question about privacy and my personal information.";
+const privacyTitle = `Privacy | ${site.companyName}`;
+const privacyDescription = `Privacy information for the ${site.companyName} website.`;
 
 export const metadata: Metadata = {
-  title: `Privacy | ${site.companyName}`,
-  description: `Privacy information for the ${site.companyName} website.`,
+  title: privacyTitle,
+  description: privacyDescription,
   alternates: {
-    canonical: "/privacy",
+    canonical: "https://leordesign.com/privacy",
+  },
+  openGraph: {
+    type: "website",
+    url: "https://leordesign.com/privacy",
+    siteName: site.companyName,
+    title: privacyTitle,
+    description: privacyDescription,
+  },
+  twitter: {
+    card: "summary",
+    title: privacyTitle,
+    description: privacyDescription,
   },
 };
 
@@ -19,10 +33,6 @@ export default function PrivacyPage() {
       <Link className="privacy-back-link" href="/">â† Back to Leor Design</Link>
       <p className="eyebrow">Privacy information</p>
       <h1>Your information, handled with care.</h1>
-      <p className="privacy-review-note">
-        This is a general privacy template, not legal advice. Leor Design should review and update it
-        before publication.
-      </p>
       <section>
         <h2>Enquiries and estimator submissions</h2>
         <p>

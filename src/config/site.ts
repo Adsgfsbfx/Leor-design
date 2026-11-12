@@ -34,7 +34,7 @@ export const faqs = [
   {
     question: "Which areas of Bangalore does Leor Design work in?",
     answer:
-      "We are based in Hebbal and serve homeowners across Bangalore. Share your locality and project details with us and we’ll confirm availability for your area.",
+      "If you are looking for interior designers in Hebbal, Leor Design is based here and serves homeowners across Bangalore. Share your locality and project details with us and we’ll confirm availability for your area.",
   },
   {
     question: "Do you handle painting and electrical work?",
@@ -50,6 +50,11 @@ export const faqs = [
     question: "How much do home interiors cost?",
     answer:
       "Every home is different. The indicative prices and calculator on this page are editable planning estimates only; final pricing depends on site dimensions, selected materials, scope, and current project requirements.",
+  },
+  {
+    question: "How should I compare 2BHK and 3BHK interior designers in Bangalore?",
+    answer:
+      "Compare the proposed scope, materials and written inclusions for your home. The calculator on this page offers editable planning estimates for 2 BHK and 3 BHK homes; final pricing depends on site dimensions, selected materials, scope, and current project requirements.",
   },
   {
     question: "Can I choose the materials and finishes?",

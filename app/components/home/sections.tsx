@@ -99,7 +99,7 @@ export function Services() {
     <section className="section services-section" id="services">
       <div className="wrap">
         <p className="services-mobile-heading" aria-hidden="true">Featured Services</p>
-        <Heading eyebrow="Our services" sub="From complete interiors to focused upgrades, get the work your space needs from one team.">
+        <Heading eyebrow="Our services" sub="For homeowners comparing home interior designers in Bangalore, we plan complete interiors and focused upgrades around the way you live.">
           Thoughtful work for <Gold>every space</Gold>
         </Heading>
         <ul className="services-grid">
@@ -147,7 +147,7 @@ export function CostCards() {
               {brandVisuals.map((item) => (
                 <li key={`${item.brand}-${item.material}`}>
                   <span className="brand-image-circle">
-                    {item.logo ? <Image src={item.logo} alt={`${item.brand} logo`} width={68} height={68} unoptimized /> : <span className="brand-text-mark">Country</span>}
+                    {item.logo ? <Image src={item.logo} alt="" width={68} height={68} unoptimized /> : <span className="brand-text-mark">Country</span>}
                   </span>
                   <strong>{item.brand}</strong>
                   <span>{item.material}</span>
@@ -285,7 +285,7 @@ export function WhyLeor() {
     <section className="section" id="why">
       <div className="wrap why-grid">
         <div>
-          <Heading align="left" eyebrow="The Leor approach" sub="Thoughtful design, a transparent process and a home you will enjoy living in.">
+          <Heading align="left" eyebrow="The Leor approach" sub="For homeowners seeking luxury interior designers in Bangalore, a considered process starts with clear choices and a home you will enjoy living in.">
             More than interiors. <Gold>A better way to home.</Gold>
           </Heading>
           <ul className="why-list">
