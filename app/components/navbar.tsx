@@ -67,7 +67,7 @@ export default function Navbar() {
 
   return <motion.header inert={hidden && !open} className={`cinematic-nav${scrolled ? " is-scrolled" : ""}${hidden ? " is-hidden" : ""}`} initial={false} animate={{ opacity: 1, y: hidden ? -110 : 0 }} transition={{ opacity: { duration: reduce ? 0 : .2 }, y: { duration: reduce ? 0 : .42, ease: [.22, 1, .36, 1] } }}>
     <div className="cinematic-nav-inner">
-      <a href="#top" className="cinematic-brand" aria-label="Leor Design home"><span>LEOR</span><small>Design</small></a>
+      <a href="#top" className="cinematic-brand" aria-label="Leor Design home"><span>LEOR</span><span>Design</span></a>
       <nav className="cinematic-nav-links" aria-label="Primary navigation">{items.map(([label, href]) => <a href={href} onClick={navigateToSection} key={href} className={active === href ? "is-active" : ""} aria-current={active === href ? "location" : undefined}>{label}<i /></a>)}</nav>
       <Magnetic className="cinematic-nav-cta-wrap"><a className="cinematic-nav-cta" href="#enquire">Book a consultation <span aria-hidden="true">↗</span></a></Magnetic>
       <button className={`cinematic-menu-button${open ? " is-open" : ""}`} type="button" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} aria-controls="cinematic-mobile-menu" onClick={() => setOpen((value) => !value)}><span /><span /></button>
