@@ -6,8 +6,6 @@ import Hero from "./components/hero";
 import { ConsultationForm } from "./components/home/forms";
 import { FloatingActions, OfferPopup } from "./components/home/overlays";
 
-export const instant = false;
-
 export default function Home() {
   return (
     <>
