@@ -1,3 +1,4 @@
+import type { Metadata } from "next";
 import Link from "next/link";
 import { Button, ButtonLink } from "../../components/ui/button";
 import { Container } from "../../components/ui/container";
@@ -11,9 +12,16 @@ const colors = [
   { name: "Soft Teal", value: "#4F7C82", className: "bg-navy-soft", note: "Soft" },
 ];
 
-export const metadata = {
+export const metadata: Metadata = {
   title: "Design system | Leor Design",
   description: "Leor Design visual and motion system reference.",
+  alternates: {
+    canonical: "/design-system",
+  },
+  robots: {
+    index: false,
+    follow: false,
+  },
 };
 
 export default function DesignSystemPage() {

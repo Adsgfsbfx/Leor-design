@@ -24,9 +24,13 @@ const cormorant = localFont({
 });
 
 export const metadata: Metadata = {
-  title: `${site.companyName} | Home Interiors in Hebbal, Bangalore`,
+  metadataBase: new URL("https://leordesign.com"),
+  alternates: {
+    canonical: "/",
+  },
+  title: `${site.companyName} | Luxury Interior Design in Bangalore`,
   description:
-    "Thoughtful home interiors in Bangalore. Explore illustrative spaces, finishes, provisional budget ranges, and design services from Leor Design in Hebbal.",
+    "Explore luxury home interiors in Bangalore, with space planning, modular kitchens, wardrobes, finishes and indicative budget guidance from Leor Design in Hebbal.",
 };
 
 export const viewport: Viewport = {

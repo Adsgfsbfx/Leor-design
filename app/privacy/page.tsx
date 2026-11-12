@@ -8,6 +8,9 @@ const privacyMessage =
 export const metadata: Metadata = {
   title: `Privacy | ${site.companyName}`,
   description: `Privacy information for the ${site.companyName} website.`,
+  alternates: {
+    canonical: "/privacy",
+  },
 };
 
 export default function PrivacyPage() {
