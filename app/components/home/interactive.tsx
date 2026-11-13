@@ -109,7 +109,7 @@ export function Projects() {
           </button>
         ))}
       </div>
-      <div className="projects-slider" role="region" aria-roledescription="carousel" aria-label="Concept interior gallery">
+      <div className="projects-slider" role="region" aria-roledescription="carousel" aria-label="Interior gallery">
         <div className="projects-slider-track" style={loopStyle}>
           <motion.ul className="project-grid projects-marquee-group" layout={!reduce}>
             <AnimatePresence mode="popLayout">
@@ -452,7 +452,7 @@ export function Finishes() {
             </li>
           ))}
         </ul>
-        <p className="fine">Photographs are illustrative stock images. Final colour and grain vary by supplier and lighting; Leor will confirm samples.</p>
+        <p className="fine">Photographs are Unsplash images used for visual reference. Final colour and grain vary by supplier and lighting; Leor will confirm samples.</p>
       </div>
     </div>
   );

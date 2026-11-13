@@ -6,5 +6,7 @@ export default function sitemap(): MetadataRoute.Sitemap {
   return [
     { url: siteUrl },
     { url: `${siteUrl}/privacy` },
+    { url: `${siteUrl}/services/full-home-interiors` },
+    { url: `${siteUrl}/services/modular-kitchens` },
   ];
 }

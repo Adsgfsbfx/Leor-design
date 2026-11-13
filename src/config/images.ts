@@ -1,4 +1,4 @@
-// All photographs are from Unsplash (free commercial licence) and are illustrative, not Leor projects.
+// All photographs are from Unsplash (free commercial licence), not Leor projects.
 // Source photo IDs are listed in ASSETS.md.
 export type Photo = { src: string; alt: string };
 
@@ -27,12 +27,12 @@ export type ProjectCategory = "Living rooms" | "Kitchens" | "Bedrooms";
 export const projectCategories: ProjectCategory[] = ["Living rooms", "Kitchens", "Bedrooms"];
 
 export const concepts: { id: string; title: string; room: string; category: ProjectCategory; photo: Photo }[] = [
-  { id: "c1", title: "Marble-wall living room", room: "Living room concept", category: "Living rooms", photo: photos.hero },
-  { id: "c2", title: "White oak kitchen", room: "Modular kitchen concept", category: "Kitchens", photo: photos.kitchenOak },
-  { id: "c3", title: "Timber bedroom suite", room: "Bedroom and wardrobe concept", category: "Bedrooms", photo: photos.bedroomTimber },
-  { id: "c4", title: "Villa living and stair", room: "Villa concept", category: "Living rooms", photo: photos.villaStaircase },
-  { id: "c5", title: "Grey island kitchen", room: "Modular kitchen concept", category: "Kitchens", photo: photos.kitchenGrey },
-  { id: "c6", title: "Arched headboard bedroom", room: "Bedroom concept", category: "Bedrooms", photo: photos.bedroomArched },
-  { id: "c7", title: "Neutral lounge", room: "Living room concept", category: "Living rooms", photo: photos.livingNeutral },
-  { id: "c8", title: "Timber-fronted kitchen", room: "Modular kitchen concept", category: "Kitchens", photo: photos.kitchenTimber },
+  { id: "c1", title: "Marble-wall living room", room: "Living room", category: "Living rooms", photo: photos.hero },
+  { id: "c2", title: "White oak kitchen", room: "Modular kitchen", category: "Kitchens", photo: photos.kitchenOak },
+  { id: "c3", title: "Timber bedroom suite", room: "Bedroom and wardrobe", category: "Bedrooms", photo: photos.bedroomTimber },
+  { id: "c4", title: "Villa living and stair", room: "Villa living room", category: "Living rooms", photo: photos.villaStaircase },
+  { id: "c5", title: "Grey island kitchen", room: "Modular kitchen", category: "Kitchens", photo: photos.kitchenGrey },
+  { id: "c6", title: "Arched headboard bedroom", room: "Bedroom", category: "Bedrooms", photo: photos.bedroomArched },
+  { id: "c7", title: "Neutral lounge", room: "Living room", category: "Living rooms", photo: photos.livingNeutral },
+  { id: "c8", title: "Timber-fronted kitchen", room: "Modular kitchen", category: "Kitchens", photo: photos.kitchenTimber },
 ];

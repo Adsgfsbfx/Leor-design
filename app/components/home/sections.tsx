@@ -17,6 +17,7 @@ import { FadeUpListItem } from "../../../components/ui/motion";
 import { CookiePreferencesLink } from "../cookie-preferences-link";
 import { ConsultationLink } from "./consultation-link";
 import { EstimatorLink } from "./estimator-link";
+import TestimonialsCarousel from "./testimonials-carousel";
 
 const iconPaths: Record<string, string> = {
   check: "M5 12.5l4.5 4.5L19 7.5",
@@ -210,7 +211,7 @@ export function CostCards() {
 export function ProjectsHeading() {
   return (
     <div className="projects-head">
-      <Heading align="left" eyebrow="Previous works & concepts">
+      <Heading align="left" eyebrow="Interior inspiration">
         Spaces to <Gold>inspire</Gold> your home
       </Heading>
     </div>
@@ -329,33 +330,7 @@ export function Testimonials() {
         <Heading align="left" eyebrow="Made for your life, loved every day">
           Kind Words from the Homes We’ve Shaped
         </Heading>
-        <div className="testimonial-slider" role="region" aria-roledescription="carousel" aria-label="Client testimonials">
-          <div className="testimonial-track">
-            {[false, true].map((duplicate) => (
-              <ul className={`testimonial-grid${duplicate ? " testimonial-grid-clone" : ""}`} key={String(duplicate)} aria-hidden={duplicate || undefined}>
-                {examples.map((review, index) => {
-                  const content = (
-                    <>
-                      <div className="testimonial-person">
-                        <span className={`testimonial-avatar testimonial-avatar-${index % 6}`} aria-hidden="true">{review.initials}</span>
-                        <div className="testimonial-person-copy">
-                          <p className="testimonial-name">{review.name}</p>
-                          <p className="testimonial-role">{review.role}</p>
-                        </div>
-                      </div>
-                      <div className="testimonial-stars" aria-label="5 out of 5 stars">★★★★★</div>
-                      <blockquote>{review.quote}</blockquote>
-                    </>
-                  );
-
-                  return duplicate
-                    ? <li className="testimonial-card" key={review.name}>{content}</li>
-                    : <FadeUpListItem className="testimonial-card" key={review.name} delay={index * 0.07}>{content}</FadeUpListItem>;
-                })}
-              </ul>
-            ))}
-          </div>
-        </div>
+        <TestimonialsCarousel reviews={examples} />
       </div>
     </section>
   );
@@ -443,7 +418,7 @@ export function ConsultationSection({ children }: { children: React.ReactNode })
   );
 }
 
-export function Footer() {
+export function Footer({ homeLinks = false }: { homeLinks?: boolean }) {
   return (
     <footer className="footer">
       <div className="wrap footer-grid">
@@ -455,14 +430,14 @@ export function Footer() {
         <nav aria-label="Footer quick links">
           <h3>Explore</h3>
           <ul className="footer-link-list">
-            <li><a href="#top">Home</a></li>
-            <li><a href="#highlights">About</a></li>
-            <li><a href="#services">Services</a></li>
-            <li><a href="#projects">Projects</a></li>
-            <li><a href="#why">Design Process</a></li>
-            <li><a href="#estimator">Cost Estimator</a></li>
-            <li><a href="#contact">Contact</a></li>
-            <li><a href="#faq">FAQs</a></li>
+            <li><a href={homeLinks ? "/#top" : "#top"}>Home</a></li>
+            <li><a href={homeLinks ? "/#highlights" : "#highlights"}>About</a></li>
+            <li><a href={homeLinks ? "/#services" : "#services"}>Services</a></li>
+            <li><a href={homeLinks ? "/#projects" : "#projects"}>Projects</a></li>
+            <li><a href={homeLinks ? "/#why" : "#why"}>Design Process</a></li>
+            <li><a href={homeLinks ? "/#estimator" : "#estimator"}>Cost Estimator</a></li>
+            <li><a href={homeLinks ? "/#contact" : "#contact"}>Contact</a></li>
+            <li><a href={homeLinks ? "/#faq" : "#faq"}>FAQs</a></li>
           </ul>
         </nav>
         <div>

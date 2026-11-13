@@ -128,7 +128,7 @@ export default function Hero() {
 
     <div className="cinematic-copy">
       <p className="cinematic-eyebrow">Hebbal, Bangalore <span>·</span> Home interior</p>
-      <h1 id="hero-heading" aria-label="Thoughtful home interiors in Bangalore."><span className="cinematic-line-mask"><span>Thoughtful home</span></span><span className="cinematic-line-mask"><span>interiors in</span></span><span className="cinematic-line-mask"><span className="cinematic-last-line">Bangalore.</span></span></h1>
+      <h1 id="hero-heading" aria-label="Interior Designers in Bangalore"><span className="cinematic-line-mask"><span>Interior</span></span>{" "}<span className="cinematic-line-mask"><span>Designers in</span></span>{" "}<span className="cinematic-line-mask"><span className="cinematic-last-line">Bangalore</span></span></h1>
       <p className="cinematic-subtext">Space planning, modular kitchens, wardrobes and finishes, designed for Bangalore homes. Start with a free conversation.</p>
       <div className="cinematic-actions">
         <Magnetic><ButtonLink href="#enquire" onClick={navigateToSection} className="cinematic-primary">Get a free consultation</ButtonLink></Magnetic>

@@ -11,7 +11,7 @@ const items = [
   ["FAQs", "#faq"], ["Contact", "#contact"],
 ] as const;
 
-export default function Navbar() {
+export default function Navbar({ homeLinks = false }: { homeLinks?: boolean }) {
   const [scrolled, setScrolled] = useState(false);
   const [hidden, setHidden] = useState(false);
   const [open, setOpen] = useState(false);
@@ -67,14 +67,14 @@ export default function Navbar() {
 
   return <motion.header inert={hidden && !open} className={`cinematic-nav${scrolled ? " is-scrolled" : ""}${hidden ? " is-hidden" : ""}`} initial={false} animate={{ opacity: 1, y: hidden ? -110 : 0 }} transition={{ opacity: { duration: reduce ? 0 : .2 }, y: { duration: reduce ? 0 : .42, ease: [.22, 1, .36, 1] } }}>
     <div className="cinematic-nav-inner">
-      <a href="#top" className="cinematic-brand" aria-label="Leor Design home"><span>LEOR</span><span>Design</span></a>
-      <nav className="cinematic-nav-links" aria-label="Primary navigation">{items.map(([label, href]) => <a href={href} onClick={navigateToSection} key={href} className={active === href ? "is-active" : ""} aria-current={active === href ? "location" : undefined}>{label}<i /></a>)}</nav>
-      <Magnetic className="cinematic-nav-cta-wrap"><a className="cinematic-nav-cta" href="#enquire">Book a consultation <span aria-hidden="true">↗</span></a></Magnetic>
+      <a href={homeLinks ? "/#top" : "#top"} className="cinematic-brand" aria-label="Leor Design home"><span>LEOR</span><span>Design</span></a>
+      <nav className="cinematic-nav-links" aria-label="Primary navigation">{items.map(([label, href]) => { const target = homeLinks ? `/${href}` : href; return <a href={target} onClick={navigateToSection} key={href} className={active === href ? "is-active" : ""} aria-current={active === href ? "location" : undefined}>{label}<i /></a>; })}</nav>
+      <Magnetic className="cinematic-nav-cta-wrap"><a className="cinematic-nav-cta" href={homeLinks ? "/#enquire" : "#enquire"}>Book a consultation <span aria-hidden="true">↗</span></a></Magnetic>
       <button className={`cinematic-menu-button${open ? " is-open" : ""}`} type="button" aria-label={open ? "Close menu" : "Open menu"} aria-expanded={open} aria-controls="cinematic-mobile-menu" onClick={() => setOpen((value) => !value)}><span /><span /></button>
     </div>
     <AnimatePresence>
       {open && <motion.div id="cinematic-mobile-menu" className="cinematic-mobile-menu" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} transition={{ duration: reduce ? 0 : .28 }}>
-        <nav aria-label="Mobile navigation">{items.map(([label, href], index) => <motion.a key={href} href={href} onClick={navigateToSection} initial={reduce ? false : { opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: reduce ? 0 : .52, delay: reduce ? 0 : .12 + index * .09, ease: [.22, 1, .36, 1] }}>{label}<span aria-hidden="true">↗</span></motion.a>)}</nav>
+        <nav aria-label="Mobile navigation">{items.map(([label, href], index) => <motion.a key={href} href={homeLinks ? `/${href}` : href} onClick={navigateToSection} initial={reduce ? false : { opacity: 0, y: 20 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }} transition={{ duration: reduce ? 0 : .52, delay: reduce ? 0 : .12 + index * .09, ease: [.22, 1, .36, 1] }}>{label}<span aria-hidden="true">↗</span></motion.a>)}</nav>
         <div className="cinematic-mobile-footer"><a href={phoneHref}>{site.phoneNumber.replace("+91 ", "")}</a><a href={buildWhatsAppLink(site.whatsappMessage)} target="_blank" rel="noopener noreferrer">WhatsApp <span aria-hidden="true">↗</span></a></div>
       </motion.div>}
     </AnimatePresence>

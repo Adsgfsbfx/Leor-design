@@ -309,11 +309,9 @@ export function ConsultationForm() {
       void sendVisitorEvent({ eventName: "form_submit", ctaName: "consultation-form", leadId: typeof result?.leadId === "string" ? result.leadId : "" });
       
       setDone(true);
-    } catch (error) {
+    } catch {
       void sendVisitorEvent({ eventName: "form_error", ctaName: "consultation-form-submit" });
-      setSubmitError(error instanceof Error && error.message
-        ? error.message
-        : "We couldn't reach the server. Check your connection and try again.");
+      setSubmitError("Something went wrong.");
     } finally {
       submissionInProgressRef.current = false;
       setSubmitting(false);
@@ -415,7 +413,7 @@ export function ConsultationForm() {
         <span>I agree to be contacted by Leor Design about my consultation. See the <a href="/privacy">privacy notice</a>.</span>
       </label>
       {errors.consent ? <p className="field-error" id={`${uid}-consent-error`} role="alert">{errors.consent}</p> : null}
-      {submitError ? <p className="field-error" role="alert">{submitError} You can retry; your details are still here.</p> : null}
+      {submitError ? <p className="field-error" role="alert">{submitError}</p> : null}
       <button className="btn btn-gold" type="submit" disabled={submitting} aria-busy={submitting}>
         {submitting ? "Sending your enquiry…" : "Book my consultation"} {!submitting ? <span aria-hidden="true">→</span> : null}
       </button>
@@ -529,11 +527,9 @@ export function RegisterForm({
       
       setDone(true);
       onDone?.();
-    } catch (error) {
+    } catch {
       void sendVisitorEvent({ eventName: "form_error", ctaName: "estimator-form-submit" });
-      setSubmitError(error instanceof Error && error.message
-        ? error.message
-        : "We couldn't reach the server. Check your connection and try again.");
+      setSubmitError("Something went wrong.");
     } finally {
       submissionInProgressRef.current = false;
       setSubmitting(false);

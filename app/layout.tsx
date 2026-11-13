@@ -5,6 +5,7 @@ import { site } from "../src/config/site";
 import { SmoothScrollProvider } from "../components/smooth-scroll";
 import { TrackingInitializer } from "./components/tracking-initializer";
 import { CookieBanner } from "./components/cookie-banner";
+import { JsonLd } from "./components/seo/json-ld";
 import "./globals.css";
 
 const inter = localFont({
@@ -23,12 +24,12 @@ const cormorant = localFont({
   display: "swap",
 });
 
-const homepageTitle = `Luxury Interior Designers in Bangalore | ${site.companyName}`;
+const homepageTitle = `Interior Designers in Bangalore | ${site.companyName}`;
 const homepageDescription =
-  "Explore luxury home interiors in Bangalore by Leor Design in Hebbal, from space planning and modular kitchens to wardrobes and considered finishes.";
+  "Discover Leor Design, an interior design company in Bangalore creating beautiful home interiors, modular kitchens and thoughtfully designed living spaces.";
 const socialImage = {
   url: "/images/hero-living-room-marble-wall.jpg",
-  alt: "Illustrative stock interior photo; not a completed Leor Design project.",
+  alt: "Contemporary Indian living room with a marble feature wall and a mandir niche",
 };
 
 export const metadata: Metadata = {
@@ -64,6 +65,26 @@ export default function RootLayout({ children }: { children: ReactNode }) {
   return (
     <html lang="en" className={`${inter.variable} ${cormorant.variable}`}>
       <body>
+        <JsonLd
+          data={{
+            "@context": "https://schema.org",
+            "@graph": [
+              {
+                "@type": "Organization",
+                "@id": "https://leordesign.com/#organization",
+                name: site.companyName,
+                url: "https://leordesign.com",
+              },
+              {
+                "@type": "WebSite",
+                "@id": "https://leordesign.com/#website",
+                name: site.companyName,
+                url: "https://leordesign.com",
+                publisher: { "@id": "https://leordesign.com/#organization" },
+              },
+            ],
+          }}
+        />
         <TrackingInitializer />
         <SmoothScrollProvider>
           {children}

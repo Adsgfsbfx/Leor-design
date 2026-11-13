@@ -122,8 +122,8 @@ export default function PrivacyPage() {
       <section id="disclaimer">
         <h2>Disclaimer</h2>
         <p>
-          Website photographs are illustrative Unsplash stock images and are not represented as
-          completed Leor Design projects. Budgets are indicative and may change after a site visit,
+          Website photographs are Unsplash images for visual reference and are not completed Leor
+          Design projects. Budgets are indicative and may change after a site visit,
           measurement, material selection and confirmation of the project scope.
         </p>
       </section>
