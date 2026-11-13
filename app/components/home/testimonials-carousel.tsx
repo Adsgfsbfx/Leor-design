@@ -139,7 +139,7 @@ export default function TestimonialsCarousel({ reviews }: { reviews: Testimonial
         onKeyDown={handleKeyDown}
         onMouseEnter={() => { hoverRef.current = true; }}
         onMouseLeave={() => { hoverRef.current = false; }}
-        onFocus={() => { focusRef.current = true; }}
+        onFocus={(event) => { focusRef.current = event.currentTarget.matches(":focus-visible"); }}
         onBlur={handleBlur}
         onTouchStart={() => { touchRef.current = true; pausedUntilRef.current = performance.now() + 5000; }}
         onTouchMove={() => { pausedUntilRef.current = performance.now() + 5000; }}
