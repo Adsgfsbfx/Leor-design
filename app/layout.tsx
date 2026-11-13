@@ -37,6 +37,14 @@ export const metadata: Metadata = {
   alternates: {
     canonical: "/",
   },
+  icons: {
+    icon: [
+      { url: "/favicon.ico", type: "image/x-icon" },
+      { url: "/leor-favicon-512.png", type: "image/png", sizes: "512x512" },
+    ],
+    shortcut: "/favicon.ico",
+    apple: [{ url: "/leor-favicon-512.png", type: "image/png", sizes: "512x512" }],
+  },
   title: homepageTitle,
   description: homepageDescription,
   openGraph: {
