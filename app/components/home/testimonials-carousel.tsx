@@ -139,7 +139,9 @@ export default function TestimonialsCarousel({ reviews }: { reviews: Testimonial
         tabIndex={0}
         onScroll={updateCurrentReview}
         onKeyDown={handleKeyDown}
-        onMouseEnter={() => { hoverRef.current = true; }}
+        onMouseEnter={() => {
+          if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) hoverRef.current = true;
+        }}
         onMouseLeave={() => { hoverRef.current = false; }}
         onFocus={(event) => { focusRef.current = event.currentTarget.matches(":focus-visible"); }}
         onBlur={handleBlur}
