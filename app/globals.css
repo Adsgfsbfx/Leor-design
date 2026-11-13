@@ -1735,7 +1735,7 @@ body::before {
 
 .testimonials-section .heading { margin: 0 0 28px; text-align: left; }
 .testimonials-section .heading .eyebrow { font-size: .9rem; font-weight: 800; }
-.testimonial-slider { width: 100%; overflow: hidden; margin: 0; padding: 5px 0 20px; scrollbar-width: none; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y; }
+.testimonial-slider { width: 100%; overflow: hidden; margin: 0; padding: 5px 0 20px; scrollbar-width: none; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; touch-action: auto; }
 .testimonial-slider::-webkit-scrollbar { display: none; }
 .testimonial-track { position: relative; display: flex; width: max-content; }
 .testimonial-grid { position: relative; display: flex; flex: 0 0 auto; align-items: stretch; gap: 15px; width: max-content; margin: 0; padding: 0 15px 0 0; list-style: none; }
@@ -1755,7 +1755,7 @@ body::before {
   .testimonial-card { min-height: 240px; }
 }
 @media (max-width: 700px) {
-  .testimonial-slider { overflow-x: auto; scroll-behavior: auto; scroll-snap-type: none; }
+  .testimonial-slider { overflow-x: auto; overflow-y: hidden; scroll-behavior: auto; scroll-snap-type: none; touch-action: auto; }
   .testimonial-track { width: max-content; }
   .testimonial-grid { gap: 12px; padding-right: 12px; }
   .testimonial-card { width: clamp(210px, 74vw, 260px); min-height: 0; flex-basis: clamp(210px, 74vw, 260px); padding: 17px; }
