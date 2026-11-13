@@ -211,7 +211,7 @@ export function CostCards() {
 export function ProjectsHeading() {
   return (
     <div className="projects-head">
-      <Heading align="left" eyebrow="Interior inspiration">
+      <Heading align="left" eyebrow="Interior design">
         Spaces to <Gold>inspire</Gold> your home
       </Heading>
     </div>

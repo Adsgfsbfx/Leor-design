@@ -1,7 +1,6 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type FocusEvent, type KeyboardEvent } from "react";
-import { subscribeMediaQuery } from "../../../src/lib/media-query";
+import { useEffect, useRef, useState, type KeyboardEvent } from "react";
 
 type Testimonial = {
   name: string;
@@ -12,27 +11,13 @@ type Testimonial = {
 export default function TestimonialsCarousel({ reviews }: { reviews: Testimonial[] }) {
   const viewportRef = useRef<HTMLDivElement>(null);
   const trackRef = useRef<HTMLDivElement>(null);
-  const pausedUntilRef = useRef(0);
-  const hoverRef = useRef(false);
-  const focusRef = useRef(false);
-  const touchRef = useRef(false);
-  const [currentReview, setCurrentReview] = useState(0);
-  const [canAutoplay, setCanAutoplay] = useState(false);
+  const resumeTimerRef = useRef<number | null>(null);
+  const [isAutoplayPaused, setIsAutoplayPaused] = useState(false);
 
-  useEffect(() => {
-    const reducedMotionQuery = window.matchMedia("(prefers-reduced-motion: reduce)");
-    const updateAutoplay = () => setCanAutoplay(!reducedMotionQuery.matches);
-    updateAutoplay();
-    return subscribeMediaQuery(reducedMotionQuery, updateAutoplay);
-  }, []);
-
-  const updateCurrentReview = useCallback(() => {
+  const getCurrentReview = () => {
     const viewport = viewportRef.current;
     const track = trackRef.current;
-    if (!viewport || !track || reviews.length === 0) return;
-
-    const firstLoop = track.querySelector<HTMLElement>(".testimonial-loop:not([aria-hidden='true'])");
-    if (!firstLoop || firstLoop.offsetWidth === 0) return;
+    if (!viewport || !track || reviews.length === 0) return 0;
 
     const viewportLeft = viewport.getBoundingClientRect().left;
     const cards = track.querySelectorAll<HTMLElement>(".testimonial-card");
@@ -47,66 +32,58 @@ export default function TestimonialsCarousel({ reviews }: { reviews: Testimonial
       }
     });
 
-    setCurrentReview((current) => current === nearestIndex ? current : nearestIndex);
-  }, [reviews.length]);
+    return nearestIndex;
+  };
 
-  useEffect(() => {
-    if (!canAutoplay || reviews.length < 2) return;
+  const pauseAutoplay = () => {
+    if (resumeTimerRef.current !== null) window.clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = null;
+    trackRef.current?.classList.add("is-paused");
+    setIsAutoplayPaused(true);
+  };
 
+  const resumeAutoplayAfterInteraction = () => {
+    if (resumeTimerRef.current !== null) window.clearTimeout(resumeTimerRef.current);
+    resumeTimerRef.current = window.setTimeout(() => {
+      trackRef.current?.classList.remove("is-paused");
+      resumeTimerRef.current = null;
+      setIsAutoplayPaused(false);
+    }, 5000);
+  };
+
+  useEffect(() => () => {
+    if (resumeTimerRef.current !== null) window.clearTimeout(resumeTimerRef.current);
+  }, []);
+
+  const goToReview = (reviewIndex: number, direction: -1 | 1) => {
+    if (reviews.length < 2) return;
     const viewport = viewportRef.current;
     const track = trackRef.current;
     if (!viewport || !track) return;
 
-    const firstLoop = track.querySelector<HTMLElement>(".testimonial-loop:not([aria-hidden='true'])");
-    if (!firstLoop) return;
+    pauseAutoplay();
+    const cards = Array.from(track.querySelectorAll<HTMLElement>(".testimonial-card"));
+    const candidates = cards.filter((_, index) => index % reviews.length === reviewIndex);
+    if (candidates.length === 0) return;
 
-    let frame = 0;
-    let previousTime = 0;
-    const pixelsPerMillisecond = 0.032;
-
-    const move = (time: number) => {
-      if (previousTime === 0) previousTime = time;
-      const elapsed = Math.min(time - previousTime, 48);
-      previousTime = time;
-
-      const loopWidth = firstLoop.offsetWidth;
-      const paused = hoverRef.current || focusRef.current || touchRef.current || document.visibilityState !== "visible" || time < pausedUntilRef.current;
-      if (!paused && loopWidth > 0) {
-        viewport.scrollLeft += elapsed * pixelsPerMillisecond;
-        if (viewport.scrollLeft >= loopWidth) viewport.scrollLeft -= loopWidth;
-        updateCurrentReview();
-      }
-
-      frame = window.requestAnimationFrame(move);
-    };
-
-    frame = window.requestAnimationFrame(move);
-    return () => window.cancelAnimationFrame(frame);
-  }, [canAutoplay, reviews.length, updateCurrentReview]);
-
-  const goToReview = (reviewIndex: number) => {
-    const viewport = viewportRef.current;
-    const card = trackRef.current?.querySelectorAll<HTMLElement>(".testimonial-card")[reviewIndex];
-    if (!viewport || !card) return;
-
-    pausedUntilRef.current = performance.now() + 5000;
+    const viewportLeft = viewport.getBoundingClientRect().left;
+    const card = direction > 0
+      ? candidates.find((candidate) => candidate.getBoundingClientRect().left >= viewportLeft) ?? candidates[candidates.length - 1]
+      : [...candidates].reverse().find((candidate) => candidate.getBoundingClientRect().left < viewportLeft) ?? candidates[0];
     const targetLeft = viewport.scrollLeft + card.getBoundingClientRect().left - viewport.getBoundingClientRect().left;
-    viewport.scrollTo({ left: targetLeft, behavior: canAutoplay ? "smooth" : "auto" });
-    setCurrentReview(reviewIndex);
+    const behavior = window.matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth";
+    viewport.scrollTo({ left: targetLeft, behavior });
+    resumeAutoplayAfterInteraction();
   };
 
   const handleKeyDown = (event: KeyboardEvent<HTMLDivElement>) => {
     if (event.key === "ArrowLeft") {
       event.preventDefault();
-      goToReview((currentReview - 1 + reviews.length) % reviews.length);
+      goToReview((getCurrentReview() - 1 + reviews.length) % reviews.length, -1);
     } else if (event.key === "ArrowRight") {
       event.preventDefault();
-      goToReview((currentReview + 1) % reviews.length);
+      goToReview((getCurrentReview() + 1) % reviews.length, 1);
     }
-  };
-
-  const handleBlur = (event: FocusEvent<HTMLDivElement>) => {
-    if (!event.currentTarget.contains(event.relatedTarget as Node | null)) focusRef.current = false;
   };
 
   const cards = (duplicate = false) => (
@@ -137,20 +114,12 @@ export default function TestimonialsCarousel({ reviews }: { reviews: Testimonial
         role="region"
         aria-label="Client testimonials"
         tabIndex={0}
-        onScroll={updateCurrentReview}
         onKeyDown={handleKeyDown}
-        onMouseEnter={() => {
-          if (window.matchMedia("(hover: hover) and (pointer: fine)").matches) hoverRef.current = true;
-        }}
-        onMouseLeave={() => { hoverRef.current = false; }}
-        onFocus={(event) => { focusRef.current = event.currentTarget.matches(":focus-visible"); }}
-        onBlur={handleBlur}
-        onTouchStart={() => { touchRef.current = true; pausedUntilRef.current = performance.now() + 5000; }}
-        onTouchMove={() => { pausedUntilRef.current = performance.now() + 5000; }}
-        onTouchEnd={() => { touchRef.current = false; pausedUntilRef.current = performance.now() + 5000; }}
-        onTouchCancel={() => { touchRef.current = false; pausedUntilRef.current = performance.now() + 5000; }}
+        onTouchStart={pauseAutoplay}
+        onTouchEnd={resumeAutoplayAfterInteraction}
+        onTouchCancel={resumeAutoplayAfterInteraction}
       >
-        <div className="testimonial-track" ref={trackRef}>
+        <div className={`testimonial-track${reviews.length > 1 ? " is-autoplaying" : ""}${isAutoplayPaused ? " is-paused" : ""}`} ref={trackRef}>
           {cards()}
           {cards(true)}
         </div>
