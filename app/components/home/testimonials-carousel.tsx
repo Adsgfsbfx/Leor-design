@@ -32,12 +32,10 @@ export default function TestimonialsCarousel({ reviews }: { reviews: Testimonial
     if (!viewport || !track || reviews.length === 0) return;
 
     const firstLoop = track.querySelector<HTMLElement>(".testimonial-loop:not([aria-hidden='true'])");
-    const loopWidth = firstLoop?.offsetWidth ?? 0;
-    if (!firstLoop || loopWidth === 0) return;
-    if (viewport.scrollLeft >= loopWidth) viewport.scrollLeft %= loopWidth;
+    if (!firstLoop || firstLoop.offsetWidth === 0) return;
 
     const viewportLeft = viewport.getBoundingClientRect().left;
-    const cards = firstLoop.querySelectorAll<HTMLElement>(".testimonial-card");
+    const cards = track.querySelectorAll<HTMLElement>(".testimonial-card");
     let nearestIndex = 0;
     let nearestDistance = Number.POSITIVE_INFINITY;
 
@@ -45,7 +43,7 @@ export default function TestimonialsCarousel({ reviews }: { reviews: Testimonial
       const distance = Math.abs(card.getBoundingClientRect().left - viewportLeft);
       if (distance < nearestDistance) {
         nearestDistance = distance;
-        nearestIndex = index;
+        nearestIndex = index % reviews.length;
       }
     });
 
@@ -56,8 +54,11 @@ export default function TestimonialsCarousel({ reviews }: { reviews: Testimonial
     if (!canAutoplay || reviews.length < 2) return;
 
     const viewport = viewportRef.current;
-    const firstLoop = trackRef.current?.querySelector<HTMLElement>(".testimonial-loop:not([aria-hidden='true'])");
-    if (!viewport || !firstLoop) return;
+    const track = trackRef.current;
+    if (!viewport || !track) return;
+
+    const firstLoop = track.querySelector<HTMLElement>(".testimonial-loop:not([aria-hidden='true'])");
+    if (!firstLoop) return;
 
     let frame = 0;
     let previousTime = 0;
@@ -89,7 +90,8 @@ export default function TestimonialsCarousel({ reviews }: { reviews: Testimonial
     if (!viewport || !card) return;
 
     pausedUntilRef.current = performance.now() + 5000;
-    viewport.scrollTo({ left: card.offsetLeft, behavior: "smooth" });
+    const targetLeft = viewport.scrollLeft + card.getBoundingClientRect().left - viewport.getBoundingClientRect().left;
+    viewport.scrollTo({ left: targetLeft, behavior: canAutoplay ? "smooth" : "auto" });
     setCurrentReview(reviewIndex);
   };
 
