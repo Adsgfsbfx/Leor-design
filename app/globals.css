@@ -844,8 +844,8 @@ body::before {
 .cinematic-copy { position: absolute; z-index: 2; left: max(6vw, calc((100vw - 1440px) / 2)); bottom: clamp(104px, 14vh, 152px); width: min(870px, 72vw); }
 .cinematic-eyebrow { display: flex; align-items: center; gap: 9px; margin-bottom: 22px; color: var(--ivory); font-size: 15px; font-weight: 600; letter-spacing: .18em; line-height: 1.4; text-transform: uppercase; text-shadow: 0 1px 12px rgba(var(--navy-rgb),.42); }
 .cinematic-eyebrow span { color: var(--gold-light); }
-.cinematic-copy h1 { font: 500 clamp(44px, 7vw, 104px)/.9 var(--font-display); letter-spacing: -.04em; text-wrap: pretty; color: var(--ivory); text-shadow: 0 2px 24px rgba(var(--navy-rgb),.35); }
-.cinematic-line-mask { display: block; overflow: hidden; padding: .035em 0 .07em; }
+.cinematic-copy h1 { font: 500 clamp(44px, 7vw, 104px)/1.05 var(--font-inter), Arial, sans-serif; letter-spacing: -.04em; text-wrap: pretty; color: var(--ivory); text-shadow: 0 2px 24px rgba(var(--navy-rgb),.35); }
+.cinematic-line-mask { display: block; overflow: visible; padding: .035em 0 .07em; }
 .cinematic-line-mask > span { display: block; }
 .cinematic-copy h1 .cinematic-last-line { color: var(--gold-light); font-style: italic; font-weight: 500; }
 .cinematic-subtext { max-width: 52ch; margin-top: 24px; color: var(--ivory); font-size: clamp(18px, 1.3vw, 20px); font-weight: 500; line-height: 1.6; text-shadow: 0 1px 12px rgba(var(--navy-rgb),.46); }
