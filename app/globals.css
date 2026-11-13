@@ -900,10 +900,10 @@ body::before {
   .cinematic-mobile-footer a + a { color: var(--gold-light); }
 }
 @media (max-width: 680px) {
-  .cinematic-hero { min-height: 600px; }
+  .cinematic-hero { height: auto; min-height: max(100svh, 600px); }
   .cinematic-shade { background: radial-gradient(ellipse 82% 65% at 0% 100%, rgba(var(--navy-rgb),.4) 0%, rgba(var(--navy-rgb),.2) 44%, transparent 100%); }
   .cinematic-nav-inner { width: calc(100% - 40px - env(safe-area-inset-left) - env(safe-area-inset-right)); height: 72px; }
-  .cinematic-copy { right: calc(22px + env(safe-area-inset-right)); bottom: calc(88px + env(safe-area-inset-bottom)); left: calc(22px + env(safe-area-inset-left)); width: auto; }
+  .cinematic-copy { position: relative; inset: auto; width: auto; margin: calc(104px + env(safe-area-inset-top)) calc(22px + env(safe-area-inset-right)) calc(104px + env(safe-area-inset-bottom)) calc(22px + env(safe-area-inset-left)); }
   .cinematic-eyebrow { margin-bottom: 16px; gap: 6px; font-size: 14px; letter-spacing: .1em; }
   .cinematic-subtext { margin-top: 17px; font-size: 17px; line-height: 1.6; }
   .cinematic-actions { align-items: stretch; flex-direction: column; gap: 16px; margin-top: 24px; }
@@ -912,10 +912,13 @@ body::before {
   .cinematic-actions .cinematic-estimate { border-width: 2px; }
 }
 @media (max-width: 390px) {
-  .cinematic-copy { right: calc(18px + env(safe-area-inset-right)); left: calc(18px + env(safe-area-inset-left)); bottom: calc(80px + env(safe-area-inset-bottom)); }
+  .cinematic-copy { margin-right: calc(18px + env(safe-area-inset-right)); margin-left: calc(18px + env(safe-area-inset-left)); }
   .cinematic-eyebrow { gap: 5px; font-size: 14px; letter-spacing: .075em; }
 }
 @media (max-width: 1050px) and (max-height: 520px) and (orientation: landscape) {
+  .cinematic-hero { height: auto; min-height: 100svh; }
+  .cinematic-copy { position: relative; inset: auto; width: auto; margin: calc(96px + env(safe-area-inset-top)) clamp(28px, 7vw, 72px) calc(96px + env(safe-area-inset-bottom)); }
+  .cinematic-copy h1 { font-size: clamp(36px, 5.5vw, 64px); }
   .cinematic-mobile-menu { padding-top: calc(76px + env(safe-area-inset-top)); }
   .cinematic-mobile-menu > nav > a { min-height: 48px; font-size: clamp(28px, 6vh, 36px); }
   .cinematic-mobile-footer { margin-top: 12px; padding-top: 8px; }
@@ -1730,7 +1733,6 @@ body::before {
   #services .service-card h3 { font-size: 9px; }
 }
 
-.testimonials-section { background: #FFFFFF; }
 .testimonials-section .heading { margin: 0 0 28px; text-align: left; }
 .testimonials-section .heading .eyebrow { font-size: .9rem; font-weight: 800; }
 .testimonial-slider { width: 100%; overflow: hidden; margin: 0; padding: 5px 0 20px; scrollbar-width: none; overscroll-behavior-x: contain; -webkit-overflow-scrolling: touch; touch-action: pan-x pan-y; }
@@ -1762,7 +1764,6 @@ body::before {
 @media (prefers-reduced-motion: reduce) {
   .testimonial-slider { overflow-x: auto; scroll-behavior: auto; scroll-snap-type: x mandatory; }
   .testimonial-track { width: max-content; }
-  .testimonial-loop[aria-hidden="true"] { display: none; }
   .testimonial-card { transition: none; }
   .testimonial-card:hover,.testimonial-card:active { transform: none; }
 }
