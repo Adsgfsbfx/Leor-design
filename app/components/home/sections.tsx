@@ -72,7 +72,7 @@ export function Hero() {
         <div className="hero-copy">
           <p className="eyebrow light">Hebbal, Bangalore</p>
           <h1>
-            Thoughtful home interiors in <Gold>Bangalore</Gold>
+            Interior Designers in <Gold>Bangalore</Gold>
           </h1>
           <p className="hero-sub">
             Space planning, modular kitchens, wardrobes and finishes, shaped around the way you live. Start with a free conversation.

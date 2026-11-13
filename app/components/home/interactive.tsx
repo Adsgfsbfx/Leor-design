@@ -310,7 +310,7 @@ export function Estimator() {
 
       <div className={`estimator-result price-locked${showOffer ? " has-offer" : ""}`}>
         <div className="estimator-result-content" inert={showOffer} aria-hidden={showOffer || undefined}>
-        <p className="eyebrow light">Provisional budget range · GST excluded</p>
+        <p className="eyebrow light">Indicative budget estimate · GST excluded</p>
         <p className="result-number" aria-live="polite" aria-atomic="true">
           <span className="sr-only">{finalRange}</span>
           <span aria-hidden="true">{rangeText}</span>
