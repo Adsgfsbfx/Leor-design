@@ -26,7 +26,7 @@ const cormorant = localFont({
 
 const homepageTitle = `Interior Designers in Bangalore | ${site.companyName}`;
 const homepageDescription =
-  "Discover Leor Design, an interior design company in Bangalore creating beautiful home interiors, modular kitchens and thoughtfully designed living spaces.";
+  "Leor Design is an interior design studio in Hebbal, Bangalore, creating thoughtfully planned home interiors, modular kitchens and elegant living spaces across Bangalore. Explore our design services and get in touch.";
 const socialImage = {
   url: "/images/hero-living-room-marble-wall.jpg",
   alt: "Contemporary Indian living room with a marble feature wall and a mandir niche",

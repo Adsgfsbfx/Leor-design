@@ -14,8 +14,8 @@ export function isRateLimited(
   windowMs: number,
 ) {
   const forwardedFor =
+    request.headers.get("cf-connecting-ip") ??
     request.headers.get("x-real-ip") ??
-    request.headers.get("x-vercel-forwarded-for") ??
     request.headers.get("x-forwarded-for");
   const ip = forwardedFor?.split(",")[0]?.trim() || "unknown";
   const key = `${namespace}:${ip}`;

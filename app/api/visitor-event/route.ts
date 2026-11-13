@@ -1,6 +1,7 @@
 import { isRateLimited } from "../../../src/lib/rateLimit";
 import { saveVisitorEventToAppsScript, type GoogleSheetsVisitorEvent } from "../../../src/lib/visitorSheets";
 import { GoogleAppsScriptConfigurationError } from "../../../src/lib/googleSheets";
+import { getCloudflareContext } from "@opennextjs/cloudflare";
 
 type VisitorEventPayload = Record<string, unknown>;
 
@@ -216,7 +217,7 @@ export async function POST(request: Request) {
     scroll_depth_percent: scrollDepth,
     screen_resolution: screenResolution,
     language,
-    approximate_location: trustedApproximateLocation(request),
+    approximate_location: trustedApproximateLocation(),
   };
 
   try {
@@ -239,11 +240,16 @@ export async function POST(request: Request) {
   }
 }
 
-function trustedApproximateLocation(request: Request) {
-  // These headers are meaningful only when the hosting edge strips client-supplied copies.
+function trustedApproximateLocation() {
   // Country/region are coarse; raw IP and city are never collected.
-  const country = request.headers.get("x-vercel-ip-country")?.trim().slice(0, 8) ?? "";
-  const region = request.headers.get("x-vercel-ip-country-region")?.trim().slice(0, 32) ?? "";
-  if (!/^[A-Z]{2}$/i.test(country)) return "";
-  return [country.toUpperCase(), region].filter(Boolean).join("-");
+  try {
+    const { cf } = getCloudflareContext();
+    const country = typeof cf?.country === "string" ? cf.country.trim().slice(0, 8) : "";
+    const region = typeof cf?.regionCode === "string" ? cf.regionCode.trim().slice(0, 32) : "";
+    if (!/^[A-Z]{2}$/i.test(country)) return "";
+    return [country.toUpperCase(), region].filter(Boolean).join("-");
+  } catch {
+    // Local Node.js development has no Cloudflare request context.
+    return "";
+  }
 }

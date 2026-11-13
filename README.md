@@ -263,8 +263,22 @@ git commit -m "Fix popup form submission, add email fields, implement tracking
 - All tests passing, ready for production"
 ```
 
-### Step 3: Deploy
-Use your normal deployment process (Vercel, GitHub Pages, etc.)
+### Step 3: Preview or Deploy to Cloudflare Workers
+
+This project uses OpenNext for Cloudflare and the existing Wrangler configuration in
+`wrangler.jsonc`.
+
+1. Authenticate Wrangler with your Cloudflare account: `npx.cmd wrangler login`.
+2. For a local Cloudflare runtime preview, run `npm.cmd run preview`. This builds the app with
+   OpenNext and starts Wrangler's local Worker preview.
+3. Before production deployment, set `GOOGLE_APPS_SCRIPT_URL` and `LEOR_WEBHOOK_SECRET` in the
+   Cloudflare Worker environment or as Worker secrets. Do not commit their values.
+4. Build the Cloudflare Worker with `npm.cmd run cf:build`.
+5. When deployment is approved, deploy the built Worker with
+   `npx.cmd opennextjs-cloudflare deploy`.
+
+The production deployment command is documented here only; it has not been run as part of this
+verification.
 
 ### Step 4: Monitor
 - Check Google Sheets for new enquiries
