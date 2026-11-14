@@ -1,7 +1,7 @@
 #!/usr/bin/env node
 /* eslint-disable @typescript-eslint/no-require-imports */
 /**
- * Test script to verify UTM tracking and WhatsApp click tracking
+ * Test script to verify enquiry attribution and WhatsApp lead attribution
  * Run with: node test-tracking.js
  */
 
@@ -38,7 +38,7 @@ function makeRequest(path) {
 }
 
 async function runTests() {
-  console.log("🧪 Testing Leor Design Tracking Implementation\n");
+  console.log("🧪 Testing Leor Design Enquiry Attribution\n");
 
   try {
     // Test 1: Homepage loads
@@ -51,12 +51,12 @@ async function runTests() {
       return;
     }
 
-    // Test 2: Check for tracking initialization
-    console.log("Test 2: Check for TrackingInitializer component");
-    if (home.body.includes("tracking-initializer") || home.body.includes("captureUtmParameters")) {
-      console.log("✅ Tracking initialization code present in HTML\n");
+    // Test 2: Check for enquiry attribution initialization
+    console.log("Test 2: Check for EnquiryAttributionInitializer component");
+    if (home.body.includes("enquiry-attribution-initializer") || home.body.includes("captureUtmParameters")) {
+      console.log("✅ Enquiry attribution initialization code present in HTML\n");
     } else {
-      console.log("⚠️  TrackingInitializer component might not be rendering (expected in production)\n");
+      console.log("⚠️  EnquiryAttributionInitializer might not be rendering (expected in production)\n");
     }
 
     // Test 3: Check for API route

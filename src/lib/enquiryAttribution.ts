@@ -1,15 +1,13 @@
 "use client";
 
 /**
- * Tracking utilities for UTM parameters and WhatsApp clicks.
- * Uses sessionStorage to persist campaign data across page navigation.
+ * Customer enquiry attribution stored in the current browser session.
  */
 
 const UTM_SOURCE_KEY = "leor_utm_source";
 const UTM_MEDIUM_KEY = "leor_utm_medium";
 const UTM_CAMPAIGN_KEY = "leor_utm_campaign";
 const WHATSAPP_CLICKED_KEY = "leor_whatsapp_clicked";
-const WHATSAPP_LEAD_ID_KEY = "leor_whatsapp_lead_id";
 
 function getSessionStorage(): Storage | null {
   if (typeof window === "undefined") return null;
@@ -70,14 +68,13 @@ export function getPersistedUtmParameters(): {
 }
 
 /**
- * Record that a WhatsApp link was clicked.
- * Sets a flag in sessionStorage to indicate engagement.
+ * Remember a WhatsApp click so a later lead submission can include that choice.
  */
 export function recordWhatsAppClick(): void {
   try {
     getSessionStorage()?.setItem(WHATSAPP_CLICKED_KEY, "true");
   } catch {
-    // Click tracking is optional and must not block opening WhatsApp.
+    // Lead attribution is optional and must not block opening WhatsApp.
   }
 }
 
@@ -93,32 +90,10 @@ export function wasWhatsAppClicked(): boolean {
   }
 }
 
-/** Remember the most recent saved lead so a later WhatsApp click can be linked
- * to that lead in visitor analytics (when the visitor has opted into analytics).
- */
-export function rememberWhatsAppLead(leadId: string): void {
-  if (!leadId) return;
-  try {
-    getSessionStorage()?.setItem(WHATSAPP_LEAD_ID_KEY, leadId.slice(0, 100));
-  } catch {
-    // Linkage is optional; it must not block confirmation or WhatsApp navigation.
-  }
-}
-
-export function getWhatsAppLeadId(): string {
-  try {
-    return getSessionStorage()?.getItem(WHATSAPP_LEAD_ID_KEY) ?? "";
-  } catch {
-    return "";
-  }
-}
-
 /**
- * Initialize click tracking for all WhatsApp links.
- * Adds a click listener to document that records clicks on WhatsApp buttons/links.
- * Call this once after the DOM is ready (e.g., in a useEffect with empty dependency array).
+ * Capture WhatsApp link clicks for later customer enquiry submissions.
  */
-export function initializeWhatsAppClickTracking(): (() => void) | void {
+export function initializeWhatsAppLeadClickCapture(): (() => void) | void {
   if (typeof window === "undefined" || typeof document === "undefined") {
     return;
   }
@@ -137,13 +112,7 @@ export function initializeWhatsAppClickTracking(): (() => void) | void {
     if (/wa\.me|whatsapp/i.test(href) || target.closest("[data-whatsapp]")) recordWhatsAppClick();
   }
 
-  // Use capture phase to catch clicks early
   document.addEventListener("click", handleClick, true);
-
-  // Log that tracking was initialized
-  if (typeof console !== "undefined") {
-    console.debug("[tracking] WhatsApp click tracking initialized");
-  }
 
   return () => {
     document.removeEventListener("click", handleClick, true);

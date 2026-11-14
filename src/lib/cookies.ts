@@ -1,15 +1,10 @@
 /**
- * Cookie consent management.
- * Handles tracking of user's consent status for analytics and tracking.
- * Supports granular consent: Essential (always required) and Analytics (optional).
+ * Cookie choice persistence for the first-party privacy prompt.
  */
 
-export type ConsentChoice = "accepted" | "rejected" | "unknown" | "customized";
-
 export interface ConsentPreferences {
-  analytics: boolean;
-  essential: boolean; // Always true when consent is given
-  timestamp: number; // When preference was set
+  essential: boolean;
+  timestamp: number;
 }
 
 const CONSENT_PREFERENCES_KEY = "leor-cookie-preferences";
@@ -55,9 +50,8 @@ function parsePreferences(value: string | null): ConsentPreferences | null {
 
   try {
     const parsed = JSON.parse(value) as Partial<ConsentPreferences>;
-    if (typeof parsed.analytics !== "boolean" || typeof parsed.essential !== "boolean") return null;
+    if (typeof parsed.essential !== "boolean") return null;
     return {
-      analytics: parsed.analytics,
       essential: parsed.essential,
       timestamp: typeof parsed.timestamp === "number" ? parsed.timestamp : 0,
     };
@@ -68,7 +62,7 @@ function parsePreferences(value: string | null): ConsentPreferences | null {
 
 /**
  * Get the current consent preferences.
- * Returns default (analytics: false) if not set.
+ * Returns the default choice when no preference has been saved.
  */
 export function getConsentPreferences(): ConsentPreferences {
   const fromCookie = parsePreferences(readCookie(CONSENT_PREFERENCES_KEY));
@@ -85,7 +79,7 @@ export function getConsentPreferences(): ConsentPreferences {
 
   if (memoryPreferences) return memoryPreferences;
 
-  return { analytics: false, essential: false, timestamp: 0 };
+  return { essential: false, timestamp: 0 };
 }
 
 /**
@@ -122,55 +116,6 @@ export function hasBannerBeenDismissed(): boolean {
     // Keep the choice available in memory when browser storage is blocked.
   }
   return memoryPreferences?.essential === true;
-}
-
-/**
- * Check if analytics tracking is enabled.
- * Returns true only if explicitly opted in.
- */
-export function hasAnalyticsConsent(): boolean {
-  return getConsentPreferences().analytics === true;
-}
-
-/**
- * Check if essential functionality consent is given.
- * Returns true if user has made any consent choice.
- */
-export function hasEssentialConsent(): boolean {
-  return getConsentPreferences().essential === true;
-}
-
-/**
- * Get the consent status for Google Sheets (backward compatible).
- * Returns: "accepted" (all), "rejected" (all), "unknown" (not decided), or "customized" (selective)
- */
-export function getCookieConsentStatus(): "accepted" | "rejected" | "unknown" | "customized" {
-  if (!hasBannerBeenDismissed()) {
-    return "unknown";
-  }
-
-  const prefs = getConsentPreferences();
-  if (prefs.analytics === true) {
-    return "accepted";
-  }
-  return prefs.essential ? "rejected" : "unknown";
-}
-
-/**
- * Legacy function for backward compatibility.
- * Returns "accepted" | "rejected" | "unknown"
- */
-export function getCookieConsent(): "accepted" | "rejected" | "unknown" {
-  const status = getCookieConsentStatus();
-  return status === "customized" ? "rejected" : status;
-}
-
-/**
- * Check if visitor can be tracked (has accepted analytics).
- * Only returns true if user explicitly enabled analytics.
- */
-export function canTrack(): boolean {
-  return hasAnalyticsConsent();
 }
 
 /**

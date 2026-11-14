@@ -141,8 +141,29 @@ export function SmoothScrollProvider({ children }: { children: ReactNode }) {
       else window.scrollTo({ top: 0, left: 0, behavior: "auto" });
     };
     const resetHomeScroll = () => {
+      // Preserve and honor section links when arriving from another route (or
+      // loading a bookmarked section). Clearing the hash here caused links
+      // such as /#enquire to silently land at the top of the homepage.
       if (pathname === "/" && window.location.hash) {
-        window.history.replaceState(window.history.state, "", `${window.location.pathname}${window.location.search}`);
+        let target: HTMLElement | null = null;
+        try {
+          target = document.getElementById(decodeURIComponent(window.location.hash.slice(1)));
+        } catch {
+          target = null;
+        }
+        if (target) {
+          const hash = window.location.hash;
+          requestAnimationFrame(() => requestAnimationFrame(() => {
+            if (window.location.pathname !== "/" || window.location.hash !== hash) return;
+            if (lenisRef.current) {
+              lenisRef.current.scrollTo(target, { offset: -80, duration: 0.8 });
+            } else {
+              const top = Math.max(0, window.scrollY + target!.getBoundingClientRect().top - 80);
+              window.scrollTo({ top, left: 0, behavior: "auto" });
+            }
+          }));
+          return;
+        }
       }
       resetScroll();
     };

@@ -8,10 +8,8 @@ import "./cookie-banner.css";
 
 function subscribeToConsentChanges(onChange: () => void) {
   window.addEventListener("storage", onChange);
-  window.addEventListener("consent-changed", onChange);
   return () => {
     window.removeEventListener("storage", onChange);
-    window.removeEventListener("consent-changed", onChange);
   };
 }
 
@@ -35,18 +33,17 @@ export function CookieBanner() {
     return () => window.removeEventListener("leor:open-cookie-settings", openPreferences);
   }, []);
 
-  const saveConsent = (analytics: boolean) => {
-    setConsentPreferences({ analytics, essential: true, timestamp: Date.now() });
-    window.dispatchEvent(new CustomEvent("consent-changed", { detail: { analytics } }));
+  const saveConsent = () => {
+    setConsentPreferences({ essential: true, timestamp: Date.now() });
   };
 
   const handleAcceptAll = () => {
-    saveConsent(true);
+    saveConsent();
     setDismissedInView(true);
   };
 
   const handleRejectAll = () => {
-    saveConsent(false);
+    saveConsent();
     setDismissedInView(true);
   };
 
@@ -75,13 +72,13 @@ export function CookieBanner() {
           <p className="cookie-consent-kicker">Leor Design <span aria-hidden="true">/</span> Your privacy</p>
           <h2 id="cookie-consent-title">Your privacy, your choice.</h2>
           <p className="cookie-consent-description">
-            Essential storage keeps the site working. Optional analytics help us understand visits and are only enabled if you choose them. Read our <a href="/privacy">privacy notice</a>.
+            This site uses essential storage and does not collect visit analytics. Read our <a href="/privacy">privacy notice</a>.
           </p>
         </div>
-        <div className="cookie-consent-actions" role="group" aria-label="Cookie consent choices">
-          <button className="cookie-action cookie-action-quiet" onClick={handleRejectAll} type="button">Reject all</button>
-          <button className="cookie-action cookie-action-outline" onClick={() => setShowCustomize(true)} type="button">Customize</button>
-          <button className="cookie-action cookie-action-primary" onClick={handleAcceptAll} type="button">Accept all</button>
+        <div className="cookie-consent-actions" role="group" aria-label="Privacy choices">
+          <button className="cookie-action cookie-action-quiet" onClick={handleRejectAll} type="button">Essential only</button>
+          <button className="cookie-action cookie-action-outline" onClick={() => setShowCustomize(true)} type="button">Privacy choices</button>
+          <button className="cookie-action cookie-action-primary" onClick={handleAcceptAll} type="button">Continue</button>
         </div>
       </div>
     </div>

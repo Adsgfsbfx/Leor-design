@@ -52,38 +52,20 @@ export default function PrivacyPage() {
         </p>
       </section>
       <section id="cookies">
-        <h2>Cookie and analytics information</h2>
+        <h2>Cookies and browser storage</h2>
         <p>
-          Optional visitor analytics run only after analytics consent is accepted. The website may
-          send random visitor, session and event IDs; page and page-category details; referral and
-          campaign values; browser, operating system and device category; interaction type and
-          clicked-element label; scroll depth; page and session duration; screen resolution and
-          browser language. Approximate country or region is included only when supplied in trusted
-          platform headers. Raw IP addresses, passwords, payment information and sensitive form
-          contents are not included in visitor event payloads.
-        </p>
-        <p>
-          Analytics events are sent through the website&apos;s visitor-event endpoint to the existing
-          Apps Script integration for the Visitor Footprints sheet. The current Apps Script mapping
-          writes the original 19 columns. Its field names for page duration and consent do not match
-          the names currently sent by the website, so those two values may not be recorded; the
-          additional proposed columns and Session Registry are not confirmed as active. A Lead ID
-          can be attached to later visitor events after an enquiry is submitted.
-        </p>
-        <p>
-          The browser stores your consent choice in an essential cookie for up to 180 days, with
-          local storage as a compatibility fallback. After analytics consent, anonymous visitor and
-          session identifiers, attribution values and queued events are stored in local or session
-          storage. Withdrawing analytics consent stops optional tracking and clears locally queued
-          events and identifiers. Withdrawal does not delete events already sent to Google Sheets.
+          The website does not collect visit or interaction analytics. It stores your privacy choice
+          in a first-party cookie for up to 180 days, with local storage as a fallback. UTM campaign
+          values and a WhatsApp-click marker may be kept in session storage so they can be included
+          if you submit a customer enquiry; they are not sent as separate activity events.
         </p>
       </section>
       <section>
         <h2>Service operation</h2>
         <p>
           The enquiry endpoint uses a forwarded network address as a temporary in-memory rate-limit
-          key to limit repeated requests. That key is not included in the Leads or Visitor Footprints
-          rows. The website does not state a retention period for the Google Sheets records.
+          key to limit repeated requests. That key is not included in the Leads rows. The website
+          does not state a retention period for the Google Sheets records.
         </p>
       </section>
       <section>
@@ -91,8 +73,8 @@ export default function PrivacyPage() {
         <p>
           If you choose to call, your call is handled by your phone provider. If you open WhatsApp,
           WhatsApp handles messages sent there. The website keeps a session-only marker of WhatsApp
-          clicks so it can include that choice if you later submit an enquiry. It records the click
-          as an optional visitor analytics event only when analytics consent has been accepted.
+          clicks so it can include that choice if you later submit an enquiry. The click is not sent
+          to the website as a separate event.
         </p>
       </section>
       <section>

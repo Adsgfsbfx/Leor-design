@@ -3,7 +3,7 @@ import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { site } from "../src/config/site";
 import { SmoothScrollProvider } from "../components/smooth-scroll";
-import { TrackingInitializer } from "./components/tracking-initializer";
+import { EnquiryAttributionInitializer } from "./components/enquiry-attribution-initializer";
 import { CookieBanner } from "./components/cookie-banner";
 import { JsonLd } from "./components/seo/json-ld";
 import "./globals.css";
@@ -93,7 +93,7 @@ export default function RootLayout({ children }: { children: ReactNode }) {
             ],
           }}
         />
-        <TrackingInitializer />
+        <EnquiryAttributionInitializer />
         <SmoothScrollProvider>
           {children}
           <CookieBanner />

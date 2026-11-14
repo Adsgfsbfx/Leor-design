@@ -1,7 +1,7 @@
 "use client";
 
-import { useEffect, useId, useRef, useState, type MouseEvent } from "react";
-import { getConsentPreferences, setConsentPreferences } from "../../src/lib/cookies";
+import { useEffect, useId, useRef, type MouseEvent } from "react";
+import { setConsentPreferences } from "../../src/lib/cookies";
 
 interface CookiePreferencesModalProps {
   onClose: () => void;
@@ -12,11 +12,8 @@ interface CookiePreferencesModalProps {
 export function CookiePreferencesModal({ onClose, onSaved, onRejected }: CookiePreferencesModalProps) {
   const uid = useId();
   const dialogRef = useRef<HTMLDivElement>(null);
-  const [analyticsEnabled, setAnalyticsEnabled] = useState(() => getConsentPreferences().analytics);
   const titleId = `${uid}-title`;
   const descriptionId = `${uid}-description`;
-  const analyticsTitleId = `${uid}-analytics-title`;
-  const analyticsDescriptionId = `${uid}-analytics-description`;
 
   useEffect(() => {
     const previousFocus = document.activeElement instanceof HTMLElement ? document.activeElement : null;
@@ -52,20 +49,14 @@ export function CookiePreferencesModal({ onClose, onSaved, onRejected }: CookieP
     };
   }, [onClose]);
 
-  const dispatchConsentChange = (analytics: boolean) => {
-    window.dispatchEvent(new CustomEvent("consent-changed", { detail: { analytics } }));
-  };
-
   const handleSave = () => {
-    setConsentPreferences({ analytics: analyticsEnabled, essential: true, timestamp: Date.now() });
-    dispatchConsentChange(analyticsEnabled);
+    setConsentPreferences({ essential: true, timestamp: Date.now() });
     onSaved?.();
     onClose();
   };
 
   const handleReject = () => {
-    setConsentPreferences({ analytics: false, essential: true, timestamp: Date.now() });
-    dispatchConsentChange(false);
+    setConsentPreferences({ essential: true, timestamp: Date.now() });
     onRejected?.();
     onClose();
   };
@@ -92,7 +83,7 @@ export function CookiePreferencesModal({ onClose, onSaved, onRejected }: CookieP
         <p className="cookie-consent-kicker">Leor Design <span aria-hidden="true">/</span> Privacy choices</p>
         <h2 className="cookie-consent-dialog-title" id={titleId}>Choose what you share.</h2>
         <p className="cookie-consent-dialog-intro" id={descriptionId}>
-          Essential storage is always on so the website can work. Analytics are optional and stay off unless you enable them.
+          Essential storage remembers your privacy choice and supports core site functions. This website does not collect visit analytics.
         </p>
 
         <div className="cookie-consent-preferences">
@@ -106,31 +97,20 @@ export function CookiePreferencesModal({ onClose, onSaved, onRejected }: CookieP
             </div>
           </section>
 
-          <section className="cookie-consent-preference" aria-labelledby={analyticsTitleId}>
+          <section className="cookie-consent-preference" aria-labelledby={`${uid}-analytics-title`}>
             <div className="cookie-consent-preference-heading">
               <div>
-                <h3 id={analyticsTitleId}>Analytics</h3>
-                <p id={analyticsDescriptionId}>Allows visit and interaction tracking to help us improve the website.</p>
+                <h3 id={`${uid}-analytics-title`}>Visit analytics</h3>
+                <p>No visit or interaction activity is collected.</p>
               </div>
-              <label className="cookie-consent-switch">
-                <input
-                  type="checkbox"
-                  role="switch"
-                  checked={analyticsEnabled}
-                  onChange={(event) => setAnalyticsEnabled(event.target.checked)}
-                  aria-labelledby={analyticsTitleId}
-                  aria-describedby={analyticsDescriptionId}
-                />
-                <span className="cookie-consent-switch-track" aria-hidden="true"><span /></span>
-                <span className="cookie-consent-switch-state" aria-hidden="true">{analyticsEnabled ? "On" : "Off"}</span>
-              </label>
+              <span className="cookie-consent-status">Not collected</span>
             </div>
           </section>
         </div>
 
         <p className="cookie-consent-privacy-link"><a href="/privacy">Read the privacy notice</a></p>
         <div className="cookie-consent-dialog-actions">
-          <button className="cookie-action cookie-action-quiet" onClick={handleReject} type="button">Reject all</button>
+          <button className="cookie-action cookie-action-quiet" onClick={handleReject} type="button">Essential only</button>
           <button className="cookie-action cookie-action-outline" onClick={onClose} type="button">Cancel</button>
           <button className="cookie-action cookie-action-primary" onClick={handleSave} type="button">Save preferences</button>
         </div>
