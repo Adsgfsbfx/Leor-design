@@ -129,7 +129,7 @@ export default function Hero() {
     <div className="cinematic-copy">
       <p className="cinematic-eyebrow">Hebbal, Bangalore <span>·</span> Home interior</p>
       <h1 id="hero-heading" aria-label="Luxury Interior Designers in Bangalore"><span className="cinematic-line-mask"><span>Luxury Interior Designers</span></span>{" "}<span className="cinematic-line-mask"><span className="cinematic-keep-together">in <span className="cinematic-last-line">Bangalore</span></span></span></h1>
-      <p className="cinematic-subtext">Space planning, modular kitchens, wardrobes and finishes, designed for Bangalore homes. Start with a free conversation.</p>
+      <p className="cinematic-subtext">Leor Design is an interior design studio in Hebbal, serving homes across Bangalore. We plan residential interiors, modular kitchens, wardrobes and finishes around the way you live.</p>
       <div className="cinematic-actions">
         <Magnetic><ButtonLink href="#enquire" onClick={navigateToSection} className="cinematic-primary">Get a free consultation</ButtonLink></Magnetic>
         <ButtonLink href="#estimator" onClick={navigateToSection} variant="link" className="cinematic-estimate">Estimate your budget</ButtonLink>

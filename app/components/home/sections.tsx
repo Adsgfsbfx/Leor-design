@@ -91,7 +91,7 @@ const services = [
   { icon: "grid", title: "Commercial interiors", description: "Functional interiors for small offices, clinics, studios and shops.", note: "" },
   { icon: "layers", title: "Civil works", description: "Breaking walls, new bathrooms, flooring and tiling.", note: "" },
   { icon: "check", title: "Lived-in home renovation", description: "Refresh and improve your home while working around the way you live.", note: "" },
-  { icon: "home", title: "Modular kitchens and wardrobes", description: "Standalone modular kitchen and wardrobe projects, planned for your space.", note: `Warranty: ${projectTerms[1].value} on modular work and ${projectTerms[2].value} on hardware.` },
+  { icon: "home", title: "Modular kitchens and wardrobes", description: "For homeowners comparing modular kitchen designers in Bangalore, Leor plans standalone kitchen and wardrobe projects around the available space.", note: `Warranty: ${projectTerms[1].value} on modular work and ${projectTerms[2].value} on hardware.` },
   { icon: "calc", title: "Other home works", description: "False ceilings, painting, wallpaper, electrical and plumbing works.", note: "" },
 ] as const;
 
@@ -100,7 +100,7 @@ export function Services() {
     <section className="section services-section" id="services">
       <div className="wrap">
         <p className="services-mobile-heading" aria-hidden="true">Featured Services</p>
-        <Heading eyebrow="Our services" sub="For homeowners comparing home interior designers in Bangalore, we plan complete interiors and focused upgrades around the way you live.">
+        <Heading eyebrow="Our services" sub="Looking for home interior designers in Bangalore? Leor plans full-home residential interiors and focused home upgrades around the way you live, including standalone kitchens and wardrobes.">
           Thoughtful work for <Gold>every space</Gold>
         </Heading>
         <ul className="services-grid">
